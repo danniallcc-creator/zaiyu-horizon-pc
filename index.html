@@ -204,6 +204,28 @@ a{color:inherit;text-decoration:none}
 .clickable{cursor:pointer}
 .clickable:hover{transform:translateY(-3px);box-shadow:0 14px 34px rgba(0,0,0,.4),0 0 0 1px var(--line-gold)}
 
+/* Stocks (个股分析) */
+.stk-sec{margin-bottom:30px}
+.stk-head{display:flex;align-items:baseline;gap:12px;margin-bottom:15px;padding-bottom:10px;border-bottom:1px solid var(--line-gold)}
+.stk-head .mk{font-family:'Cormorant Garamond',serif;font-size:24px;font-weight:700;color:var(--gold)}
+.stk-head .mk-en{font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--text-3)}
+.stk-head .mk-cnt{margin-left:auto;font-family:'JetBrains Mono',monospace;font-size:11.5px;color:var(--text-3)}
+.stk-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(196px,1fr));gap:13px}
+.scard{padding:15px 16px;background:var(--panel);border:1px solid var(--line);border-radius:13px;transition:.25s;position:relative;overflow:hidden}
+.scard::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--text-3);opacity:.55}
+.scard.up::before{background:var(--green)}.scard.down::before{background:var(--red)}.scard.flat::before{background:var(--text-3)}
+.scard:hover{transform:translateY(-3px);border-color:var(--line-gold);box-shadow:0 12px 28px rgba(0,0,0,.4)}
+.scard .s-top{display:flex;align-items:baseline;justify-content:space-between;gap:8px;margin-bottom:10px}
+.scard .s-nm{font-size:14px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.scard .s-code{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text-3);flex-shrink:0}
+.scard .s-price{font-family:'JetBrains Mono',monospace;font-size:23px;font-weight:700;letter-spacing:-.5px}
+.scard .s-price .cur{font-size:13px;color:var(--text-3);margin-right:2px}
+.scard .s-chg{font-family:'JetBrains Mono',monospace;font-size:12.5px;font-weight:600;margin-top:4px;display:flex;align-items:center;gap:4px}
+.scard .s-na{font-family:'JetBrains Mono',monospace;font-size:14px;color:var(--text-3);margin-top:6px}
+.stk-asof{font-family:'JetBrains Mono',monospace;font-size:11.5px;color:var(--text-3);margin:2px 0 22px;display:flex;align-items:center;gap:7px}
+.stk-asof .dot{width:7px;height:7px;border-radius:50%;background:var(--green);box-shadow:0 0 8px var(--green)}
+.stk-asof.err .dot{background:var(--red);box-shadow:0 0 8px var(--red)}
+
 /* Calendar */
 .cal-row{display:flex;align-items:center;gap:14px;padding:13px 20px;border-bottom:1px solid var(--line)}
 .cal-row:last-child{border:none}
@@ -399,6 +421,7 @@ a{color:inherit;text-decoration:none}
       <div class="nav-item" data-view="masters"><span class="ic">♔</span>大师框架</div>
       <div class="nav-item" data-view="scenario"><span class="ic">⑂</span>情景推演</div>
       <div class="nav-item" data-view="camps"><span class="ic">⊕</span>G2阵营</div>
+      <div class="nav-item" data-view="stocks"><span class="ic">⊞</span>个股分析</div>
     </nav>
     <div class="sidebar-foot">
       数据仅供参考 · 不构成投资建议<br>
@@ -483,6 +506,16 @@ a{color:inherit;text-decoration:none}
         <p class="page-sub">东方阵营 / 桥梁国家 / 西方阵营 · 23国格局 · 脱钩指数追踪</p>
       </div>
       <div id="campsContent"></div>
+    </section>
+
+    <!-- ===== Stocks ===== -->
+    <section class="view" id="view-stocks">
+      <div class="page-head">
+        <div class="page-kicker">Equity Analysis · Real-Time Quotes</div>
+        <h1 class="page-title">个股<span class="gold">实时分析</span></h1>
+        <p class="page-sub">美股 · 港股 · A股 · 34只核心标的 · 实时行情(Stooq + 腾讯财经)</p>
+      </div>
+      <div id="stocksContent"><div class="data-loading"><span class="spin"></span> 正在获取个股实时行情…</div></div>
     </section>
 
     <div class="view-foot"></div>
@@ -718,6 +751,51 @@ async function fetchMarket(){
     if(j[k]&&j[k].price!=null){ o[vk]=nf(j[k].price,dec); o[ck]=(j[k].change!=null?j[k].change:null); }
   }
   return o;
+}
+
+/* ==================== STOCKS (个股分析) ==================== */
+// 全实时: 美股/港股 → Render代理(Stooq批量); A股指数/ETF → Render代理(腾讯财经)
+async function fetchUniverse(){
+  if(!API_BASE) throw new Error('未配置 API_BASE');
+  const ctrl=new AbortController(); const t=setTimeout(()=>ctrl.abort(),FETCH_TIMEOUT);
+  const r=await fetch(API_BASE+'/api/universe',{signal:ctrl.signal}); clearTimeout(t);
+  if(!r.ok) throw new Error('个股 HTTP '+r.status);
+  return await r.json();
+}
+function stkPrice(p){
+  if(p==null) return null;
+  const dec = p<10 ? 3 : 2;
+  return Number(p).toLocaleString('en-US',{minimumFractionDigits:dec,maximumFractionDigits:dec});
+}
+function scard(s,cur){
+  if(s.price==null){
+    return `<div class="scard flat"><div class="s-top"><span class="s-nm">${s.name}</span><span class="s-code">${(s.id||'').toUpperCase()}</span></div><div class="s-na">— 暂无数据</div></div>`;
+  }
+  const c=s.changePct;
+  const cls=c>0?'up':c<0?'down':'flat';
+  const ar=c>0?'▲':c<0?'▼':'■';
+  return `<div class="scard ${cls}">
+    <div class="s-top"><span class="s-nm">${s.name}</span><span class="s-code">${(s.id||'').toUpperCase()}</span></div>
+    <div class="s-price">${cur?`<span class="cur">${cur}</span>`:''}${stkPrice(s.price)}</div>
+    <div class="s-chg ${cls}">${ar} ${Math.abs(c||0).toFixed(2)}%</div>
+  </div>`;
+}
+function stkSection(title,en,rows,curFn){
+  const cards=rows.map(s=>scard(s,curFn(s))).join('');
+  return `<div class="stk-sec">
+    <div class="stk-head"><span class="mk">${title}</span><span class="mk-en">${en}</span><span class="mk-cnt">${rows.length} 标的</span></div>
+    <div class="stk-grid">${cards}</div>
+  </div>`;
+}
+function renderStocks(u){
+  const cnCur=s=>/ETF/.test(s.name)?'¥':''; // 指数为点位, ETF为人民币
+  const html =
+    stkSection('美股','US Equities',u.us||[],()=> '$') +
+    stkSection('港股','HK Equities',u.hk||[],()=> 'HK$') +
+    stkSection('A股','China A-Shares',u.cn||[],cnCur);
+  const ts=new Date(u.asOf||Date.now()).toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+  document.getElementById('stocksContent').innerHTML =
+    `<div class="stk-asof"><span class="dot"></span>实时行情 · 更新于 ${ts} · 数据源 Stooq(美股/港股) + 腾讯财经(A股)</div>` + html;
 }
 
 /* ==================== RENDER: DASHBOARD ==================== */
@@ -1042,13 +1120,24 @@ function disclaimerHTML(){return `<div class="disclaimer"><b>风险提示</b> ·
 
 /* ==================== APP CONTROL ==================== */
 let cache=null;
-const rendered={dashboard:false,crisis:false,cycle:false,masters:false,scenario:false,camps:false};
+const rendered={dashboard:false,crisis:false,cycle:false,masters:false,scenario:false,camps:false,stocks:false};
 function renderView(v){
   if(v==='crisis'&&!rendered.crisis){renderCrisis();rendered.crisis=true}
   if(v==='cycle'&&!rendered.cycle){renderCycles();rendered.cycle=true}
   if(v==='masters'&&!rendered.masters){renderMasters();rendered.masters=true}
   if(v==='scenario'&&!rendered.scenario){renderScenario();rendered.scenario=true}
   if(v==='camps'&&!rendered.camps){renderCamps();rendered.camps=true}
+  if(v==='stocks'&&!rendered.stocks){loadStocks();rendered.stocks=true}
+}
+async function loadStocks(silent){
+  const el=document.getElementById('stocksContent');
+  if(!silent) el.innerHTML='<div class="data-loading"><span class="spin"></span> 正在获取个股实时行情…</div>';
+  try{
+    renderStocks(await fetchUniverse());
+  }catch(e){
+    console.warn('个股获取失败',e);
+    if(!silent) el.innerHTML='<div class="stk-asof err" style="margin-bottom:18px"><span class="dot"></span>个股行情获取失败：尚未连接数据代理。请确认 API 已部署后点击右上角 ↻ 重试</div>';
+  }
 }
 document.querySelectorAll('.nav-item').forEach(n=>n.addEventListener('click',()=>{
   const v=n.dataset.view;
@@ -1086,6 +1175,7 @@ async function loadAll(){
   cache=md;
   renderDashboard(md);
   rendered.dashboard=true;
+  if(rendered.stocks) loadStocks(true); // 个股已打开过则静默刷新
   const ts=new Date().toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit'});
   if(ok===2)        setStatus('live','实时数据 · ECB汇率 + Stooq行情 · '+ts);
   else if(ok===1)   setStatus('offline','部分数据源不可用('+failed.join('、')+')· 下次自动重试');
