@@ -125,6 +125,10 @@ a{color:inherit;text-decoration:none}
 .src-pill.live .dot{background:var(--green);box-shadow:0 0 9px var(--green);animation:pulse 2s infinite}
 .src-pill.offline{border-color:rgba(224,162,60,.35);color:var(--orange)}
 .src-pill.offline .dot{background:var(--orange)}
+.src-pill.loading{border-color:rgba(91,155,213,.4);color:#5b9bd5}
+.src-pill.loading .dot{background:#5b9bd5;animation:pulse 1s infinite}
+.data-loading{padding:80px 0;text-align:center;color:var(--text-3);font-size:15px;letter-spacing:.5px}
+.data-loading .spin{display:inline-block;width:16px;height:16px;border:2px solid rgba(212,175,55,.25);border-top-color:var(--gold);border-radius:50%;vertical-align:-3px;margin-right:8px;animation:sp .8s linear infinite}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
 .refresh-btn{
   width:38px;height:38px;border-radius:10px;border:1px solid var(--line-gold);
@@ -272,6 +276,43 @@ a{color:inherit;text-decoration:none}
 /* ===== Masters ===== */
 .master-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:18px}
 .master-card{padding:22px 24px;cursor:pointer}
+.mtabs{display:flex;gap:10px;margin-bottom:26px;flex-wrap:wrap}
+.mtab{font-family:'Noto Sans SC',sans-serif;font-size:14px;font-weight:600;color:var(--text-2);background:var(--card);border:1px solid var(--line-gold);border-radius:11px;padding:11px 20px;cursor:pointer;transition:.22s}
+.mtab:hover{color:var(--gold-bright);border-color:var(--gold)}
+.mtab.active{color:#08080a;background:linear-gradient(120deg,var(--gold-bright),var(--gold));border-color:transparent;box-shadow:0 8px 22px rgba(212,175,55,.28)}
+.kb-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:26px}
+.kb-stat{text-align:center;padding:20px 12px}
+.kb-stat .v{font-family:'JetBrains Mono',monospace;font-size:24px;font-weight:700;color:var(--gold-bright);margin-bottom:5px}
+.kb-stat .l{font-size:12px;color:var(--text-3)}
+.kb-intro{font-size:14px;color:var(--text-2);line-height:1.85;padding:22px 26px;margin-bottom:26px}
+.kb-intro b{color:var(--gold-bright);font-weight:600}
+.kb-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;margin-bottom:30px}
+.kb-card{padding:20px 22px}
+.kb-card .ct{font-family:'Noto Serif SC',serif;font-size:16px;font-weight:700;color:var(--gold-pale);margin-bottom:9px;display:flex;align-items:center;gap:8px}
+.kb-card .cd{font-size:13px;color:var(--text-2);line-height:1.75;margin-bottom:11px}
+.kb-card .cq{font-size:12.5px;color:var(--text-3);font-style:italic;border-left:2px solid var(--gold);padding-left:11px;line-height:1.6}
+.kb-pillars{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;margin-bottom:30px}
+.kb-pillar{padding:22px 24px;border-top:2px solid var(--gold)}
+.kb-pillar .pt{font-family:'Noto Serif SC',serif;font-size:17px;font-weight:700;color:var(--gold-bright);margin-bottom:10px}
+.kb-pillar .pd{font-size:13px;color:var(--text-2);line-height:1.8;margin-bottom:12px}
+.kb-pillar .pk{font-size:13px;color:var(--gold-pale);font-style:italic;background:rgba(212,175,55,.06);padding:10px 13px;border-radius:8px}
+.kb-chips{display:flex;flex-wrap:wrap;gap:9px;margin-bottom:30px}
+.kb-chip{font-size:12.5px;color:var(--text-2);background:var(--card);border:1px solid var(--line);border-radius:20px;padding:7px 15px}
+.kb-chip:hover{border-color:var(--gold);color:var(--gold-bright)}
+.kb-timeline{position:relative;padding-left:34px;margin-bottom:30px}
+.kb-timeline::before{content:'';position:absolute;left:11px;top:6px;bottom:6px;width:2px;background:linear-gradient(var(--gold),transparent)}
+.tl-item{position:relative;margin-bottom:18px;padding:16px 20px}
+.tl-item::before{content:'';position:absolute;left:-28px;top:22px;width:11px;height:11px;border-radius:50%;background:var(--gold-bright);box-shadow:0 0 10px var(--gold);border:2px solid #08080a}
+.tl-yr{font-family:'JetBrains Mono',monospace;font-size:15px;font-weight:700;color:var(--gold-bright)}
+.tl-ttl{font-family:'Noto Serif SC',serif;font-size:15px;font-weight:700;color:var(--text-1);margin:2px 0 6px}
+.tl-ret{font-family:'JetBrains Mono',monospace;font-size:13px;margin-left:10px}
+.tl-ret.up{color:var(--green)}.tl-ret.down{color:#e05c5c}
+.tl-k{font-size:13px;color:var(--text-2);line-height:1.7}
+.kb-people{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin-bottom:30px}
+.kb-person{padding:16px 20px}
+.kb-person .pn{font-family:'Noto Serif SC',serif;font-size:15px;font-weight:700;color:var(--gold-pale)}
+.kb-person .pr{font-size:11px;color:var(--gold);margin:2px 0 7px}
+.kb-person .pdesc{font-size:12.5px;color:var(--text-2);line-height:1.7}
 .master-card:hover{transform:translateY(-3px);box-shadow:0 16px 40px rgba(0,0,0,.45)}
 .mh{display:flex;align-items:center;gap:15px;margin-bottom:15px}
 .m-av{width:54px;height:54px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:28px;flex-shrink:0;border:1px solid var(--line-gold)}
@@ -412,9 +453,14 @@ a{color:inherit;text-decoration:none}
     <!-- ===== Masters ===== -->
     <section class="view" id="view-masters">
       <div class="page-head">
-        <div class="page-kicker">Investment Master Frameworks</div>
-        <h1 class="page-title">十位<span class="gold">投研大师</span></h1>
-        <p class="page-sub">全球顶尖投资大师的思维框架 · 技术面信号 · 周期面定位</p>
+        <div class="page-kicker">Master Frameworks &amp; Knowledge Base</div>
+        <h1 class="page-title">投研大师<span class="gold">知识库</span></h1>
+        <p class="page-sub">十位大师交易框架 · 巴菲特股东信精读 · 霍华德·马克思备忘录</p>
+      </div>
+      <div class="mtabs">
+        <button class="mtab active" data-mtab="frameworks">🎯 十位大师框架</button>
+        <button class="mtab" data-mtab="buffett">📜 巴菲特股东信</button>
+        <button class="mtab" data-mtab="marks">📝 马克思备忘录</button>
       </div>
       <div id="mastersContent"></div>
     </section>
@@ -445,32 +491,21 @@ a{color:inherit;text-decoration:none}
 
 <script>
 /* ==================== CONFIG ==================== */
-// 部署API后填写Render地址即可启用实时数据; 留空则尝试Stooq直连→种子回退
-const API_BASE = ""; // e.g. "https://zaiyu-horizon-api.onrender.com"
-const FETCH_TIMEOUT = 8000;
+// Render 代理(server.js): 提供股指/商品/加密实时行情(Stooq服务端抓取, 解决浏览器跨域)
+// 外汇/人民币/美元指数 走 Frankfurter(ECB官方汇率, 浏览器直连, 支持CORS)
+const API_BASE = "https://zaiyu-horizon-api.onrender.com"; // 部署后如域名不同请替换
+const FETCH_TIMEOUT = 12000;
+const FX_SYMS = ['CNY','EUR','JPY','GBP','CAD','SEK','CHF'];
 
-/* ==================== SEED DATA ==================== */
-const SEED = {
-  source:'fallback',
-  sp500:'5921.54', sp500Change:0.32,
-  nasdaq:'19218.17', nasdaqChange:0.48,
-  dow:'43870.35', dowChange:-0.11,
-  vixIndex:'14.2',
-  goldPrice:'2654.30', goldChange:0.12,
-  silver:'30.85', silverChange:0.41,
-  oil:'68.72', oilChange:-0.83,
-  natgas:'3.14', natgasChange:1.22,
-  btcPrice:'96842', btcChange:1.74,
-  eth:'3358', ethChange:2.05,
-  dxyIndex:'106.3', dxyChange:-0.18,
-  gbpusd:'1.2710', gbpusdChange:0.09,
-  usdjpy:'149.85', usdjpyChange:-0.22,
-  usdcny:'7.2345', usdcnyChange:0.05,
-  eurcny:'7.8910', eurcnyChange:-0.12,
-  jpycny:'0.0485', jpycnyChange:0.18,
-  gbpcny:'9.1830', gbpcnyChange:0.07,
-  fedRate:'4.25-4.50%', chinaLPR:'3.10'
-};
+/* 仅政策利率与波动率指数无免费实时CORS源, 保留最新公布值(非市场tick数据) */
+const CURATED = { vixIndex:'14.2', fedRate:'4.25-4.50%', chinaLPR:'3.10' };
+
+/* ==================== FORMAT HELPERS ==================== */
+function nf(n,dec){return Number(n).toLocaleString('en-US',{minimumFractionDigits:dec,maximumFractionDigits:dec});}
+function pct(cur,prev){return prev?((cur-prev)/prev*100):0;}
+// 显示空值占位(加载中/获取失败时不显示假数据)
+function dv(v){return (v===null||v===undefined||v==='')?'<span style="color:var(--text-3)">—</span>':v;}
+function chgStr(c){return c===null||c===undefined?'—':(c>=0?'+':'')+Number(c).toFixed(2)+'%';}
 
 const CENTRAL_BANKS = [
   {flag:'🇺🇸',name:'美联储 FED',rate:'4.25-4.50%',action:'2024.12 降息25bp',meeting:'下次 1月底'},
@@ -528,6 +563,82 @@ const MASTERS=[
   {id:'ackman',nm:'比尔·阿克曼',en:'Bill Ackman',title:'潘兴广场创始人',style:'激进维权 / 集中持仓',tech:'估值洼地信号',cycle:'企业变革周期',av:'🦅',c:'#78909C'},
 ];
 
+/* ==================== 巴菲特股东信知识库 ==================== */
+const BUFFETT_STATS=[
+  {v:'1965–2024',l:'股东信跨度'},{v:'19.9%',l:'年化复合收益'},{v:'5.5万倍',l:'累计回报'},{v:'$9,000亿',l:'伯克希尔市值'},
+];
+const BUFFETT_CONCEPTS=[
+  {t:'护城河 Moat',d:'企业抵御竞争对手的持久结构性优势。真正的护城河来自低成本、品牌、网络效应或转换成本，且能逐年加宽。',q:'我们寻找的是被宽阔、可持续的护城河所保护的经济城堡。'},
+  {t:'内在价值',d:'企业在其余生中所能产生现金流的折现值。它是估值的唯一逻辑标准，却无法精确计算，只能给出区间。',q:'内在价值是一个估计值，而非精确数字；并会随利率与现金流预测变化而调整。'},
+  {t:'安全边际',d:'以远低于内在价值的价格买入，为判断失误和坏运气预留缓冲。这是格雷厄姆传授的投资基石。',q:'用4毛钱买价值1块钱的东西——这就是投资的全部秘密。'},
+  {t:'能力圈',d:'只在自己真正理解的领域投资。圈子大小不重要，清楚边界在哪里才至关重要。',q:'风险来自你不知道自己在做什么。'},
+  {t:'市场先生',d:'把市场拟人化为情绪化的生意伙伴，每天报价。聪明的投资者利用它的报价，而非被它指挥。',q:'市场先生是来服务你的，不是来指导你的。'},
+  {t:'复利',d:'时间与可观回报率的乘积所产生的雪球效应。长长的坡道和厚厚的雪，是财富积累的根本。',q:'人生就像滚雪球，重要的是找到湿的雪和很长的坡。'},
+  {t:'透视盈余',d:'将所持股票按持股比例应享的留存利润计入自身收益，比账面会计利润更能反映真实价值创造。',q:'真正重要的是企业留存收益是否被高效再投资。'},
+  {t:'浮存金 Float',d:'保险业务先收保费后赔付而沉淀的低成本资金，可长期用于投资，是伯克希尔的复利引擎。',q:'浮存金是别人的钱，却能为我们持续创造收益。'},
+  {t:'资本配置',d:'CEO最重要的工作是理性分配现金：再投资、并购、回购或分红，取决于何者每元留存能创造超过一元市值。',q:'留存的每一美元，都应至少创造一美元的市场价值。'},
+  {t:'长期持有',d:'优秀企业的复利需要时间兑现，频繁交易只会让税收和成本侵蚀回报。',q:'我们最喜欢的持有期限是——永远。'},
+  {t:'股票回购',d:'当股价显著低于内在价值时回购，能提升每股内在价值；溢价回购则损害股东。',q:'回购只有在低于内在价值时进行才对继续持有者有利。'},
+  {t:'管理层品质',d:'寻找既能干又诚实、像所有者一样思考的经理人。德行与才干缺一不可。',q:'我们寻找诚实、聪明、充满活力的管理者；若缺第一项，后两项会害死你。'},
+];
+const BUFFETT_COMPANIES=[
+  {n:'See\'s Candies',y:'1972',d:'喜诗糖果——理解品牌定价权与轻资产高ROE的转折点投资。'},
+  {n:'Coca-Cola',y:'1988',d:'可口可乐——全球品牌护城河与永续特许经营权的典范。'},
+  {n:'GEICO',y:'1996',d:'政府雇员保险——低成本直销模式+浮存金引擎，全资收购。'},
+  {n:'American Express',y:'1964',d:'色拉油丑闻危机中逆向重仓，品牌韧性带来巨额回报。'},
+  {n:'Apple',y:'2016',d:'苹果——消费品牌生态+超强用户黏性，成第一大持仓。'},
+  {n:'BNSF',y:'2009',d:'伯灵顿北方铁路——押注美国经济长期增长的重资产基础设施。'},
+  {n:'Bank of America',y:'2011',d:'金融危机后注资优先股，附带认股权证的非对称下注。'},
+  {n:'Washington Post',y:'1973',d:'华盛顿邮报——以远低于资产价值买入的经典安全边际案例。'},
+];
+const BUFFETT_PEOPLE=[
+  {n:'查理·芒格',r:'黄金搭档 / 副主席',d:'推动巴菲特从"捡烟蒂"转向"以合理价格买伟大公司"，强调多元思维模型。'},
+  {n:'本杰明·格雷厄姆',r:'恩师',d:'价值投资之父，《聪明的投资者》作者，传授安全边际与市场先生理念。'},
+  {n:'阿吉特·贾恩',r:'保险业务负责人',d:'掌管再保险，被巴菲特誉为为伯克希尔创造数百亿价值的关键人物。'},
+  {n:'格雷格·阿贝尔',r:'指定接班人',d:'非保险业务副主席，2025年起接任CEO，能源与运营专家。'},
+  {n:'托德·库姆斯 & 泰德·韦施勒',r:'投资经理',d:'管理部分股票组合，被视为新一代投资决策者。'},
+  {n:'B夫人 Rose Blumkin',r:'传奇经营者',d:'内布拉斯加家具城创始人，以极致勤奋与商业直觉成为巴菲特推崇的典范。'},
+];
+const BUFFETT_LETTERS=[
+  {y:1977,r:'+21.9%',k:'首次系统阐述以ROE而非每股收益衡量管理绩效。'},
+  {y:1983,r:'+32.3%',k:'喜诗糖果案例：商誉与品牌的经济价值远超账面。'},
+  {y:1987,r:'+19.5%',k:'提出"市场先生"寓言，黑色星期一后的理性宣言。'},
+  {y:1988,r:'+20.1%',k:'重仓可口可乐，"最爱的持有期是永远"。'},
+  {y:1996,r:'+31.8%',k:'能力圈思想：投资者只需正确评估自己理解的少数公司。'},
+  {y:2002,r:'-3.8%',k:'称金融衍生品为"大规模杀伤性武器"，预警系统性风险。'},
+  {y:2008,r:'-9.6%',k:'金融危机中"别人贪婪我恐惧"，逆向投资高盛与通用电气。'},
+  {y:2017,r:'+21.9%',k:'剖析回购逻辑与现金堆积，强调耐心等待"大象级"机会。'},
+  {y:2021,r:'+29.6%',k:'"永不做空美国"，盛赞美国经济的长期顺风。'},
+  {y:2023,r:'+15.8%',k:'悼念芒格："伯克希尔的总设计师"，回顾60年合伙。'},
+];
+
+/* ==================== 霍华德·马克思备忘录知识库 ==================== */
+const MARKS_PILLARS=[
+  {t:'第一性原理',d:'回到事物本质思考，不被市场叙事和共识裹挟。先问"价格里已经包含了什么预期"。',k:'最危险的事，是相信"这次不一样"。'},
+  {t:'周期认知',d:'万物皆有周期，钟摆从不停在中点。理解我们身处周期何处，比预测未来更重要。',k:'我们无法预测，但可以做好准备。'},
+  {t:'第二层思维',d:'第一层思维人人都有；第二层思维要追问"我的看法与共识有何不同，差异是否已被定价"。',k:'要取得超额收益，你的判断必须既不同于共识，又被证明是对的。'},
+  {t:'非对称回报',d:'优秀投资者的标志是下跌时损失少、上涨时收益不打折——用控制风险换取不对称收益。',k:'投资的成功不在于买好东西，而在于买得好。'},
+];
+const MARKS_KEYWORDS=['周期定位','钟摆理论','风险控制','第二层思维','逆向投资','安全边际','市场情绪','信贷周期','非对称回报','均值回归','泡沫识别','防御性投资','耐心资本','价格 vs 价值','极端心理','流动性','收益率追逐','不确定性','概率思维','可知与不可知'];
+const MARKS_MEMOS=[
+  {y:2000,t:'bubble.com',s:'科网泡沫顶点前夕，警示估值脱离现实、"新经济"叙事掩盖风险。'},
+  {y:2007,t:'The Race to the Bottom',s:'信贷狂热中投资者为追逐收益不断放松标准，预警次贷危机临近。'},
+  {y:2008,t:'The Limits to Negativism',s:'危机最深处反思过度悲观的代价，提出敢于在恐慌中买入。'},
+  {y:2011,t:'How Quickly They Forget',s:'危机记忆消退之快令人担忧，风险偏好重新抬头。'},
+  {y:2018,t:'The Seven Worst Words',s:'"太多钱追逐太少交易"——流动性过剩催生风险定价扭曲。'},
+  {y:2020,t:'Nobody Knows II',s:'新冠冲击下重申不可知论，强调在不确定中保持理性与行动力。'},
+  {y:2022,t:'Sea Change',s:'判断利率长期低位时代结束，"沧海桑田"式的环境转变正在发生。'},
+  {y:2023,t:'Taking the Temperature',s:'如何为市场情绪"量体温"，识别贪婪与恐惧的极端读数。'},
+  {y:2024,t:'The Folly of Certainty',s:'确定性的愚蠢——在复杂系统中，自信的预测往往是危险的。'},
+];
+const MARKS_ERAS=[
+  {y:'1968–1980',t:'通胀与漂亮50',d:'高通胀侵蚀回报，"漂亮50"泡沫破裂的早期教训。'},
+  {y:'1980–2000',t:'利率长牛',d:'通胀见顶后的利率下行大周期，资产价格普涨。'},
+  {y:'2000–2009',t:'两次泡沫',d:'科网与房地产次贷，连续两轮泡沫与崩塌。'},
+  {y:'2009–2021',t:'零利率时代',d:'量化宽松与超低利率推动风险资产长期繁荣。'},
+  {y:'2022–今',t:'沧海桑田',d:'利率中枢上移，从"涨潮托举所有船"转向甄别能力定胜负。'},
+];
+
 /* ==================== SCENARIOS ==================== */
 const SCENARIOS=[
   {type:'optimistic',lbl:'乐观情景',prob:20,c:'#4caf72',sum:'AI革命加速 + 全球合作深化 → 新黄金十年',desc:'AI/AGI/量子计算/核聚变突破驱动全要素生产率大幅提升，中美达成阶段性贸易和解，全球供应链高效重组完成，新兴市场持续增长，通胀回归2%目标。',driv:['AGI 2028-2030实现，生产力飞跃','中美贸易协议(关税降至10%以下)','全球绿色能源转型加速','新兴市场人口红利释放','核聚变商业化2032+'],sp500:[10,15]},
@@ -553,21 +664,65 @@ const CAMPS=[
 const TRADE_FLOWS=['🔄 中国-东盟贸易额超越中美(2024起)','📈 印度GDP年增速6-7%，2030年前超日本','🏭 越南/墨西哥承接中国制造业转移加速','🛢️ 沙特对华石油人民币结算占比升至30%','💾 半导体供应链: 台湾先进制程+日韩存储+美欧设备','🌏 金砖国家扩容: GDP总量(PPP)超G7'];
 const TECH_AREAS=['🔒 先进半导体(<7nm): 西方封锁 vs 中国自研','🔒 AI大模型: 美国领先 vs 中国追赶','🔒 量子计算: 早期脱钩中','🔓 新能源(光伏/电池/EV): 中国领先','🔓 5G/6G: 华为 vs 爱立信/诺基亚','🔓 稀土加工: 中国垄断(>80%)'];
 
-/* ==================== DATA FETCH (try live → fallback) ==================== */
-async function fetchData(){
-  if(API_BASE){
-    try{
-      const ctrl=new AbortController();const t=setTimeout(()=>ctrl.abort(),FETCH_TIMEOUT);
-      const r=await fetch(API_BASE+'/api/market',{signal:ctrl.signal});clearTimeout(t);
-      if(r.ok){const j=await r.json();return {...SEED,...j,source:'server'}}
-    }catch(e){/* fallthrough */}
+/* ==================== DATA FETCH (全实时, 无离线回退) ====================
+   外汇/人民币/美元指数 → Frankfurter(ECB官方, 浏览器直连CORS)
+   股指/商品/加密       → Render代理(server.js 服务端抓取 Stooq)
+   取数失败 → 抛错, 由 loadAll 显示加载/错误状态(绝不展示假数据)            */
+
+// 美元指数 DXY 官方加权几何公式(ICE)
+function computeDXY(r){
+  const eurusd=1/r.EUR, usdjpy=r.JPY, gbpusd=1/r.GBP, usdcad=r.CAD, usdsek=r.SEK, usdchf=r.CHF;
+  return 50.14348112*Math.pow(eurusd,-0.576)*Math.pow(usdjpy,0.136)*Math.pow(gbpusd,-0.119)
+        *Math.pow(usdcad,0.091)*Math.pow(usdsek,0.042)*Math.pow(usdchf,0.036);
+}
+
+async function fetchFX(){
+  const d2=new Date(), d1=new Date(); d1.setDate(d1.getDate()-9);
+  const f=d=>d.toISOString().slice(0,10);
+  const url=`https://api.frankfurter.dev/v1/${f(d1)}..${f(d2)}?base=USD&symbols=${FX_SYMS.join(',')}`;
+  const ctrl=new AbortController(); const t=setTimeout(()=>ctrl.abort(),FETCH_TIMEOUT);
+  const r=await fetch(url,{signal:ctrl.signal}); clearTimeout(t);
+  if(!r.ok) throw new Error('FX HTTP '+r.status);
+  const j=await r.json();
+  const dates=Object.keys(j.rates).sort();
+  const cur=j.rates[dates[dates.length-1]], prev=j.rates[dates[dates.length-2]]||cur;
+  const o={fxDate:dates[dates.length-1]};
+  // 人民币对
+  o.usdcny=nf(cur.CNY,4);          o.usdcnyChange=pct(cur.CNY,prev.CNY);
+  o.eurcny=nf(cur.CNY/cur.EUR,4);  o.eurcnyChange=pct(cur.CNY/cur.EUR,prev.CNY/prev.EUR);
+  o.jpycny=nf(cur.CNY/cur.JPY,4);  o.jpycnyChange=pct(cur.CNY/cur.JPY,prev.CNY/prev.JPY);
+  o.gbpcny=nf(cur.CNY/cur.GBP,4);  o.gbpcnyChange=pct(cur.CNY/cur.GBP,prev.CNY/prev.GBP);
+  // 主要货币对
+  o.eurusd=nf(1/cur.EUR,4);        o.eurusdChange=pct(1/cur.EUR,1/prev.EUR);
+  o.gbpusd=nf(1/cur.GBP,4);        o.gbpusdChange=pct(1/cur.GBP,1/prev.GBP);
+  o.usdjpy=nf(cur.JPY,2);          o.usdjpyChange=pct(cur.JPY,prev.JPY);
+  // 美元指数
+  o.dxyIndex=nf(computeDXY(cur),2);o.dxyChange=pct(computeDXY(cur),computeDXY(prev));
+  return o;
+}
+
+const MKT_MAP={
+  SP500:['sp500','sp500Change',2], NASDAQ:['nasdaq','nasdaqChange',2], DOW:['dow','dowChange',2],
+  GOLD:['goldPrice','goldChange',2], SILVER:['silver','silverChange',2], OIL:['oil','oilChange',2],
+  NATGAS:['natgas','natgasChange',2], BTC:['btcPrice','btcChange',0], ETH:['eth','ethChange',0],
+};
+async function fetchMarket(){
+  if(!API_BASE) throw new Error('未配置 API_BASE');
+  const ctrl=new AbortController(); const t=setTimeout(()=>ctrl.abort(),FETCH_TIMEOUT);
+  const r=await fetch(API_BASE+'/api/market',{signal:ctrl.signal}); clearTimeout(t);
+  if(!r.ok) throw new Error('行情 HTTP '+r.status);
+  const j=await r.json();
+  const o={};
+  for(const k in MKT_MAP){
+    const [vk,ck,dec]=MKT_MAP[k];
+    if(j[k]&&j[k].price!=null){ o[vk]=nf(j[k].price,dec); o[ck]=(j[k].change!=null?j[k].change:null); }
   }
-  return {...SEED};
+  return o;
 }
 
 /* ==================== RENDER: DASHBOARD ==================== */
 function fmtChg(c){if(c===undefined||c===null)return '';const cls=c>0?'up':c<0?'down':'flat';const ar=c>0?'▲':c<0?'▼':'■';return `<div class="dc ${cls}">${ar} ${Math.abs(c).toFixed(2)}%</div>`}
-function dcard(ico,nm,val,chg,click){return `<div class="card dcard gold-edge ${click?'clickable':''}"><div class="dt"><span class="ico">${ico}</span><span class="nm">${nm}</span></div><div class="dv">${val}</div>${fmtChg(chg)}</div>`}
+function dcard(ico,nm,val,chg,click){return `<div class="card dcard gold-edge ${click?'clickable':''}"><div class="dt"><span class="ico">${ico}</span><span class="nm">${nm}</span></div><div class="dv">${dv(val)}</div>${fmtChg(chg)}</div>`}
 
 function sentiment(md){
   let s=0;
@@ -600,16 +755,25 @@ function getTodayCalendar(){
 }
 function genSummary(md){
   const it=[];
-  if(md.sp500Change>.5)it.push({c:'#4caf72',t:`标普500上涨${md.sp500Change.toFixed(2)}%，市场情绪偏乐观`});
-  else if(md.sp500Change<-.5)it.push({c:'#e05c5c',t:`标普500下跌${Math.abs(md.sp500Change).toFixed(2)}%，市场承压`});
-  else it.push({c:'#76726c',t:`标普500窄幅震荡(${md.sp500Change>=0?'+':''}${md.sp500Change.toFixed(2)}%)，多空博弈`});
-  if(md.goldChange>.5)it.push({c:'#e0a23c',t:`黄金走强 $${md.goldPrice}，避险需求升温`});
-  else if(md.goldChange<-.5)it.push({c:'#4caf72',t:`黄金回落 $${md.goldPrice}，风险偏好回升`});
-  if(md.btcChange>2)it.push({c:'#e0a23c',t:`BTC大涨${md.btcChange.toFixed(2)}%，加密市场活跃`});
-  else if(md.btcChange<-2)it.push({c:'#76726c',t:`BTC下跌${Math.abs(md.btcChange).toFixed(2)}%，加密市场降温`});
-  if(md.dxyChange<-.3)it.push({c:'#5b9bd5',t:`美元走弱(DXY ${md.dxyIndex})，新兴市场受益`});
-  else if(md.dxyChange>.3)it.push({c:'#e0a23c',t:`美元走强(DXY ${md.dxyIndex})，非美资产承压`});
+  if(md.sp500Change!=null){
+    if(md.sp500Change>.5)it.push({c:'#4caf72',t:`标普500上涨${md.sp500Change.toFixed(2)}%，市场情绪偏乐观`});
+    else if(md.sp500Change<-.5)it.push({c:'#e05c5c',t:`标普500下跌${Math.abs(md.sp500Change).toFixed(2)}%，市场承压`});
+    else it.push({c:'#76726c',t:`标普500窄幅震荡(${md.sp500Change>=0?'+':''}${md.sp500Change.toFixed(2)}%)，多空博弈`});
+  }
+  if(md.goldChange!=null){
+    if(md.goldChange>.5)it.push({c:'#e0a23c',t:`黄金走强 $${md.goldPrice}，避险需求升温`});
+    else if(md.goldChange<-.5)it.push({c:'#4caf72',t:`黄金回落 $${md.goldPrice}，风险偏好回升`});
+  }
+  if(md.btcChange!=null){
+    if(md.btcChange>2)it.push({c:'#e0a23c',t:`BTC大涨${md.btcChange.toFixed(2)}%，加密市场活跃`});
+    else if(md.btcChange<-2)it.push({c:'#76726c',t:`BTC下跌${Math.abs(md.btcChange).toFixed(2)}%，加密市场降温`});
+  }
+  if(md.dxyChange!=null){
+    if(md.dxyChange<-.3)it.push({c:'#5b9bd5',t:`美元走弱(DXY ${md.dxyIndex})，新兴市场受益`});
+    else if(md.dxyChange>.3)it.push({c:'#e0a23c',t:`美元走强(DXY ${md.dxyIndex})，非美资产承压`});
+  }
   it.push({c:'#d4af37',t:`美联储维持 ${md.fedRate}，关注下次议息会议点阵图`});
+  if(!it.length||it.length===1)it.unshift({c:'#76726c',t:'部分实时行情加载中，稍后将自动更新'});
   return it.slice(0,5);
 }
 function renderDashboard(md){
@@ -618,7 +782,6 @@ function renderDashboard(md){
   const calRows=cal.map(e=>`<div class="cal-row"><span class="cal-time imp-${e.i}">${e.t}</span><span class="cal-flag">${e.f}</span><div class="cal-ev"><div class="e">${e.e}</div><div class="co">${e.i==='high'?'🔴 重要':e.i==='medium'?'🟡 中等':'⚪ 一般'}</div></div>${e.p?`<div class="cal-data"><div class="l">前值</div><div class="vv">${e.p}</div></div>`:''}${e.fc?`<div class="cal-data" style="color:var(--gold)"><div class="l">预期</div><div class="vv">${e.fc}</div></div>`:''}</div>`).join('');
   const banks=CENTRAL_BANKS.map(b=>{const hi=parseFloat(b.rate)>5;return `<div class="bank-row"><span class="bank-flag">${b.flag}</span><div style="flex:1"><div class="bank-nm">${b.name}</div><div class="bank-act">${b.action}</div></div><div><div class="bank-rate" style="color:${hi?'#e05c5c':'#d4af37'}">${b.rate}</div><div class="bank-meet">${b.meeting}</div></div></div>`}).join('');
   const sum=genSummary(md).map(i=>`<div class="sum-item"><span class="sum-dot" style="background:${i.c}"></span><span class="sum-txt">${i.t}</span></div>`).join('');
-  const eurusd=md.gbpusd?(parseFloat(md.gbpusd)/1.27*1.05).toFixed(4):'1.0480';
 
   document.getElementById('dashContent').innerHTML=`
   <div class="hero fade-stagger">
@@ -628,14 +791,14 @@ function renderDashboard(md){
       <div class="sentiment" style="border-color:${st.c}40;background:${st.c}0d">
         <span class="sent-emoji">${st.e}</span>
         <div><div class="sent-label" style="color:${st.c}">${st.l}</div><div class="sent-desc">市场情绪 · ${st.d}</div></div>
-        <div class="sent-hint">S&amp;P ${md.sp500Change>=0?'+':''}${md.sp500Change.toFixed(2)}%<br>金 ${md.goldChange>=0?'+':''}${md.goldChange.toFixed(2)}%</div>
+        <div class="sent-hint">S&amp;P ${chgStr(md.sp500Change)}<br>金 ${chgStr(md.goldChange)}</div>
       </div>
     </div>
     <div class="card hero-side gold-edge" style="animation-delay:.12s">
-      <div class="mini-stat"><span class="k">🏛️ 美联储利率</span><div class="vwrap"><span class="v" style="color:var(--gold-bright)">${md.fedRate}</span></div></div>
-      <div class="mini-stat"><span class="k">🇨🇳 中国 LPR</span><div class="vwrap"><span class="v" style="color:var(--gold-bright)">${md.chinaLPR}%</span></div></div>
-      <div class="mini-stat"><span class="k">📊 VIX 恐慌指数</span><div class="vwrap"><span class="v">${md.vixIndex}</span></div></div>
-      <div class="mini-stat"><span class="k">💵 美元指数 DXY</span><div class="vwrap"><span class="v">${md.dxyIndex}</span><span class="c ${md.dxyChange>=0?'up':'down'}">${md.dxyChange>=0?'+':''}${(md.dxyChange||0).toFixed(2)}%</span></div></div>
+      <div class="mini-stat"><span class="k">🏛️ 美联储利率</span><div class="vwrap"><span class="v" style="color:var(--gold-bright)">${dv(md.fedRate)}</span></div></div>
+      <div class="mini-stat"><span class="k">🇨🇳 中国 LPR</span><div class="vwrap"><span class="v" style="color:var(--gold-bright)">${dv(md.chinaLPR)}%</span></div></div>
+      <div class="mini-stat"><span class="k">📊 VIX 恐慌指数</span><div class="vwrap"><span class="v">${dv(md.vixIndex)}</span></div></div>
+      <div class="mini-stat"><span class="k">💵 美元指数 DXY</span><div class="vwrap"><span class="v">${dv(md.dxyIndex)}</span><span class="c ${md.dxyChange>=0?'up':'down'}">${chgStr(md.dxyChange)}</span></div></div>
     </div>
   </div>
 
@@ -671,7 +834,7 @@ function renderDashboard(md){
   <div class="sec-title">💹 外汇 &amp; 宏观</div>
   <div class="grid g-6 fade-stagger">
     ${dcard('💵','美元指数',md.dxyIndex,md.dxyChange)}
-    ${dcard('💶','EUR/USD',eurusd,undefined)}
+    ${dcard('💶','EUR/USD',md.eurusd,md.eurusdChange)}
     ${dcard('💷','GBP/USD',md.gbpusd,md.gbpusdChange)}
     ${dcard('💴','USD/JPY',md.usdjpy,md.usdjpyChange)}
     ${dcard('🏛️','美联储利率',md.fedRate,undefined)}
@@ -788,10 +951,49 @@ function renderCycles(){
   document.getElementById('cycleContent').innerHTML=`<div class="cycle-grid">${cards}</div>${disclaimerHTML()}`;
 }
 
-/* ==================== RENDER: MASTERS ==================== */
-function renderMasters(){
+/* ==================== RENDER: MASTERS (3 tabs) ==================== */
+let masterTab='frameworks';
+function renderMFrameworks(){
   const cards=MASTERS.map(m=>`<div class="card master-card gold-edge"><div class="mh"><div class="m-av" style="background:${m.c}22;color:${m.c}">${m.av}</div><div><div class="m-nm">${m.nm}</div><div class="m-en">${m.en}</div><div class="m-title">${m.title}</div></div></div><div class="m-style"><b>交易风格</b>${m.style}</div><div class="m-sig"><div class="row"><span class="d" style="background:#5b9bd5"></span>技术面: ${m.tech}</div><div class="row"><span class="d" style="background:#4caf72"></span>周期面: ${m.cycle}</div></div></div>`).join('');
-  document.getElementById('mastersContent').innerHTML=`<div class="master-grid">${cards}</div>${disclaimerHTML()}`;
+  return `<div class="master-grid">${cards}</div>`;
+}
+function renderBuffettKB(){
+  const stats=BUFFETT_STATS.map(s=>`<div class="card kb-stat gold-edge"><div class="v">${s.v}</div><div class="l">${s.l}</div></div>`).join('');
+  const concepts=BUFFETT_CONCEPTS.map(c=>`<div class="card kb-card gold-edge"><div class="ct">💡 ${c.t}</div><div class="cd">${c.d}</div><div class="cq">"${c.q}"</div></div>`).join('');
+  const comps=BUFFETT_COMPANIES.map(c=>`<div class="card kb-person gold-edge"><div class="pn">${c.n}</div><div class="pr">${c.y}</div><div class="pdesc">${c.d}</div></div>`).join('');
+  const people=BUFFETT_PEOPLE.map(p=>`<div class="card kb-person gold-edge"><div class="pn">${p.n}</div><div class="pr">${p.r}</div><div class="pdesc">${p.d}</div></div>`).join('');
+  const letters=BUFFETT_LETTERS.map(l=>{const up=l.r.startsWith('+');return `<div class="card tl-item gold-edge"><span class="tl-yr">${l.y} 年致股东信</span><span class="tl-ret ${up?'up':'down'}">伯克希尔 ${l.r}</span><div class="tl-k">${l.k}</div></div>`}).join('');
+  return `
+  <div class="kb-stats">${stats}</div>
+  <div class="card kb-intro gold-edge">沃伦·巴菲特自 <b>1965年</b> 执掌伯克希尔·哈撒韦，每年亲笔撰写致股东信，被全球投资者奉为价值投资圣经。本知识库提炼其 <b>核心理念</b>、<b>经典投资案例</b>、<b>关键人物</b> 与 <b>历年股东信要点</b>，帮助你系统理解"用合理价格买入伟大企业并长期持有"的智慧。</div>
+  <div class="sec-title">💎 核心投资理念<span class="cnt">${BUFFETT_CONCEPTS.length}</span></div>
+  <div class="kb-grid">${concepts}</div>
+  <div class="sec-title">🏛️ 经典投资案例<span class="cnt">${BUFFETT_COMPANIES.length}</span></div>
+  <div class="kb-people">${comps}</div>
+  <div class="sec-title">🤝 关键人物<span class="cnt">${BUFFETT_PEOPLE.length}</span></div>
+  <div class="kb-people">${people}</div>
+  <div class="sec-title">📜 历年股东信精读<span class="cnt">1977 – 2023</span></div>
+  <div class="kb-timeline">${letters}</div>`;
+}
+function renderMarksKB(){
+  const pillars=MARKS_PILLARS.map(p=>`<div class="card kb-pillar gold-edge"><div class="pt">${p.t}</div><div class="pd">${p.d}</div><div class="pk">"${p.k}"</div></div>`).join('');
+  const chips=MARKS_KEYWORDS.map(k=>`<span class="kb-chip">${k}</span>`).join('');
+  const eras=MARKS_ERAS.map(e=>`<div class="card kb-person gold-edge"><div class="pn">${e.t}</div><div class="pr">${e.y}</div><div class="pdesc">${e.d}</div></div>`).join('');
+  const memos=MARKS_MEMOS.map(m=>`<div class="card tl-item gold-edge"><span class="tl-yr">${m.y}</span><div class="tl-ttl">${m.t}</div><div class="tl-k">${m.s}</div></div>`).join('');
+  return `
+  <div class="card kb-intro gold-edge">霍华德·马克思是橡树资本(Oaktree)联合创始人，其 <b>投资备忘录(Memos)</b> 自 1990 年起发布，连巴菲特都说"看到他的备忘录会第一时间打开阅读"。其思想围绕 <b>周期</b>、<b>风险控制</b> 与 <b>第二层思维</b> 展开，强调在不确定的世界里以概率和逆向思维取胜。</div>
+  <div class="sec-title">🏛️ 四大思想支柱</div>
+  <div class="kb-pillars">${pillars}</div>
+  <div class="sec-title">🔑 核心关键词</div>
+  <div class="kb-chips">${chips}</div>
+  <div class="sec-title">🕰️ 投资时代划分<span class="cnt">${MARKS_ERAS.length}</span></div>
+  <div class="kb-people">${eras}</div>
+  <div class="sec-title">📝 经典备忘录精选<span class="cnt">2000 – 2024</span></div>
+  <div class="kb-timeline">${memos}</div>`;
+}
+function renderMasters(){
+  const body=masterTab==='buffett'?renderBuffettKB():masterTab==='marks'?renderMarksKB():renderMFrameworks();
+  document.getElementById('mastersContent').innerHTML=body+disclaimerHTML();
 }
 
 /* ==================== RENDER: SCENARIO ==================== */
@@ -836,7 +1038,7 @@ function renderCamps(){
   ${disclaimerHTML()}`;
 }
 
-function disclaimerHTML(){return `<div class="disclaimer"><b>风险提示</b> · 本平台所有数据仅供研究参考，不构成任何投资建议。市场有风险，投资需谨慎。数据来源：Stooq / FRED / RSS新闻聚合 · 历史数据不代表未来表现。</div>`}
+function disclaimerHTML(){return `<div class="disclaimer"><b>风险提示</b> · 本平台所有数据仅供研究参考，不构成任何投资建议。市场有风险，投资需谨慎。数据来源：外汇/人民币/美元指数 Frankfurter(欧洲央行ECB官方参考汇率) · 股指/商品/加密 Stooq(经服务端代理) · 政策利率为最新公布值 · 历史数据不代表未来表现。</div>`}
 
 /* ==================== APP CONTROL ==================== */
 let cache=null;
@@ -856,17 +1058,39 @@ document.querySelectorAll('.nav-item').forEach(n=>n.addEventListener('click',()=
   renderView(v);window.scrollTo({top:0,behavior:'smooth'});
 }));
 
-function setSource(src){
+// masters 子标签切换
+document.querySelectorAll('.mtab').forEach(b=>b.addEventListener('click',()=>{
+  masterTab=b.dataset.mtab;
+  document.querySelectorAll('.mtab').forEach(x=>x.classList.remove('active'));
+  b.classList.add('active');
+  renderMasters();
+}));
+
+function setStatus(state,detail){
   const pill=document.getElementById('srcPill'),txt=document.getElementById('srcText');
-  pill.className='src-pill '+(src==='server'?'live':'offline');
-  txt.textContent=src==='server'?'实时数据':'离线模式 · 示例数据';
+  pill.className='src-pill '+(state==='live'?'live':state==='loading'?'loading':'offline');
+  txt.textContent=detail;
 }
+let refreshing=false;
 async function loadAll(){
-  cache=await fetchData();
-  setSource(cache.source);
-  renderDashboard(cache);
+  if(refreshing)return; refreshing=true;
+  setStatus('loading','数据加载中…');
+  if(!rendered.dashboard){
+    document.getElementById('dashContent').innerHTML='<div class="data-loading"><span class="spin"></span> 正在获取全球实时市场数据…</div>';
+  }
+  const [fx,mkt]=await Promise.allSettled([fetchFX(),fetchMarket()]);
+  const md=Object.assign({},CURATED);
+  let ok=0; const failed=[];
+  if(fx.status==='fulfilled'){Object.assign(md,fx.value);ok++;}else{failed.push('外汇/人民币');console.warn('FX失败',fx.reason);}
+  if(mkt.status==='fulfilled'){Object.assign(md,mkt.value);ok++;}else{failed.push('股指/商品/加密');console.warn('行情失败',mkt.reason);}
+  cache=md;
+  renderDashboard(md);
   rendered.dashboard=true;
-  // reset module caches so refresh re-renders if needed
+  const ts=new Date().toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit'});
+  if(ok===2)        setStatus('live','实时数据 · ECB汇率 + Stooq行情 · '+ts);
+  else if(ok===1)   setStatus('offline','部分数据源不可用('+failed.join('、')+')· 下次自动重试');
+  else              setStatus('offline','实时数据获取失败 · 请点击右上角刷新重试');
+  refreshing=false;
 }
 document.getElementById('refreshBtn').addEventListener('click',loadAll);
 
