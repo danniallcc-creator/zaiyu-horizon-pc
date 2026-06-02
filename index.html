@@ -526,7 +526,7 @@ a{color:inherit;text-decoration:none}
 /* ==================== CONFIG ==================== */
 // Render 代理(server.js): 提供股指/商品/加密实时行情(Stooq服务端抓取, 解决浏览器跨域)
 // 外汇/人民币/美元指数 走 Frankfurter(ECB官方汇率, 浏览器直连, 支持CORS)
-const API_BASE = "https://zaiyu-horizon-api.onrender.com"; // 部署后如域名不同请替换
+const API_BASE = "https://zaiyu-horizon-api.danniallcc.workers.dev"; // Cloudflare Workers
 const FETCH_TIMEOUT = 12000;
 const FX_SYMS = ['CNY','EUR','JPY','GBP','CAD','SEK','CHF'];
 
