@@ -7,6 +7,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Noto+Serif+SC:wght@400;500;600;700;900&family=Noto+Sans+SC:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@3.0.1/dist/chartjs-plugin-annotation.min.js"></script>
 <style>
 :root{
   --black:#08080a;
@@ -411,6 +413,21 @@ a{color:inherit;text-decoration:none}
 .cyc-chart{margin:6px 0 14px}
 .cyc-pos{font-size:14px;font-weight:600;margin-bottom:6px;color:var(--gold-pale)}
 .cyc-desc{font-size:12.5px;color:var(--text-3);line-height:1.6}
+/* Cycle chart containers (ported from legacy) */
+.cycle-detail-box{margin-bottom:24px}
+.cycle-detail-box .chart-hd{font-family:'Noto Serif SC',serif;font-size:16px;font-weight:700;margin-bottom:10px;color:var(--gold-pale)}
+.cycle-detail-box .chart-sub{font-size:12px;color:var(--text-3);line-height:1.6;margin-bottom:12px}
+.cycle-detail-box .chart-phase{display:inline-block;font-size:11px;font-weight:700;padding:4px 12px;border-radius:20px;margin-bottom:12px}
+#kondWaveBox,#industryInvestBox{overflow-x:auto;-webkit-overflow-scrolling:touch;background:var(--panel);border:1px solid var(--line);border-radius:var(--r)}
+#kondWaveBox svg{min-width:700px}
+#industryInvestBox svg{min-width:600px}
+#merrillClock{overflow-x:auto}
+#merrillClock svg{min-width:300px;max-width:340px;margin:0 auto;display:block}
+#crisisChartBox{height:260px}
+#juglarChart,#kitchinChart{height:220px}
+.cycle-detail-box .chart-container{position:relative;height:220px}
+.cycle-detail-box .phase-pills{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.cycle-detail-box .phase-pill{font-size:11px;font-weight:600;padding:4px 10px;border-radius:12px}
 
 /* ===== Masters ===== */
 .master-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:18px}
@@ -650,6 +667,14 @@ const FETCH_TIMEOUT = 12000;
 
 /* 仅政策利率与波动率指数无免费实时CORS源, 保留最新公布值(非市场tick数据) */
 const CURATED = { vixIndex:'14.2', fedRate:'3.50-3.75%', chinaLPR:'3.00' };
+
+/* Chart.js defaults for cycle charts */
+if(typeof Chart!=='undefined'){
+  Chart.defaults.color = '#b9b4ab';
+  Chart.defaults.borderColor = 'rgba(38,38,47,0.6)';
+  Chart.defaults.font.family = "'Noto Sans SC',system-ui";
+  Chart.defaults.font.size = 11;
+}
 
 /* ==================== FORMAT HELPERS ==================== */
 function nf(n,dec){return Number(n).toLocaleString('en-US',{minimumFractionDigits:dec,maximumFractionDigits:dec});}
@@ -1738,7 +1763,834 @@ function renderCrisisWarning(){
 }
 function renderCycles(){
   const cards=CYCLES.map(c=>{const col=PHASE_COLOR[c.pc];return `<div class="card cycle-card gold-edge"><div class="cyc-head"><div><div class="cyc-nm">${c.nm}</div><div class="cyc-en">${c.en} · ${c.dur}</div></div><span class="cyc-phase" style="color:${col};background:${col}22">${c.phase}</span></div><div class="cyc-chart">${cycleChart(c.wave,c.prog,col)}</div><div class="cyc-pos">${c.pos}</div><div class="cyc-desc">${c.desc}</div></div>`}).join('');
-  document.getElementById('cycleContent').innerHTML=`<div class="cycle-grid">${cards}</div>${renderCrisisWarning()}${disclaimerHTML()}`;
+
+  const detailCharts=`
+  <div class="sec-title" style="margin-top:34px">六大周期深度图解</div>
+  <div class="cycle-detail-box">
+    <div class="card gold-edge" style="padding:22px 24px;margin-bottom:18px">
+      <div class="chart-hd">康波周期 (Kondratieff Wave) | 长周期 40-60年</div>
+      <div class="chart-sub">生产力决定生产关系，过去两百年历史进步的动力，主要依靠科技生产力的突破。</div>
+      <div id="kondWaveBox" style="width:100%;border-radius:var(--r);border:1px solid var(--line);overflow:hidden"></div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:18px">
+      <div class="card gold-edge" style="padding:22px 24px">
+        <div class="chart-hd">产业投资周期 | 30-40年一个周期</div>
+        <div class="chart-sub">中国企业出海的产业S型扩张曲线 — 全球化→逆全球化→再全球化(G2)→深度全球化</div>
+        <div id="industryInvestBox" style="width:100%;border-radius:var(--r);border:1px solid var(--line);overflow:hidden"></div>
+      </div>
+      <div class="card gold-edge" style="padding:22px 24px">
+        <div class="chart-hd">朱格拉周期 | 中周期 7-11年</div>
+        <div class="chart-sub">设备投资与资本支出周期。当前处于新一轮资本开支上升期。</div>
+        <div class="chart-container"><canvas id="juglarChart"></canvas></div>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:18px">
+      <div class="card gold-edge" style="padding:22px 24px">
+        <div class="chart-hd">基钦周期 | 短周期 3-5年</div>
+        <div class="chart-sub">库存周期。企业补库存/去库存驱动经济短期波动。</div>
+        <div class="chart-container"><canvas id="kitchinChart"></canvas></div>
+      </div>
+      <div class="card gold-edge" style="padding:22px 24px">
+        <div class="chart-hd">美林时钟 | 资产配置轮动</div>
+        <div class="chart-sub">基于经济增长与通胀两个维度判断资产配置方向。</div>
+        <div id="merrillClock" style="width:100%;height:340px;display:flex;align-items:center;justify-content:center;position:relative;"></div>
+      </div>
+    </div>
+    <div class="card gold-edge" style="padding:22px 24px;margin-bottom:18px;border-color:rgba(224,92,92,.25)">
+      <div class="chart-hd" style="color:#e05c5c">2028 全球智能危机推演</div>
+      <div class="chart-sub">当智能不再稀缺会发生什么？— 基于AI替代曲线与历史金融危机规律的推演模型</div>
+      <div id="crisisChartBox" style="width:100%;height:280px;position:relative;margin:12px 0"></div>
+    </div>
+  </div>`;
+
+  document.getElementById('cycleContent').innerHTML=`<div class="cycle-grid">${cards}</div><div id="kondWaveBoxPC" style="margin-top:20px;width:100%;background:linear-gradient(180deg,rgba(8,8,10,.8),rgba(15,15,18,.95));border-radius:12px;border:1px solid rgba(212,175,55,.15);padding:10px 8px 6px"></div>${renderCrisisWarning()}${disclaimerHTML()}`;
+  setTimeout(initKondratieffPC,100);
+/* ========= CYCLES: KONDRATIEFF WAVE — Bell curve style ========= */
+function initKondratieffPC(){
+  var el = document.getElementById('kondWaveBoxPC');
+  if(!el) return;
+
+  // Wave data exactly matching the reference image
+  var WAVES = [
+    {num:1, tech:'纺织和蒸汽机技术', dur:'63年', lead:'英国', chall:'法国、德国',
+     // Key years defining the wave shape
+     boomStart:1782, peak:1815, recEnd:1825, trough:1836, recoverEnd:1845,
+     boom:'1782-1802年', boomDur:'20年',
+     bust:'1815-1825年', bustDur:'10年',
+     dep:'1825-1836年', depDur:'11年',
+     rec:'1836-1845年', recDur:'9年',
+     war:null, war2:null},
+    {num:2, tech:'钢铁和铁路', dur:'47年', lead:'英国', chall:'美国',
+     boomStart:1845, peak:1866, recEnd:1873, trough:1883, recoverEnd:1892,
+     boom:'1845-1866年', boomDur:'21年',
+     bust:'1866-1873年', bustDur:'7年',
+     dep:'1873-1883年', depDur:'10年',
+     rec:'1883-1892年', recDur:'9年',
+     war:null, war2:null},
+    {num:3, tech:'电气化和重工业', dur:'56年', lead:'美国', chall:'日本',
+     boomStart:1892, peak:1920, recEnd:1929, trough:1937, recoverEnd:1948,
+     boom:'1892-1913年', boomDur:'21年',
+     bust:'1920-1929年', bustDur:'9年',
+     dep:'1929-1937年', depDur:'8年',
+     rec:'1937-1948年', recDur:'11年',
+     war:{lbl:'一战',yr:'1913-1920'}, war2:{lbl:'二战',yr:'1931-1945'}},
+    {num:4, tech:'汽车和电子计算机', dur:'43年', lead:'美国', chall:'日本',
+     boomStart:1948, peak:1966, recEnd:1973, trough:1982, recoverEnd:1991,
+     boom:'1948-1966年', boomDur:'18年',
+     bust:'1966-1973年', bustDur:'7年',
+     dep:'1973-1982年', depDur:'9年',
+     rec:'1982-1991年', recDur:'9年',
+     war:{lbl:'越战',yr:'1955-1975'}, war2:{lbl:'冷战',yr:'1947-1991'}},
+    {num:5, tech:'信息技术', dur:'45年', lead:'美国', chall:'中国',
+     boomStart:1991, peak:2008, recEnd:2020, trough:2027, recoverEnd:2035,
+     boom:'1991-2008年', boomDur:'17年',
+     bust:'2008-2020年', bustDur:'12年',
+     dep:'2020-2027年', depDur:'7年',
+     rec:'2027-?年', recDur:'?年',
+     war:{lbl:'金融\n危机',yr:'2008'}, war2:null,
+     extra:{chatgpt:true, yr2035:true}},
+    {num:6, tech:'AI→AGI·核聚变·量子·机器人', dur:'33年', lead:'美国', chall:'中国',
+     boomStart:2035, peak:2053, recEnd:2057, trough:2060, recoverEnd:2068,
+     boom:'2035-2053年', boomDur:'18年',
+     bust:'2036-2053年', bustDur:'17年',
+     dep:'2053-2060年', depDur:'7年',
+     rec:'2060+年', recDur:'?年',
+     war:null, war2:null, fut:true, yr2035:true}
+  ];
+
+  var TS=1775, TE=2072;
+  var W=1200, H=600, PL=10, PR=10, PT=105, PB=55;
+  var GW=W-PL-PR, GH=H-PT-PB;
+  var MID=PT+GH/2, AMP=GH*0.40;
+  var CY=2026;
+  function xOf(y){return PL+(y-TS)/(TE-TS)*GW;}
+  // Y on the sine wave at a given year within a wave
+  function waveY(w, yr){
+    // Map year to 0..1 within the wave's full cycle
+    var t = (yr - w.boomStart) / (w.recoverEnd - w.boomStart);
+    t = Math.max(0, Math.min(1, t));
+    // Sine: 0→peak at t~0.25, trough at t~0.75
+    return MID - Math.sin(t * Math.PI * 2 - Math.PI/2) * AMP;
+  }
+
+  // Generate wave points
+  function wavePts(w, n){
+    n = n || 120;
+    var pts = [];
+    for(var i=0; i<=n; i++){
+      var t = i/n;
+      var yr = w.boomStart + t * (w.recoverEnd - w.boomStart);
+      var sv = Math.sin(t * Math.PI * 2 - Math.PI/2);
+      pts.push([xOf(yr), MID - sv * AMP]);
+    }
+    return pts;
+  }
+
+  var s='<svg viewBox="0 0 '+W+' '+H+'" style="width:100%;height:auto;display:block" xmlns="http://www.w3.org/2000/svg">';
+  s+='<defs><filter id="kg"><feGaussianBlur stdDeviation="2" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>';
+  s+='<rect width="'+W+'" height="'+H+'" fill="#08080a" rx="12"/>';
+
+  // Midline
+  s+='<line x1="'+PL+'" y1="'+MID+'" x2="'+(W-PR)+'" y2="'+MID+'" stroke="rgba(118,114,106,.12)" stroke-width="1"/>';
+
+  // Top header area
+  // Wave 6 tech line
+  s+='<text x="'+(W/2)+'" y="16" text-anchor="middle" font-size="11" fill="#e8d49b" font-weight="700" font-family="\'Noto Sans SC\',system-ui">第六轮康波周期推动: 大数据、人工智能（从AI→AGI）、可控核聚变、量子计算、基因编辑、人形机器人、空天技术等</text>';
+
+  // Per-wave column headers
+  WAVES.forEach(function(w,i){
+    var x1=xOf(w.boomStart), x2=xOf(w.recoverEnd), mx=(x1+x2)/2;
+    var col=w.fut?'#e8d49b':'#f0f0f0';
+    // Divider
+    if(i>0) s+='<line x1="'+x1.toFixed(1)+'" y1="'+(PT-8)+'" x2="'+x1.toFixed(1)+'" y2="'+(H-PB)+'" stroke="rgba(212,175,55,.22)" stroke-width="1.5" stroke-dasharray="6,5"/>';
+    // Tech name
+    var maxW = x2-x1;
+    var fs = Math.min(13, maxW / (w.tech.length+w.dur.length+3) * 1.6);
+    s+='<text x="'+mx.toFixed(1)+'" y="34" text-anchor="middle" font-size="'+fs.toFixed(1)+'" font-weight="800" fill="'+col+'" font-family="\'Noto Sans SC\',system-ui">'+w.tech+'（'+w.dur+'）</text>';
+    s+='<text x="'+mx.toFixed(1)+'" y="52" text-anchor="middle" font-size="10" fill="#b9b4ab" font-family="\'Noto Sans SC\',system-ui">主导国: '+w.lead+'</text>';
+    s+='<text x="'+mx.toFixed(1)+'" y="66" text-anchor="middle" font-size="10" fill="#b9b4ab" font-family="\'Noto Sans SC\',system-ui">挑战国: '+w.chall+'</text>';
+    // Background tint
+    s+='<rect x="'+x1.toFixed(1)+'" y="'+PT+'" width="'+(x2-x1).toFixed(1)+'" height="'+GH+'" fill="'+(w.fut?'rgba(99,102,241,.05)':'rgba(30,41,59,.25)')+'"/>';
+  });
+
+  // Draw each wave
+  WAVES.forEach(function(w, wi){
+    var pts = wavePts(w);
+    // Fill
+    var fd = 'M '+pts[0][0].toFixed(1)+' '+MID;
+    pts.forEach(function(p){ fd += ' L '+p[0].toFixed(1)+' '+p[1].toFixed(1); });
+    fd += ' L '+pts[pts.length-1][0].toFixed(1)+' '+MID+' Z';
+    s+='<path d="'+fd+'" fill="'+(w.fut?'rgba(129,140,248,.08)':'rgba(96,165,250,.06)')+'"/>';
+    // Line
+    var ld = 'M '+pts[0][0].toFixed(1)+' '+pts[0][1].toFixed(1);
+    for(var i=1;i<pts.length;i++) ld+=' L '+pts[i][0].toFixed(1)+' '+pts[i][1].toFixed(1);
+    s+='<path d="'+ld+'" fill="none" stroke="'+(w.fut?'#d4af37':'#f0f0f0')+'" stroke-width="2.5" '+(w.fut?'stroke-dasharray="8,5" opacity=".85"':'')+' filter="url(#kg)"/>';
+
+    // === Key coordinates ===
+    var peakX = xOf(w.peak), peakY = MID - AMP;     // exact top
+    var troughX = xOf(w.trough), troughY = MID + AMP; // exact bottom
+
+    // Red dots at peak and trough (small, precise)
+    s+='<circle cx="'+peakX.toFixed(1)+'" cy="'+peakY.toFixed(1)+'" r="4.5" fill="'+(w.fut?'#d4af37':'#e05c5c')+'" stroke="#08080a" stroke-width="1.5"/>';
+    s+='<circle cx="'+troughX.toFixed(1)+'" cy="'+troughY.toFixed(1)+'" r="4.5" fill="'+(w.fut?'#d4af37':'#e05c5c')+'" stroke="#08080a" stroke-width="1.5"/>';
+
+    // Peak year label ABOVE the peak dot
+    s+='<text x="'+peakX.toFixed(1)+'" y="'+(peakY-12)+'" text-anchor="middle" font-size="15" font-weight="900" fill="#e05c5c" font-family="system-ui">'+w.peak+'年</text>';
+    // Trough year label BELOW the trough dot
+    s+='<text x="'+troughX.toFixed(1)+'" y="'+(troughY+20)+'" text-anchor="middle" font-size="15" font-weight="900" fill="#e05c5c" font-family="system-ui">'+w.trough+'年</text>';
+
+    // === Phase labels along the wave segments ===
+    // Each label is positioned at the MIDPOINT of its time segment on the curve
+
+    // 1. 繁荣 (orange) — on the RISING segment (boomStart → peak), positioned at midpoint
+    var boomMidYr = (w.boomStart + w.peak) / 2;
+    var boomMidX = xOf(boomMidYr);
+    var boomMidY = waveY(w, boomMidYr);
+    // Place bubble to the left of the rising curve
+    s+='<rect x="'+(boomMidX-30)+'" y="'+(boomMidY-10)+'" width="56" height="20" rx="6" fill="#d97706"/>';
+    s+='<text x="'+(boomMidX-2)+'" y="'+(boomMidY+4)+'" text-anchor="middle" font-size="11" font-weight="800" fill="#fff" font-family="\'Noto Sans SC\',system-ui">繁荣</text>';
+    s+='<text x="'+(boomMidX-2)+'" y="'+(boomMidY+18)+'" text-anchor="middle" font-size="8" fill="#e8d49b" font-family="system-ui">'+w.boom+'</text>';
+    s+='<text x="'+(boomMidX-2)+'" y="'+(boomMidY+28)+'" text-anchor="middle" font-size="8" fill="#e8d49b" font-family="system-ui">('+w.boomDur+')</text>';
+
+    // 2035 中等发达国家 — shown near Wave6 boom segment start
+    if(w.yr2035){
+      var y35X = xOf(2035);
+      var y35Y = boomMidY; // same height as 繁荣 bubble, to the left
+      s+='<circle cx="'+y35X.toFixed(1)+'" cy="'+(MID-AMP*0.3).toFixed(1)+'" r="4" fill="#4caf72" stroke="#08080a" stroke-width="1.5"/>';
+      s+='<text x="'+y35X.toFixed(1)+'" y="'+(MID-AMP*0.3-14).toFixed(1)+'" text-anchor="middle" font-size="12" fill="#4caf72" font-weight="900" font-family="system-ui">2035年</text>';
+      s+='<text x="'+y35X.toFixed(1)+'" y="'+(MID-AMP*0.3-2).toFixed(1)+'" text-anchor="middle" font-size="9" fill="#4caf72" font-family="\'Noto Sans SC\',system-ui">中等发达国家</text>';
+    }
+
+    // 2. 衰退 (cyan) — on the FALLING segment (peak → recEnd), right side of peak
+    var bustMidYr = (w.peak + w.recEnd) / 2;
+    var bustMidX = xOf(bustMidYr);
+    var bustMidY = waveY(w, bustMidYr);
+    s+='<rect x="'+(bustMidX-26)+'" y="'+(bustMidY-10)+'" width="52" height="20" rx="6" fill="#0891b2"/>';
+    s+='<text x="'+bustMidX.toFixed(1)+'" y="'+(bustMidY+4)+'" text-anchor="middle" font-size="11" font-weight="800" fill="#fff" font-family="\'Noto Sans SC\',system-ui">衰退</text>';
+    s+='<text x="'+bustMidX.toFixed(1)+'" y="'+(bustMidY+18)+'" text-anchor="middle" font-size="8" fill="#a5f3fc" font-family="system-ui">'+w.bust+'</text>';
+    s+='<text x="'+bustMidX.toFixed(1)+'" y="'+(bustMidY+28)+'" text-anchor="middle" font-size="8" fill="#a5f3fc" font-family="system-ui">('+w.bustDur+')</text>';
+
+    // 3. 萧条 (gray) — on the BOTTOM segment (recEnd → trough), left of trough
+    var depMidYr = (w.recEnd + w.trough) / 2;
+    var depMidX = xOf(depMidYr);
+    var depMidY = waveY(w, depMidYr);
+    s+='<rect x="'+(depMidX-26)+'" y="'+(depMidY-10)+'" width="52" height="20" rx="6" fill="#76726c"/>';
+    s+='<text x="'+depMidX.toFixed(1)+'" y="'+(depMidY+4)+'" text-anchor="middle" font-size="11" font-weight="800" fill="#fff" font-family="\'Noto Sans SC\',system-ui">萧条</text>';
+    s+='<text x="'+depMidX.toFixed(1)+'" y="'+(depMidY+18)+'" text-anchor="middle" font-size="8" fill="#f0f0f0" font-family="system-ui">'+w.dep+'</text>';
+    s+='<text x="'+depMidX.toFixed(1)+'" y="'+(depMidY+28)+'" text-anchor="middle" font-size="8" fill="#f0f0f0" font-family="system-ui">('+w.depDur+')</text>';
+
+    // 4. 复苏 (yellow) — on the RISING segment from trough (trough → recoverEnd), right of trough
+    var recMidYr = (w.trough + w.recoverEnd) / 2;
+    var recMidX = xOf(recMidYr);
+    var recMidY = waveY(w, recMidYr);
+    s+='<rect x="'+(recMidX-26)+'" y="'+(recMidY-10)+'" width="52" height="20" rx="6" fill="#ca8a04"/>';
+    s+='<text x="'+recMidX.toFixed(1)+'" y="'+(recMidY+4)+'" text-anchor="middle" font-size="11" font-weight="800" fill="#fff" font-family="\'Noto Sans SC\',system-ui">复苏</text>';
+    s+='<text x="'+recMidX.toFixed(1)+'" y="'+(recMidY+18)+'" text-anchor="middle" font-size="8" fill="#fef08a" font-family="system-ui">'+w.rec+'</text>';
+    s+='<text x="'+recMidX.toFixed(1)+'" y="'+(recMidY+28)+'" text-anchor="middle" font-size="8" fill="#fef08a" font-family="system-ui">('+w.recDur+')</text>';
+
+    // === War/crisis events (small dashed circles near peak or trough) ===
+    if(w.war){
+      var wcx = peakX, wcy = peakY - 38;
+      s+='<circle cx="'+wcx.toFixed(1)+'" cy="'+wcy+'" r="14" fill="none" stroke="#e05c5c" stroke-width="1.2" stroke-dasharray="4,3"/>';
+      var warLines = w.war.lbl.split('\n');
+      warLines.forEach(function(line, li){
+        s+='<text x="'+wcx.toFixed(1)+'" y="'+(wcy - 2 + li*12)+'" text-anchor="middle" font-size="9" font-weight="800" fill="#e05c5c" font-family="\'Noto Sans SC\',system-ui">'+line+'</text>';
+      });
+      if(w.war.yr) s+='<text x="'+wcx.toFixed(1)+'" y="'+(wcy+10+warLines.length*2)+'" text-anchor="middle" font-size="7.5" fill="#fca5a5" font-family="system-ui">('+w.war.yr+')</text>';
+    }
+    if(w.war2){
+      var wc2x = troughX, wc2y = troughY + 40;
+      s+='<circle cx="'+wc2x.toFixed(1)+'" cy="'+wc2y+'" r="14" fill="none" stroke="#d4af37" stroke-width="1.2" stroke-dasharray="4,3"/>';
+      s+='<text x="'+wc2x.toFixed(1)+'" y="'+(wc2y+1)+'" text-anchor="middle" font-size="9" font-weight="800" fill="#d4af37" font-family="\'Noto Sans SC\',system-ui">'+w.war2.lbl+'</text>';
+      s+='<text x="'+wc2x.toFixed(1)+'" y="'+(wc2y+12)+'" text-anchor="middle" font-size="7.5" fill="#e8d49b" font-family="system-ui">('+w.war2.yr+')</text>';
+    }
+
+    // Wave 5 extras: ChatGPT label and 2035 — positioned on the curve
+    if(w.extra){
+      if(w.extra.chatgpt){
+        var cgY = waveY(w, 2023);
+        s+='<text x="'+xOf(2023).toFixed(1)+'" y="'+(cgY+20)+'" text-anchor="middle" font-size="9" fill="#d4af37" font-weight="700" font-family="\'Noto Sans SC\',system-ui">ChatGPT</text>';
+      }
+      // 2035 label moved to Wave6 boom segment below
+    }
+  });
+
+  // === 2026 NOW marker ===
+  var nX = xOf(CY);
+  var w5 = WAVES[4];
+  var nY = waveY(w5, CY);
+  s+='<line x1="'+nX.toFixed(1)+'" y1="'+PT+'" x2="'+nX.toFixed(1)+'" y2="'+(H-PB)+'" stroke="#e05c5c" stroke-width="2" stroke-dasharray="7,4"/>';
+  s+='<rect x="'+(nX-26)+'" y="'+(PT+2)+'" width="52" height="20" rx="5" fill="#e05c5c"/>';
+  s+='<text x="'+nX.toFixed(1)+'" y="'+(PT+16)+'" text-anchor="middle" font-size="11" font-weight="900" fill="#fff" font-family="system-ui">2026年▶</text>';
+  s+='<circle cx="'+nX.toFixed(1)+'" cy="'+nY.toFixed(1)+'" r="6" fill="#e05c5c" stroke="#fff" stroke-width="2">';
+  s+='<animate attributeName="r" values="5;10;5" dur="2s" repeatCount="indefinite"/>';
+  s+='<animate attributeName="opacity" values="1;.5;1" dur="2s" repeatCount="indefinite"/>';
+  s+='</circle>';
+
+  // Bottom axis years
+  s+='<line x1="'+PL+'" y1="'+(H-PB)+'" x2="'+(W-PR)+'" y2="'+(H-PB)+'" stroke="rgba(148,163,184,.25)" stroke-width="1"/>';
+
+  s+='</svg>';
+  el.innerHTML=s;
+  el.style.background='#08080a';
+  el.style.borderRadius='12px';
+  el.style.padding='0';
+}
+
+  setTimeout(()=>{
+    initKondratieffWave();
+    initIndustryInvest();
+    initJuglarChart();
+    initKitchinChart();
+    initMerrillClock();
+    initCrisisChart();
+  },0);
+}
+
+/* ========= CYCLES: YEAR TICKER (auto +1/yr) ========= */
+const CYCLE_BASE_YEAR = 2026;
+const CYCLE_START_TS  = Date.UTC(2026, 3, 10);
+function cycleCurrentYear() {
+  const elapsed = Date.now() - CYCLE_START_TS;
+  return CYCLE_BASE_YEAR + Math.floor(elapsed / (365.25 * 24 * 3600 * 1000));
+}
+function cycleLabelNow(prefix) {
+  return (prefix || '') + cycleCurrentYear() + '年 ▶';
+}
+
+/* ========= CYCLES: KONDRATIEFF WAVE (SVG) ========= */
+function initKondratieffWave(){
+  var el = document.getElementById('kondWaveBox');
+  if(!el) return;
+  var WAVES = [
+    {num:1, tech:'纺织和蒸汽机技术', dur:'63年', lead:'英国', chall:'法国、德国', boomStart:1782, peak:1815, recEnd:1825, trough:1836, recoverEnd:1845, boom:'1782-1802年', boomDur:'20年', bust:'1815-1825年', bustDur:'10年', dep:'1825-1836年', depDur:'11年', rec:'1836-1845年', recDur:'9年', war:null, war2:null},
+    {num:2, tech:'钢铁和铁路', dur:'47年', lead:'英国', chall:'美国', boomStart:1845, peak:1866, recEnd:1873, trough:1883, recoverEnd:1892, boom:'1845-1866年', boomDur:'21年', bust:'1866-1873年', bustDur:'7年', dep:'1873-1883年', depDur:'10年', rec:'1883-1892年', recDur:'9年', war:null, war2:null},
+    {num:3, tech:'电气化和重工业', dur:'56年', lead:'美国', chall:'日本', boomStart:1892, peak:1920, recEnd:1929, trough:1937, recoverEnd:1948, boom:'1892-1913年', boomDur:'21年', bust:'1920-1929年', bustDur:'9年', dep:'1929-1937年', depDur:'8年', rec:'1937-1948年', recDur:'11年', war:{lbl:'一战',yr:'1913-1920'}, war2:{lbl:'二战',yr:'1931-1945'}},
+    {num:4, tech:'汽车和电子计算机', dur:'43年', lead:'美国', chall:'日本', boomStart:1948, peak:1966, recEnd:1973, trough:1982, recoverEnd:1991, boom:'1948-1966年', boomDur:'18年', bust:'1966-1973年', bustDur:'7年', dep:'1973-1982年', depDur:'9年', rec:'1982-1991年', recDur:'9年', war:{lbl:'越战',yr:'1955-1975'}, war2:{lbl:'冷战',yr:'1947-1991'}},
+    {num:5, tech:'信息技术', dur:'45年', lead:'美国', chall:'中国', boomStart:1991, peak:2008, recEnd:2020, trough:2027, recoverEnd:2035, boom:'1991-2008年', boomDur:'17年', bust:'2008-2020年', bustDur:'12年', dep:'2020-2027年', depDur:'7年', rec:'2027-?年', recDur:'?年', war:{lbl:'金融\n危机',yr:'2008'}, war2:null, extra:{chatgpt:true, yr2035:true}},
+    {num:6, tech:'AI→AGI·核聚变·量子·机器人', dur:'33年', lead:'美国', chall:'中国', boomStart:2035, peak:2053, recEnd:2057, trough:2060, recoverEnd:2068, boom:'2035-2053年', boomDur:'18年', bust:'2036-2053年', bustDur:'17年', dep:'2053-2060年', depDur:'7年', rec:'2060+年', recDur:'?年', war:null, war2:null, fut:true, yr2035:true}
+  ];
+  var TS=1775, TE=2072;
+  var W=1200, H=600, PL=10, PR=10, PT=105, PB=55;
+  var GW=W-PL-PR, GH=H-PT-PB;
+  var MID=PT+GH/2, AMP=GH*0.40;
+  var CY=2026;
+  function xOf(y){return PL+(y-TS)/(TE-TS)*GW;}
+  function waveY(w, yr){
+    var t = (yr - w.boomStart) / (w.recoverEnd - w.boomStart);
+    t = Math.max(0, Math.min(1, t));
+    return MID - Math.sin(t * Math.PI * 2 - Math.PI/2) * AMP;
+  }
+  function wavePts(w, n){
+    n = n || 120;
+    var pts = [];
+    for(var i=0; i<=n; i++){
+      var t = i/n;
+      var yr = w.boomStart + t * (w.recoverEnd - w.boomStart);
+      var sv = Math.sin(t * Math.PI * 2 - Math.PI/2);
+      pts.push([xOf(yr), MID - sv * AMP]);
+    }
+    return pts;
+  }
+  var s='<svg viewBox="0 0 '+W+' '+H+'" style="width:100%;height:auto;display:block" xmlns="http://www.w3.org/2000/svg">';
+  s+='<defs><filter id="kg"><feGaussianBlur stdDeviation="2" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>';
+  s+='<rect width="'+W+'" height="'+H+'" fill="#0f0f12" rx="12"/>';
+  s+='<line x1="'+PL+'" y1="'+MID+'" x2="'+(W-PR)+'" y2="'+MID+'" stroke="rgba(118,114,108,.12)" stroke-width="1"/>';
+  s+='<text x="'+(W/2)+'" y="16" text-anchor="middle" font-size="11" fill="#e8d49b" font-weight="700" font-family="\'Noto Sans SC\',system-ui">第六轮康波周期推动: 大数据、人工智能（从AI→AGI）、可控核聚变、量子计算、基因编辑、人形机器人、空天技术等</text>';
+  WAVES.forEach(function(w,i){
+    var x1=xOf(w.boomStart), x2=xOf(w.recoverEnd), mx=(x1+x2)/2;
+    var col=w.fut?'#e8d49b':'#f3eede';
+    if(i>0) s+='<line x1="'+x1.toFixed(1)+'" y1="'+(PT-8)+'" x2="'+x1.toFixed(1)+'" y2="'+(H-PB)+'" stroke="rgba(212,175,55,.22)" stroke-width="1.5" stroke-dasharray="6,5"/>';
+    var maxW = x2-x1;
+    var fs = Math.min(13, maxW / (w.tech.length+w.dur.length+3) * 1.6);
+    s+='<text x="'+mx.toFixed(1)+'" y="34" text-anchor="middle" font-size="'+fs.toFixed(1)+'" font-weight="800" fill="'+col+'" font-family="\'Noto Sans SC\',system-ui">'+w.tech+'（'+w.dur+'）</text>';
+    s+='<text x="'+mx.toFixed(1)+'" y="52" text-anchor="middle" font-size="10" fill="#76726c" font-family="\'Noto Sans SC\',system-ui">主导国: '+w.lead+'</text>';
+    s+='<text x="'+mx.toFixed(1)+'" y="66" text-anchor="middle" font-size="10" fill="#76726c" font-family="\'Noto Sans SC\',system-ui">挑战国: '+w.chall+'</text>';
+    s+='<rect x="'+x1.toFixed(1)+'" y="'+PT+'" width="'+(x2-x1).toFixed(1)+'" height="'+GH+'" fill="'+(w.fut?'rgba(245,218,122,.05)':'rgba(18,19,25,.25)')+'"/>';
+  });
+  WAVES.forEach(function(w, wi){
+    var pts = wavePts(w);
+    var fd = 'M '+pts[0][0].toFixed(1)+' '+MID;
+    pts.forEach(function(p){ fd += ' L '+p[0].toFixed(1)+' '+p[1].toFixed(1); });
+    fd += ' L '+pts[pts.length-1][0].toFixed(1)+' '+MID+' Z';
+    s+='<path d="'+fd+'" fill="'+(w.fut?'rgba(245,218,122,.08)':'rgba(212,175,55,.06)')+'"/>';
+    var ld = 'M '+pts[0][0].toFixed(1)+' '+pts[0][1].toFixed(1);
+    for(var i=1;i<pts.length;i++) ld+=' L '+pts[i][0].toFixed(1)+' '+pts[i][1].toFixed(1);
+    s+='<path d="'+ld+'" fill="none" stroke="'+(w.fut?'#d4af37':'#f3eede')+'" stroke-width="2.5" '+(w.fut?'stroke-dasharray="8,5" opacity=".85"':'')+' filter="url(#kg)"/>';
+    var peakX = xOf(w.peak), peakY = MID - AMP;
+    var troughX = xOf(w.trough), troughY = MID + AMP;
+    s+='<circle cx="'+peakX.toFixed(1)+'" cy="'+peakY.toFixed(1)+'" r="4.5" fill="'+(w.fut?'#d4af37':'#e05c5c')+'" stroke="#0f0f12" stroke-width="1.5"/>';
+    s+='<circle cx="'+troughX.toFixed(1)+'" cy="'+troughY.toFixed(1)+'" r="4.5" fill="'+(w.fut?'#d4af37':'#e05c5c')+'" stroke="#0f0f12" stroke-width="1.5"/>';
+    s+='<text x="'+peakX.toFixed(1)+'" y="'+(peakY-12)+'" text-anchor="middle" font-size="15" font-weight="900" fill="#e05c5c" font-family="system-ui">'+w.peak+'年</text>';
+    s+='<text x="'+troughX.toFixed(1)+'" y="'+(troughY+20)+'" text-anchor="middle" font-size="15" font-weight="900" fill="#e05c5c" font-family="system-ui">'+w.trough+'年</text>';
+    var boomMidYr = (w.boomStart + w.peak) / 2;
+    var boomMidX = xOf(boomMidYr);
+    var boomMidY = waveY(w, boomMidYr);
+    s+='<rect x="'+(boomMidX-30)+'" y="'+(boomMidY-10)+'" width="56" height="20" rx="6" fill="#e0a23c"/>';
+    s+='<text x="'+(boomMidX-2)+'" y="'+(boomMidY+4)+'" text-anchor="middle" font-size="11" font-weight="800" fill="#fff" font-family="\'Noto Sans SC\',system-ui">繁荣</text>';
+    s+='<text x="'+(boomMidX-2)+'" y="'+(boomMidY+18)+'" text-anchor="middle" font-size="8" fill="#e8d49b" font-family="system-ui">'+w.boom+'</text>';
+    s+='<text x="'+(boomMidX-2)+'" y="'+(boomMidY+28)+'" text-anchor="middle" font-size="8" fill="#e8d49b" font-family="system-ui">('+w.boomDur+')</text>';
+    if(w.yr2035){
+      var y35X = xOf(2035);
+      s+='<circle cx="'+y35X.toFixed(1)+'" cy="'+(MID-AMP*0.3).toFixed(1)+'" r="4" fill="#4caf72" stroke="#0f0f12" stroke-width="1.5"/>';
+      s+='<text x="'+y35X.toFixed(1)+'" y="'+(MID-AMP*0.3-14).toFixed(1)+'" text-anchor="middle" font-size="12" fill="#4caf72" font-weight="900" font-family="system-ui">2035年</text>';
+      s+='<text x="'+y35X.toFixed(1)+'" y="'+(MID-AMP*0.3-2).toFixed(1)+'" text-anchor="middle" font-size="9" fill="#4caf72" font-family="\'Noto Sans SC\',system-ui">中等发达国家</text>';
+    }
+    var bustMidYr = (w.peak + w.recEnd) / 2;
+    var bustMidX = xOf(bustMidYr);
+    var bustMidY = waveY(w, bustMidYr);
+    s+='<rect x="'+(bustMidX-26)+'" y="'+(bustMidY-10)+'" width="52" height="20" rx="6" fill="#5b9bd5"/>';
+    s+='<text x="'+bustMidX.toFixed(1)+'" y="'+(bustMidY+4)+'" text-anchor="middle" font-size="11" font-weight="800" fill="#fff" font-family="\'Noto Sans SC\',system-ui">衰退</text>';
+    s+='<text x="'+bustMidX.toFixed(1)+'" y="'+(bustMidY+18)+'" text-anchor="middle" font-size="8" fill="#b9b4ab" font-family="system-ui">'+w.bust+'</text>';
+    s+='<text x="'+bustMidX.toFixed(1)+'" y="'+(bustMidY+28)+'" text-anchor="middle" font-size="8" fill="#b9b4ab" font-family="system-ui">('+w.bustDur+')</text>';
+    var depMidYr = (w.recEnd + w.trough) / 2;
+    var depMidX = xOf(depMidYr);
+    var depMidY = waveY(w, depMidYr);
+    s+='<rect x="'+(depMidX-26)+'" y="'+(depMidY-10)+'" width="52" height="20" rx="6" fill="#76726c"/>';
+    s+='<text x="'+depMidX.toFixed(1)+'" y="'+(depMidY+4)+'" text-anchor="middle" font-size="11" font-weight="800" fill="#fff" font-family="\'Noto Sans SC\',system-ui">萧条</text>';
+    s+='<text x="'+depMidX.toFixed(1)+'" y="'+(depMidY+18)+'" text-anchor="middle" font-size="8" fill="#f3eede" font-family="system-ui">'+w.dep+'</text>';
+    s+='<text x="'+depMidX.toFixed(1)+'" y="'+(depMidY+28)+'" text-anchor="middle" font-size="8" fill="#f3eede" font-family="system-ui">('+w.depDur+')</text>';
+    var recMidYr = (w.trough + w.recoverEnd) / 2;
+    var recMidX = xOf(recMidYr);
+    var recMidY = waveY(w, recMidYr);
+    s+='<rect x="'+(recMidX-26)+'" y="'+(recMidY-10)+'" width="52" height="20" rx="6" fill="#d4af37"/>';
+    s+='<text x="'+recMidX.toFixed(1)+'" y="'+(recMidY+4)+'" text-anchor="middle" font-size="11" font-weight="800" fill="#fff" font-family="\'Noto Sans SC\',system-ui">复苏</text>';
+    s+='<text x="'+recMidX.toFixed(1)+'" y="'+(recMidY+18)+'" text-anchor="middle" font-size="8" fill="#e8d49b" font-family="system-ui">'+w.rec+'</text>';
+    s+='<text x="'+recMidX.toFixed(1)+'" y="'+(recMidY+28)+'" text-anchor="middle" font-size="8" fill="#e8d49b" font-family="system-ui">('+w.recDur+')</text>';
+    if(w.war){
+      var wcx = peakX, wcy = peakY - 38;
+      s+='<circle cx="'+wcx.toFixed(1)+'" cy="'+wcy+'" r="14" fill="none" stroke="#e05c5c" stroke-width="1.2" stroke-dasharray="4,3"/>';
+      var warLines = w.war.lbl.split('\n');
+      warLines.forEach(function(line, li){
+        s+='<text x="'+wcx.toFixed(1)+'" y="'+(wcy - 2 + li*12)+'" text-anchor="middle" font-size="9" font-weight="800" fill="#e05c5c" font-family="\'Noto Sans SC\',system-ui">'+line+'</text>';
+      });
+      if(w.war.yr) s+='<text x="'+wcx.toFixed(1)+'" y="'+(wcy+10+warLines.length*2)+'" text-anchor="middle" font-size="7.5" fill="rgba(224,92,92,.7)" font-family="system-ui">('+w.war.yr+')</text>';
+    }
+    if(w.war2){
+      var wc2x = troughX, wc2y = troughY + 40;
+      s+='<circle cx="'+wc2x.toFixed(1)+'" cy="'+wc2y+'" r="14" fill="none" stroke="#d4af37" stroke-width="1.2" stroke-dasharray="4,3"/>';
+      s+='<text x="'+wc2x.toFixed(1)+'" y="'+(wc2y+1)+'" text-anchor="middle" font-size="9" font-weight="800" fill="#d4af37" font-family="\'Noto Sans SC\',system-ui">'+w.war2.lbl+'</text>';
+      s+='<text x="'+wc2x.toFixed(1)+'" y="'+(wc2y+12)+'" text-anchor="middle" font-size="7.5" fill="#e8d49b" font-family="system-ui">('+w.war2.yr+')</text>';
+    }
+    if(w.extra){
+      if(w.extra.chatgpt){
+        var cgY = waveY(w, 2023);
+        s+='<text x="'+xOf(2023).toFixed(1)+'" y="'+(cgY+20)+'" text-anchor="middle" font-size="9" fill="#d4af37" font-weight="700" font-family="\'Noto Sans SC\',system-ui">ChatGPT</text>';
+      }
+    }
+  });
+  var nX = xOf(CY);
+  var w5 = WAVES[4];
+  var nY = waveY(w5, CY);
+  s+='<line x1="'+nX.toFixed(1)+'" y1="'+PT+'" x2="'+nX.toFixed(1)+'" y2="'+(H-PB)+'" stroke="#e05c5c" stroke-width="2" stroke-dasharray="7,4"/>';
+  s+='<rect x="'+(nX-26)+'" y="'+(PT+2)+'" width="52" height="20" rx="5" fill="#e05c5c"/>';
+  s+='<text x="'+nX.toFixed(1)+'" y="'+(PT+16)+'" text-anchor="middle" font-size="11" font-weight="900" fill="#fff" font-family="system-ui">2026年▶</text>';
+  s+='<circle cx="'+nX.toFixed(1)+'" cy="'+nY.toFixed(1)+'" r="6" fill="#e05c5c" stroke="#fff" stroke-width="2"><animate attributeName="r" values="5;10;5" dur="2s" repeatCount="indefinite"/><animate attributeName="opacity" values="1;.5;1" dur="2s" repeatCount="indefinite"/></circle>';
+  s+='<line x1="'+PL+'" y1="'+(H-PB)+'" x2="'+(W-PR)+'" y2="'+(H-PB)+'" stroke="rgba(118,114,108,.25)" stroke-width="1"/>';
+  s+='</svg>';
+  el.innerHTML=s;
+  el.style.background='#0f0f12';
+  el.style.borderRadius='12px';
+  el.style.padding='0';
+}
+
+/* ========= CYCLES: INDUSTRY INVESTMENT (SVG) ========= */
+function initIndustryInvest(){
+  var box = document.getElementById('industryInvestBox');
+  if(!box) return;
+  var W=1200, H=600, PL=60, PR=40, PT=95, PB=80;
+  var GW=W-PL-PR, GH=H-PT-PB;
+  var XMIN=2000, XMAX=2058, CY=2026;
+  function xOf(y){ return PL+(y-XMIN)/(XMAX-XMIN)*GW; }
+  function yOf(v){ return PT+GH-(v/100)*GH; }
+  var pts=[
+    [2001,5],[2003,7],[2005,10],[2007,14],[2008,18],[2009,20],[2010,22],
+    [2011,20],[2012,17],[2013,13],[2014,10],[2015,7],
+    [2016,10],[2017,16],[2018,24],[2019,30],[2020,28],[2021,34],
+    [2022,40],[2023,47],[2024,54],[2025,60],
+    [2026,65],
+    [2027,72],[2028,78],
+    [2029,82],[2030,86],[2031,88],[2033,91],[2035,93],[2037,95],
+    [2039,96],[2041,97],[2043,96],[2045,95],[2048,93],[2052,92],[2056,91]
+  ];
+  var s='<svg viewBox="0 0 '+W+' '+H+'" style="width:100%;height:auto;display:block" xmlns="http://www.w3.org/2000/svg">';
+  s+='<defs>';
+  s+='<linearGradient id="ibg" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#0f0f12" stop-opacity="1"/><stop offset="100%" stop-color="#08080a" stop-opacity="1"/></linearGradient>';
+  s+='<linearGradient id="ifill" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#d4af37" stop-opacity=".22"/><stop offset="100%" stop-color="#16171e" stop-opacity=".05"/></linearGradient>';
+  s+='<filter id="igl"><feGaussianBlur stdDeviation="4" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>';
+  s+='</defs>';
+  s+='<rect width="'+W+'" height="'+H+'" fill="url(#ibg)" rx="14"/>';
+  s+='<text x="22" y="'+(PT+GH/2)+'" text-anchor="middle" dominant-baseline="middle" font-size="18" fill="#d4af37" font-weight="800" font-family="\'Noto Sans SC\',system-ui" transform="rotate(-90,22,'+(PT+GH/2)+')">海外营收</text>';
+  s+='<line x1="'+PL+'" y1="'+(PT+GH)+'" x2="'+PL+'" y2="'+(PT-10)+'" stroke="#d4af37" stroke-width="2.5"/>';
+  s+='<polygon points="'+(PL-6)+','+(PT-5)+' '+(PL+6)+','+(PT-5)+' '+PL+','+(PT-18)+'" fill="#d4af37"/>';
+  s+='<line x1="'+PL+'" y1="'+yOf(0)+'" x2="'+(W-10)+'" y2="'+yOf(0)+'" stroke="rgba(243,238,222,.4)" stroke-width="2.5"/>';
+  s+='<polygon points="'+(W-10)+','+(yOf(0)-6)+' '+(W-10)+','+(yOf(0)+6)+' '+(W+2)+','+yOf(0)+'" fill="rgba(243,238,222,.4)"/>';
+  s+='<text x="'+(W-8)+'" y="'+(yOf(0)+24)+'" text-anchor="end" font-size="18" fill="#d4af37" font-weight="900" font-family="\'Noto Sans SC\',system-ui">时间</text>';
+  var dividers=[{yr:2015, label:'2015年'},{yr:2028, label:'2028年'},{yr:2039, label:'2039年'}];
+  dividers.forEach(function(d){
+    var dx=xOf(d.yr);
+    s+='<line x1="'+dx+'" y1="'+(PT-5)+'" x2="'+dx+'" y2="'+(yOf(0)+8)+'" stroke="rgba(243,238,222,.25)" stroke-width="2" stroke-dasharray="8,6"/>';
+    s+='<text x="'+dx+'" y="'+(yOf(0)+30)+'" text-anchor="middle" font-size="20" font-weight="900" fill="#f3eede" font-family="system-ui">'+d.label+'</text>';
+  });
+  var phases=[
+    {name:'蓄力期', dur:'15年左右', years:'(2001-2015年)', x1:2000, x2:2015, color:'#fff'},
+    {name:'加速期', dur:'12年左右', years:'(2016-2028年)', x1:2015, x2:2028, color:'#fff'},
+    {name:'转型发展期', dur:'11年左右', years:'(2029-2039年)', x1:2028, x2:2039, color:'#fff'},
+    {name:'稳定期', dur:'', years:'(2040年-)', x1:2039, x2:2057, color:'#fff'}
+  ];
+  phases.forEach(function(p){
+    var mx=(xOf(p.x1)+xOf(p.x2))/2;
+    s+='<text x="'+mx+'" y="'+(PT-60)+'" text-anchor="middle" font-size="26" font-weight="900" fill="'+p.color+'" font-family="\'Noto Sans SC\',system-ui">'+p.name+'</text>';
+    if(p.dur){ s+='<text x="'+mx+'" y="'+(PT-38)+'" text-anchor="middle" font-size="16" fill="rgba(255,255,255,.75)" font-family="\'Noto Sans SC\',system-ui">'+p.dur+'</text>'; }
+    s+='<text x="'+mx+'" y="'+(PT-18)+'" text-anchor="middle" font-size="15" fill="rgba(255,255,255,.6)" font-family="system-ui">'+p.years+'</text>';
+  });
+  var eras=[
+    {name:'全球化', x1:2000, x2:2015},{name:'逆全球化', x1:2015, x2:2028},
+    {name:'再全球化（G2）', x1:2028, x2:2039},{name:'深度全球化', x1:2039, x2:2057}
+  ];
+  eras.forEach(function(e){
+    var mx=(xOf(e.x1)+xOf(e.x2))/2;
+    s+='<text x="'+mx+'" y="'+(yOf(0)+58)+'" text-anchor="middle" font-size="22" font-weight="900" fill="#d4af37" font-family="\'Noto Sans SC\',system-ui">'+e.name+'</text>';
+  });
+  var fillD=xOf(pts[0][0])+','+yOf(0)+' ';
+  pts.forEach(function(p){fillD+=xOf(p[0]).toFixed(1)+','+yOf(p[1]).toFixed(1)+' ';});
+  fillD+=xOf(pts[pts.length-1][0]).toFixed(1)+','+yOf(0);
+  s+='<polygon points="'+fillD+'" fill="url(#ifill)"/>';
+  var pathD='M '+xOf(pts[0][0]).toFixed(1)+' '+yOf(pts[0][1]).toFixed(1);
+  for(var i=1;i<pts.length;i++){
+    var p0=pts[i-1],p1=pts[i];
+    var dx=xOf(p1[0])-xOf(p0[0]);
+    pathD+=' C '+(xOf(p0[0])+dx*.45).toFixed(1)+','+yOf(p0[1]).toFixed(1)+' '+(xOf(p1[0])-dx*.45).toFixed(1)+','+yOf(p1[1]).toFixed(1)+' '+xOf(p1[0]).toFixed(1)+','+yOf(p1[1]).toFixed(1);
+  }
+  s+='<path d="'+pathD+'" fill="none" stroke="rgba(255,255,255,.95)" stroke-width="4" stroke-linejoin="round" filter="url(#igl)"/>';
+  [2008,2015,2020,2026,2028,2039].forEach(function(yr){
+    var pt=pts.find(function(p){return p[0]===yr;});
+    if(!pt)return;
+    var cx=xOf(pt[0]),cy=yOf(pt[1]);
+    s+='<circle cx="'+cx.toFixed(1)+'" cy="'+cy.toFixed(1)+'" r="6" fill="#fff" stroke="#0f0f12" stroke-width="2"/>';
+  });
+  var t1x=xOf(2001)+12, t1y=yOf(0)-90;
+  ['✓ WTO融入期','✓ OEM/ODM模式','✓ 一般贸易出口','✓ 海外收入占比≤10%'].forEach(function(t,i){
+    s+='<text x="'+t1x+'" y="'+(t1y+i*26)+'" font-size="16" fill="rgba(243,238,222,.85)" font-family="\'Noto Sans SC\',system-ui">'+t+'</text>';
+  });
+  var t2x=xOf(2017)+10, t2y=PT+30;
+  ['✓ 高速扩张期','✓ 产业链布局','✓ 高端制造出海','✓ 海外收入占比≤25%'].forEach(function(t,i){
+    s+='<text x="'+t2x+'" y="'+(t2y+i*26)+'" font-size="16" fill="rgba(243,238,222,.85)" font-family="\'Noto Sans SC\',system-ui">'+t+'</text>';
+  });
+  var t3x=xOf(2029)+10, t3y=PT+95;
+  ['✓ 品牌建设期','✓ 本地化运营（渠道建设）','✓ 深度融入','✓ 海外收入占比≤50%'].forEach(function(t,i){
+    s+='<text x="'+t3x+'" y="'+(t3y+i*26)+'" font-size="16" fill="rgba(243,238,222,.85)" font-family="\'Noto Sans SC\',system-ui">'+t+'</text>';
+  });
+  var t4x=xOf(2042)+5, t4y=PT+30;
+  ['✓ 价值链主导期','✓ 海外标准制定','✓ 技术标准输出','✓ 海外收入占比','   ≤40~50%'].forEach(function(t,i){
+    s+='<text x="'+t4x+'" y="'+(t4y+i*26)+'" font-size="16" fill="rgba(243,238,222,.85)" font-family="\'Noto Sans SC\',system-ui">'+t+'</text>';
+  });
+  var nowX=xOf(CY), nowY=yOf(65);
+  s+='<line x1="'+nowX.toFixed(1)+'" y1="'+(PT-5)+'" x2="'+nowX.toFixed(1)+'" y2="'+(yOf(0)+5)+'" stroke="#e05c5c" stroke-width="2.5" stroke-dasharray="8,5"/>';
+  s+='<circle cx="'+nowX.toFixed(1)+'" cy="'+nowY.toFixed(1)+'" r="9" fill="#e05c5c" stroke="#fff" stroke-width="3"><animate attributeName="r" values="8;13;8" dur="2s" repeatCount="indefinite"/><animate attributeName="opacity" values="1;0.5;1" dur="2s" repeatCount="indefinite"/></circle>';
+  s+='<rect x="'+(nowX-32)+'" y="'+(PT-5)+'" width="64" height="26" rx="6" fill="#e05c5c"/>';
+  s+='<text x="'+nowX.toFixed(1)+'" y="'+(PT+14)+'" text-anchor="middle" font-size="14" font-weight="900" fill="#fff" font-family="system-ui">2026▶</text>';
+  s+='<text x="'+(PL+5)+'" y="'+(H-10)+'" font-size="13" fill="rgba(118,114,108,.5)" font-family="\'Noto Sans SC\',system-ui">数据来源: 彭博、Wind、Haver</text>';
+  s+='</svg>';
+  box.innerHTML=s;
+}
+
+/* ========= CYCLES: JUGLAR (Chart.js) ========= */
+function initJuglarChart(){
+  var ctxEl = document.getElementById('juglarChart');
+  if(!ctxEl) return;
+  var jugCtx = ctxEl.getContext('2d');
+  var jugLabels = ['2010','11','12','13','14','15','16','17','18','19','20','21','22','23','24','25','26','27','28','29','30','31','32','33','34','35'];
+  var jugData = [48,52,58,62,64,60,52,55,60,50,28,58,68,52,50,55,62,72,75,70,62,58,54,50,55,60];
+  var jugNowIdx = jugLabels.indexOf('26');
+  new Chart(jugCtx, {
+    type:'line',
+    data:{labels:jugLabels,datasets:[{
+      label:'资本开支指数',data:jugData,
+      borderColor:'#d4af37',
+      backgroundColor:function(ctx){
+        const g=ctx.chart.ctx.createLinearGradient(0,0,0,200);
+        g.addColorStop(0,'rgba(212,175,55,.16)');g.addColorStop(1,'rgba(212,175,55,.01)');return g;
+      },
+      fill:true,tension:.4,
+      pointRadius:jugData.map((_,i)=>i===jugNowIdx?6:2),
+      pointBackgroundColor:jugData.map((_,i)=>i===jugNowIdx?'#e05c5c':'#d4af37'),
+      segment:{borderDash:function(ctx){return ctx.p0DataIndex>=jugNowIdx?[6,4]:[];}},
+      borderWidth:2.5
+    }]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false},
+      annotation:{annotations:{
+        now:{type:'line',xMin:'26',xMax:'26',borderColor:'#e05c5c',borderWidth:2.5,borderDash:[5,4],
+          label:{display:true,content:cycleLabelNow(),position:'start',
+            backgroundColor:'rgba(224,92,92,.85)',color:'#fff',font:{size:10},padding:4}},
+        peak:{type:'label',xValue:'27',yValue:75,content:['AI资本开支高峰','▲ 2027-2028'],
+          font:{size:9},color:'#d4af37'},
+        future:{type:'box',xMin:'26',xMax:'35',backgroundColor:'rgba(212,175,55,.04)',
+          label:{display:false}}
+      }}},
+      scales:{y:{title:{display:true,text:'资本支出指数'},suggestedMin:20,suggestedMax:85}}
+    }
+  });
+}
+
+/* ========= CYCLES: KITCHIN (Chart.js) ========= */
+function initKitchinChart(){
+  var ctxEl = document.getElementById('kitchinChart');
+  if(!ctxEl) return;
+  var kitCtx = ctxEl.getContext('2d');
+  var kitLabels = ['2020Q1','Q3','2021Q1','Q3','2022Q1','Q3','2023Q1','Q3','2024Q1','Q3','2025Q1','Q3','2026Q1','Q3','2027Q1','Q3','2028Q1','Q3','2029Q1','Q3','2030Q1','Q3','2031Q1','Q3','2032Q1','Q3','2033Q1','Q3','2034Q1','Q3','2035Q1'];
+  var kitData = [32,22,45,68,72,60,38,36,42,48,54,60,63,68,72,68,58,48,42,38,50,62,68,65,52,44,48,55,62,68,64];
+  var kitNow = kitLabels.indexOf('2026Q1');
+  new Chart(kitCtx, {
+    type:'line',
+    data:{labels:kitLabels,datasets:[
+      {label:'库存周期指数',data:kitData,
+        borderColor:function(ctx){
+          const i=ctx.p0DataIndex;return i>=kitNow?'rgba(212,175,55,.6)':'#4caf72';
+        },
+        backgroundColor:'rgba(76,175,114,.06)',fill:true,tension:.45,
+        pointRadius:kitData.map((_,i)=>i===kitNow?7:2),
+        pointBackgroundColor:kitData.map((_,i)=>i===kitNow?'#e05c5c':(i>kitNow?'#d4af37':'#4caf72')),
+        segment:{borderDash:function(ctx){return ctx.p0DataIndex>=kitNow?[6,4]:[];}},
+        borderWidth:2.5
+      },
+      {label:'均衡线(50)',data:kitLabels.map(()=>50),
+        borderColor:'rgba(118,114,108,.3)',borderDash:[4,4],pointRadius:0,borderWidth:1}
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false},tooltip:{filter:function(i){return i.datasetIndex===0;}},
+      annotation:{annotations:{
+        now:{type:'line',xMin:'2026Q1',xMax:'2026Q1',borderColor:'#e05c5c',borderWidth:2.5,borderDash:[5,4],
+          label:{display:true,content:cycleLabelNow()+'Q1',position:'start',
+            backgroundColor:'rgba(224,92,92,.85)',color:'#fff',font:{size:10},padding:4}},
+        future:{type:'box',xMin:'2026Q1',xMax:'2035Q1',backgroundColor:'rgba(212,175,55,.04)',
+          label:{display:false}},
+        lbl1:{type:'label',xValue:'2027Q1',yValue:72,content:['▲ 主动补库高峰','2027'],font:{size:9},color:'#4caf72'},
+        lbl2:{type:'label',xValue:'2029Q1',yValue:40,content:['▼ 去库底部','2029'],font:{size:9},color:'#e05c5c'},
+        lbl3:{type:'label',xValue:'2031Q3',yValue:68,content:['▲ 新周期高峰','2031'],font:{size:9},color:'#4caf72'},
+        lbl4:{type:'label',xValue:'2033Q3',yValue:44,content:['▼ 去库底部','2033'],font:{size:9},color:'#e05c5c'}
+      }}},
+      scales:{y:{title:{display:true,text:'库存指数 (50=均衡)'},min:15,max:80}}
+    }
+  });
+}
+
+/* ========= CYCLES: MERRILL CLOCK (SVG) ========= */
+function initMerrillClock(){
+  var container = document.getElementById('merrillClock');
+  if(!container) return;
+  var div = document.createElement('div');
+  div.id = 'merrillClockInner';
+  div.style.cssText = 'width:100%;height:340px;display:flex;align-items:center;justify-content:center;position:relative;';
+  container.innerHTML='';
+  container.appendChild(div);
+  var CX = 170, CY = 170, R1 = 155, R2 = 118, R3 = 82, R4 = 50;
+  var phases = [
+    {name:'复苏',en:'Recovery',  color:'#d4af37',bg:'rgba(212,175,55,.13)', startDeg:180,endDeg:270,
+     assets:'股票',sectors:'电信·IT',cond:'增长复苏·通胀底部',arrow:'↑'},
+    {name:'过热',en:'Overheat', color:'#e0a23c',bg:'rgba(224,162,60,.13)',  startDeg:270,endDeg:360,
+     assets:'商品',sectors:'工业·能源',cond:'增长放缓·通胀顶部',arrow:'↗'},
+    {name:'滞胀',en:'Stagflation',color:'#e05c5c',bg:'rgba(224,92,92,.13)',startDeg:0,  endDeg:90,
+     assets:'现金',sectors:'公用事业·医药',cond:'滞胀·产能缺口',arrow:'↓'},
+    {name:'衰退',en:'Recession', color:'#4caf72',bg:'rgba(76,175,114,.13)',startDeg:90, endDeg:180,
+     assets:'债券',sectors:'消费·金融',cond:'衰退·通胀回落',arrow:'↙'}
+  ];
+  var currentPhaseIdx = 0;
+  function deg2rad(d){return d*Math.PI/180;}
+  function arc(cx,cy,r,s,e){
+    var sa=deg2rad(s-90), ea=deg2rad(e-90);
+    var x1=cx+r*Math.cos(sa),y1=cy+r*Math.sin(sa);
+    var x2=cx+r*Math.cos(ea),y2=cy+r*Math.sin(ea);
+    var lg=(e-s)>180?1:0;
+    return 'M '+cx+' '+cy+' L '+x1+' '+y1+' A '+r+' '+r+' 0 '+lg+' 1 '+x2+' '+y2+' Z';
+  }
+  function midAngle(s,e){return deg2rad((s+e)/2-90);}
+  function textAt(cx,cy,r,s,e,txt,size,color,bold){
+    var a=midAngle(s,e);
+    var tx=cx+r*Math.cos(a), ty=cy+r*Math.sin(a);
+    return '<text x="'+tx+'" y="'+ty+'" text-anchor="middle" dominant-baseline="middle" font-size="'+size+'" fill="'+color+'" font-weight="'+(bold?'700':'400')+'" font-family="\'Noto Sans SC\',system-ui">'+txt+'</text>';
+  }
+  function rotatedText(cx,cy,r,s,e,txt,size,color){
+    var a=midAngle(s,e);
+    var tx=cx+r*Math.cos(a), ty=cy+r*Math.sin(a);
+    var angleDeg=(s+e)/2-90;
+    var rot = angleDeg > 90 && angleDeg < 270 ? angleDeg+180 : angleDeg;
+    return '<text x="'+tx+'" y="'+ty+'" text-anchor="middle" dominant-baseline="middle" font-size="'+size+'" fill="'+color+'" font-weight="700" font-family="\'Noto Sans SC\',system-ui" transform="rotate('+rot+','+tx+','+ty+')">'+txt+'</text>';
+  }
+  var svg = '<svg viewBox="0 0 340 340" width="340" height="340" xmlns="http://www.w3.org/2000/svg">';
+  phases.forEach(function(p,i){
+    var highlight = i===currentPhaseIdx;
+    svg += '<path d="'+arc(CX,CY,R1,p.startDeg,p.endDeg)+'" fill="'+p.bg+'" stroke="'+p.color+'" stroke-width="'+(highlight?3:1.5)+'" opacity="'+(highlight?1:.85)+'"/>';
+  });
+  phases.forEach(function(p,i){
+    svg += '<path d="'+arc(CX,CY,R2,p.startDeg,p.endDeg)+'" fill="'+phases[i].bg+'" stroke="'+p.color+'" stroke-width="1" opacity=".7"/>';
+  });
+  phases.forEach(function(p,i){
+    svg += '<path d="'+arc(CX,CY,R3,p.startDeg,p.endDeg)+'" fill="'+phases[i].bg+'" stroke="'+p.color+'" stroke-width="1" opacity=".5"/>';
+  });
+  svg += '<circle cx="'+CX+'" cy="'+CY+'" r="'+R4+'" fill="rgba(15,15,18,.95)" stroke="rgba(212,175,55,.3)" stroke-width="1.5"/>';
+  svg += '<line x1="'+CX+'" y1="'+(CY-R4)+'" x2="'+CX+'" y2="'+(CY+R4)+'" stroke="rgba(118,114,108,.4)" stroke-width="1"/>';
+  svg += '<line x1="'+(CX-R4)+'" y1="'+CY+'" x2="'+(CX+R4)+'" y2="'+CY+'" stroke="rgba(118,114,108,.4)" stroke-width="1"/>';
+  svg += '<text x="'+(CX-R4/2)+'" y="'+(CY-R4/2+4)+'" text-anchor="middle" dominant-baseline="middle" font-size="11" font-weight="700" fill="#d4af37" font-family="\'Noto Sans SC\',system-ui">股票</text>';
+  svg += '<text x="'+(CX+R4/2)+'" y="'+(CY-R4/2+4)+'" text-anchor="middle" dominant-baseline="middle" font-size="11" font-weight="700" fill="#e0a23c" font-family="\'Noto Sans SC\',system-ui">商品</text>';
+  svg += '<text x="'+(CX-R4/2)+'" y="'+(CY+R4/2+4)+'" text-anchor="middle" dominant-baseline="middle" font-size="11" font-weight="700" fill="#4caf72" font-family="\'Noto Sans SC\',system-ui">债券</text>';
+  svg += '<text x="'+(CX+R4/2)+'" y="'+(CY+R4/2+4)+'" text-anchor="middle" dominant-baseline="middle" font-size="11" font-weight="700" fill="#76726c" font-family="\'Noto Sans SC\',system-ui">现金</text>';
+  svg += rotatedText(CX,CY,(R3+R2)/2, 180,270,'电信·IT',9,'#d4af37');
+  svg += rotatedText(CX,CY,(R3+R2)/2, 270,360,'工业·能源',9,'#e0a23c');
+  svg += rotatedText(CX,CY,(R3+R2)/2, 0,90,'公用·医药',9,'#e05c5c');
+  svg += rotatedText(CX,CY,(R3+R2)/2, 90,180,'消费·金融',9,'#4caf72');
+  phases.forEach(function(p,i){
+    var highlight = i===currentPhaseIdx;
+    svg += textAt(CX,CY,(R2+R1)/2,p.startDeg,p.endDeg,p.name, highlight?16:13, p.color, true);
+  });
+  svg += '<text x="'+CX+'" y="12" text-anchor="middle" font-size="12" font-weight="800" fill="#e0a23c" font-family="\'Noto Sans SC\',system-ui">通胀上升 ↑</text>';
+  svg += '<text x="'+CX+'" y="332" text-anchor="middle" font-size="12" font-weight="800" fill="#4caf72" font-family="\'Noto Sans SC\',system-ui">通胀回落 ↓</text>';
+  svg += '<text x="8" y="'+CY+'" text-anchor="middle" dominant-baseline="middle" font-size="11" font-weight="700" fill="#d4af37" font-family="\'Noto Sans SC\',system-ui" transform="rotate(-90,8,'+CY+')">增长复苏</text>';
+  svg += '<text x="332" y="'+CY+'" text-anchor="middle" dominant-baseline="middle" font-size="11" font-weight="700" fill="#e05c5c" font-family="\'Noto Sans SC\',system-ui" transform="rotate(90,332,'+CY+')">增长放缓</text>';
+  var curPhase = phases[currentPhaseIdx];
+  var curA = midAngle(curPhase.startDeg, curPhase.endDeg);
+  var dotR = (R2+R3)/2;
+  var dotX = CX+dotR*Math.cos(curA), dotY = CY+dotR*Math.sin(curA);
+  svg += '<circle cx="'+dotX+'" cy="'+dotY+'" r="9" fill="#e05c5c" stroke="#fff" stroke-width="2.5"><animate attributeName="r" values="7;11;7" dur="2s" repeatCount="indefinite"/><animate attributeName="opacity" values="1;0.6;1" dur="2s" repeatCount="indefinite"/></circle>';
+  svg += '<text x="'+dotX+'" y="'+(dotY+20)+'" text-anchor="middle" font-size="9" fill="#e05c5c" font-weight="700" font-family="\'Noto Sans SC\',system-ui">▶ 2026当前</text>';
+  svg += '<path d="M '+(CX+R1+6)+' '+CY+' A '+(R1+6)+' '+(R1+6)+' 0 0 1 '+CX+' '+(CY-R1-6)+'" stroke="#76726c" stroke-width="1.5" fill="none" marker-end="url(#arr)" stroke-dasharray="8 4" opacity=".5"/>';
+  svg += '<defs><marker id="arr" markerWidth="6" markerHeight="6" refX="3" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#76726c"/></marker></defs>';
+  svg += '</svg>';
+  div.innerHTML = svg;
+  var leg = document.createElement('div');
+  leg.style.cssText='display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:8px;';
+  phases.forEach(function(p,i){
+    leg.innerHTML += '<span style="font-size:.75rem;color:'+p.color+';font-weight:'+(i===currentPhaseIdx?'800':'500')+'">'+(i===currentPhaseIdx?'▶ ':'')+'<b>'+p.name+'</b>: '+p.assets+' · '+p.sectors+'</span>';
+  });
+  container.appendChild(leg);
+}
+
+/* ========= CYCLES: 2028 AI CRISIS CHART (Chart.js) ========= */
+function initCrisisChart(){
+  var box = document.getElementById('crisisChartBox');
+  if(!box) return;
+  var canvas = document.createElement('canvas');
+  canvas.id = 'crisisChart';
+  canvas.style.cssText = 'position:absolute;top:0;left:0;width:100%;height:100%';
+  box.innerHTML='';
+  box.appendChild(canvas);
+  var labels = ['25年1月','25年4月','25年7月','25年10月','26年1月','26年4月','26年7月','26年10月','27年1月','27年4月','27年7月','27年10月','28年1月','28年4月','28年7月','28年10月'];
+  var sp500 = [5500,5800,6200,6600,6950,7400,8100,7500,7000,6200,5500,4900,4750,4800,4700,4750];
+  var unemp  = [4.0,4.1,4.2,4.3,4.5,4.7,5.0,5.8,6.8,7.6,8.5,9.4,10.2,10.5,10.8,10.6];
+  var events = [
+    {x:1, label:'AI取代SaaS技术栈', side:'top', spY:5800},
+    {x:3, label:'白领裁员系统化',    side:'top', spY:6600},
+    {x:6, label:'标普见顶~8100\nServiceNow -18%', side:'top', spY:8100},
+    {x:7, label:'$18万经理→失业',   side:'bot', spY:7500},
+    {x:9, label:'失业申请48.7万',   side:'bot', spY:6200},
+    {x:8, label:'私人信贷重定价',    side:'top', spY:7000},
+    {x:11,label:'2027年11月\n市场冻结崩盘',side:'bot',spY:4900},
+    {x:13,label:'失业率超10%',       side:'bot', spY:4800}
+  ];
+  var phasePlugin = {
+    id:'crisisPhases',
+    beforeDraw: function(chart) {
+      var ctx2=chart.ctx, ca=chart.chartArea;
+      var w=ca.right-ca.left, h=ca.bottom-ca.top;
+      var phases=[
+        {start:0, end:4,  color:'rgba(212,175,55,.1)', label:'第一阶段: 工作消失'},
+        {start:4, end:11, color:'rgba(224,162,60,.1)', label:'第二阶段: 市场崩盘'},
+        {start:11,end:15, color:'rgba(224,92,92,.12)', label:'第三阶段: 政府瘫痪'}
+      ];
+      var total=labels.length;
+      phases.forEach(function(ph){
+        var x1=ca.left+ph.start/total*w;
+        var x2=ca.left+ph.end/total*w;
+        ctx2.fillStyle=ph.color;
+        ctx2.fillRect(x1,ca.top,x2-x1,h);
+        ctx2.fillStyle=ph.start===0?'rgba(212,175,55,.7)':ph.start===4?'rgba(224,162,60,.7)':'rgba(224,92,92,.7)';
+        ctx2.font='bold 10px system-ui';
+        ctx2.fillText(ph.label,x1+6,ca.top+16);
+      });
+      var nowX=ca.left+(4/total)*w;
+      ctx2.save();
+      ctx2.setLineDash([5,3]);
+      ctx2.strokeStyle='#e05c5c';
+      ctx2.lineWidth=2;
+      ctx2.beginPath();ctx2.moveTo(nowX,ca.top);ctx2.lineTo(nowX,ca.bottom);ctx2.stroke();
+      ctx2.restore();
+      ctx2.fillStyle='#e05c5c';
+      ctx2.font='bold 9px system-ui';
+      ctx2.fillText('▶ 2026当前',nowX+3,ca.top+28);
+    }
+  };
+  var eventPlugin = {
+    id:'crisisEvents',
+    afterDraw: function(chart) {
+      var ctx2=chart.ctx, ca=chart.chartArea;
+      var xScale=chart.scales.x, yScale=chart.scales['y-sp'];
+      events.forEach(function(ev){
+        var px=xScale.getPixelForValue(ev.x);
+        var py=yScale.getPixelForValue(ev.spY);
+        var isTop=ev.side==='top';
+        var lines=ev.label.split('\n');
+        var bw=Math.max.apply(null,lines.map(function(l){return l.length}))*5.5+12;
+        var bh=lines.length*13+8;
+        var bx=Math.min(Math.max(px-bw/2,ca.left),ca.right-bw);
+        var by=isTop?py-bh-10:py+10;
+        ctx2.fillStyle='rgba(15,15,18,.93)';
+        ctx2.strokeStyle=isTop?'rgba(212,175,55,.5)':'rgba(224,162,60,.5)';
+        ctx2.lineWidth=1;
+        ctx2.beginPath();
+        if(ctx2.roundRect)ctx2.roundRect(bx,by,bw,bh,5);
+        else ctx2.rect(bx,by,bw,bh);
+        ctx2.fill();ctx2.stroke();
+        ctx2.strokeStyle='rgba(118,114,108,.4)';
+        ctx2.setLineDash([3,3]);
+        ctx2.beginPath();ctx2.moveTo(px,py);ctx2.lineTo(px,isTop?by+bh:by);ctx2.stroke();
+        ctx2.setLineDash([]);
+        ctx2.fillStyle='#f3eede';
+        ctx2.font='9px system-ui';
+        ctx2.textAlign='center';
+        lines.forEach(function(line,li){ctx2.fillText(line,bx+bw/2,by+12+li*13);});
+        ctx2.fillStyle=isTop?'#d4af37':'#e0a23c';
+        ctx2.beginPath();ctx2.arc(px,py,4,0,Math.PI*2);ctx2.fill();
+      });
+    }
+  };
+  new Chart(canvas.getContext('2d'), {
+    type:'line',
+    data:{
+      labels:labels,
+      datasets:[
+        {label:'标普500(预测)',data:sp500,borderColor:'#e05c5c',backgroundColor:'rgba(224,92,92,.08)',
+         fill:true,tension:.4,pointRadius:0,borderWidth:2.5,yAxisID:'y-sp'},
+        {label:'失业率 %',data:unemp,borderColor:'#4caf72',backgroundColor:'transparent',
+         tension:.4,pointRadius:0,borderWidth:2,borderDash:[6,3],yAxisID:'y-un'}
+      ]
+    },
+    options:{
+      responsive:true,maintainAspectRatio:false,
+      plugins:{
+        legend:{position:'top',labels:{boxWidth:14,padding:14,font:{size:11}}},
+        tooltip:{mode:'index',intersect:false,callbacks:{
+          label:function(c){
+            if(c.datasetIndex===0)return '标普500: '+c.parsed.y.toLocaleString();
+            return '失业率: '+c.parsed.y.toFixed(1)+'%';
+          }
+        }}
+      },
+      scales:{
+        x:{grid:{color:'rgba(38,38,47,.3)'},ticks:{font:{size:9},maxRotation:0}},
+        'y-sp':{position:'left', title:{display:true,text:'标普500指数'},
+          grid:{color:'rgba(38,38,47,.3)'},
+          ticks:{callback:function(v){return v.toLocaleString();},font:{size:10}},
+          min:4500,max:8600},
+        'y-un':{position:'right', title:{display:true,text:'失业率 %'},
+          grid:{display:false},
+          ticks:{callback:function(v){return v+'%';},font:{size:10}},
+          min:3,max:12}
+      },
+      animation:{duration:800}
+    },
+    plugins:[phasePlugin, eventPlugin]
+  });
 }
 
 /* ==================== RENDER: MASTERS (3 tabs) ==================== */
