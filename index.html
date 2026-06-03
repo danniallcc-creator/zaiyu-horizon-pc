@@ -824,7 +824,7 @@ const BUBBLE_2000={
   market_concentration:27, // 前10大股占S&P500权重
   // 利率
   fed_rate_start:4.63,fed_rate_end:6.32,fed_direction:'加息周期 +169bp',
-  t2y:5.8,t10y:6.3,t30y:6.0,spread_10y2y:0.5,
+  t2y:5.8,t5y:5.9,t10y:6.3,t30y:6.0,spread_10y2y:0.5,
   // 美元
   dxy_start:96,dxy_end:120,dxy_chg:25,
   // 黄金
@@ -847,7 +847,7 @@ const BUBBLE_2026={
   mag_pe:30,mag_earnings_growth:22,
   market_concentration:39,
   fed_rate_start:5.375,fed_rate_end:3.625,fed_direction:'降息周期 -175bp',
-  t2y:4.05,t10y:4.47,t30y:5.0,spread_10y2y:0.42,
+  t2y:4.05,t5y:4.20,t10y:4.47,t30y:5.0,spread_10y2y:0.42,
   dxy_start:104,dxy_end:99.3,dxy_chg:-4.5,
   gold_start:2600,gold_end:4493,gold_chg:73,
   btc_start:62000,btc_end:67276,btc_chg:8.5,
@@ -875,13 +875,13 @@ const CW_DIMENSIONS=[
      return Math.round((s1*.4+s2*.3+s3*.3)*100);
    }},
   {dim:'利率环境',icon:'🏛️',
-   d2k:{fed:BUBBLE_2000.fed_rate_end,spread:BUBBLE_2000.spread_10y2y,t30y:BUBBLE_2000.t30y},
-   d26:{fed:BUBBLE_2026.fed_rate_end,spread:BUBBLE_2026.spread_10y2y,t30y:BUBBLE_2026.t30y},
+   d2k:{t30y:BUBBLE_2000.t30y,t10y:BUBBLE_2000.t10y,t5y:BUBBLE_2000.t5y},
+   d26:{t30y:BUBBLE_2026.t30y,t10y:BUBBLE_2026.t10y,t5y:BUBBLE_2026.t5y},
    weight:.15,calc:function(a,b){
-     const s1=1-Math.min(Math.abs(a.fed-b.fed)/b.fed,1);
-     const s2=Math.abs(a.spread-b.spread)<.3?1:1-Math.abs(a.spread-b.spread);
-     const s3=1-Math.abs(a.t30y-b.t30y)/b.t30y;
-     return Math.round((s1*.4+s2*.3+s3*.3)*100);
+     const s1=1-Math.abs(a.t30y-b.t30y)/b.t30y;
+     const s2=1-Math.abs(a.t10y-b.t10y)/b.t10y;
+     const s3=1-Math.abs(a.t5y-b.t5y)/b.t5y;
+     return Math.round((s1*.50+s2*.30+s3*.20)*100);
    }},
   {dim:'美元走势',icon:'💵',
    d2k:{chg:BUBBLE_2000.dxy_chg},
@@ -1605,7 +1605,7 @@ function renderCrisisWarning(){
   const rows=[
     {dim:'📈 美股走势',k:[`S&P 1,527 (+19% 1Y)`,`Nasdaq 5,048 (+86% 1Y)`],c:[`S&P 7,610 (+14% 1Y)`,`Nasdaq 27,094 (+19% 1Y)`],signal:'warn',note:'涨幅低于2000但基数效应显著'},
     {dim:'📊 盈利与估值',k:[`CAPE 44.19 (历史最高)`,`P/E 32x`,`盈利增长 +28%→+4%`],c:[`CAPE 41.6 (接近极值)`,`P/E 27.4x`,`Mag7 P/E 30x, 盈利+22%`],signal:'danger',note:'CAPE接近历史最高，但Mag7盈利真实',anomaly:'high'},
-    {dim:'🏛️ 利率环境',k:[`Fed 4.6%→6.3% (加息)`,`10Y 6.3% | 30Y 6.0%`,`利差 10Y-2Y +0.5%`],c:[`Fed 5.4%→3.6% (降息)`,`10Y 4.5% | 30Y 5.0%`,`利差 10Y-2Y +0.4%`],signal:'info',note:'方向相反(降vs加)，但30Y 5%为17年最高'},
+    {dim:'🏛️ 利率环境',k:[`30Y 6.0% (权重50%)`,`10Y 6.3% (权重30%)`,`2-5Y 5.8~5.9% (权重20%)`,`Fed 4.6%→6.3% (加息)`,`利差 10Y-2Y +0.5%`],c:[`30Y 5.0% (权重50%)`,`10Y 4.5% (权重30%)`,`2-5Y 4.1~4.2% (权重20%)`,`Fed 5.4%→3.6% (降息)`,`利差 10Y-2Y +0.4%`],signal:'info',note:'30Y均在5%+高位(相似度83%)，10Y均>4.4%(相似度71%)。中长期利率水平高度相似，但Fed方向相反(降vs加)'},
     {dim:'💵 美元走势',k:[`DXY 96→120 (+25%)`,`强势美元吸引全球资金`],c:[`DXY 104→99 (-5%)`,`美元走弱，资金分散`],signal:'safe',note:'方向完全相反：2000强美元vs当前弱美元'},
     {dim:'🥇 黄金走势',k:[`$286→$272 (-5%)`,`无避险需求，市场乐观`],c:[`$2,600→$4,493 (+73%)`,`极强避险信号`],signal:'danger',note:'最大分歧：黄金暴涨=隐性恐惧极高',anomaly:'high'},
     {dim:'₿ BTC走势',k:[`不存在`],c:[`$62K→$67K (+9%)`,`距ATH $109K -38%`],signal:'info',note:'新资产类别，2000年无对应参照'},
@@ -1636,7 +1636,9 @@ function renderCrisisWarning(){
   // 柱状图
   const charts=[
     cwBarChart('CAPE 估值',BUBBLE_2000.cape,BUBBLE_2026.cape,'','#5b9bd5','#d4af37'),
-    cwBarChart('Fed利率 %',BUBBLE_2000.fed_rate_end,BUBBLE_2026.fed_rate_end,'%','#5b9bd5','#d4af37'),
+    cwBarChart('30Y国债 (50%)',BUBBLE_2000.t30y,BUBBLE_2026.t30y,'%','#5b9bd5','#d4af37'),
+    cwBarChart('10Y国债 (30%)',BUBBLE_2000.t10y,BUBBLE_2026.t10y,'%','#5b9bd5','#d4af37'),
+    cwBarChart('2-5Y国债 (20%)',BUBBLE_2000.t5y,BUBBLE_2026.t5y,'%','#5b9bd5','#d4af37'),
     cwBarChart('黄金 $/oz',BUBBLE_2000.gold_end,BUBBLE_2026.gold_end,'$','#5b9bd5','#d4af37'),
     cwBarChart('石油 $/bbl',BUBBLE_2000.oil_end,BUBBLE_2026.oil_end,'$','#5b9bd5','#d4af37'),
     cwBarChart('CPI %',BUBBLE_2000.cpi,BUBBLE_2026.cpi,'%','#5b9bd5','#d4af37'),
