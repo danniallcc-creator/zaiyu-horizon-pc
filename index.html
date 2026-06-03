@@ -513,7 +513,7 @@ a{color:inherit;text-decoration:none}
       <div class="page-head">
         <div class="page-kicker">Equity Analysis · Real-Time Quotes</div>
         <h1 class="page-title">个股<span class="gold">实时分析</span></h1>
-        <p class="page-sub">美股 · 港股 · A股 · 34只核心标的 · 实时行情(Stooq + 腾讯财经)</p>
+        <p class="page-sub">美股 · 港股 · A股 · 34只核心标的 · 实时行情(东方财富 Eastmoney)</p>
       </div>
       <div id="stocksContent"><div class="data-loading"><span class="spin"></span> 正在获取个股实时行情…</div></div>
     </section>
@@ -524,11 +524,12 @@ a{color:inherit;text-decoration:none}
 
 <script>
 /* ==================== CONFIG ==================== */
-// Render 代理(server.js): 提供股指/商品/加密实时行情(Stooq服务端抓取, 解决浏览器跨域)
-// 外汇/人民币/美元指数 走 Frankfurter(ECB官方汇率, 浏览器直连, 支持CORS)
-const API_BASE = "https://zaiyu-horizon-api.danniallcc.workers.dev"; // Cloudflare Workers
+// 全部行情走 东方财富 push2 公开接口(浏览器直连, 支持 CORS, 国内可访问, UTF-8 JSON)
+//   股指/商品/外汇/人民币/美元指数/美股/港股/A股 → push2.eastmoney.com
+//   加密货币 BTC/ETH → OKX(国内可访问) → Binance 公共数据(备用)
+// 无需任何后端代理, 彻底解决跨域与海外服务器被墙问题
+const EM_BASE = "https://push2.eastmoney.com/api/qt/ulist.np/get";
 const FETCH_TIMEOUT = 12000;
-const FX_SYMS = ['CNY','EUR','JPY','GBP','CAD','SEK','CHF'];
 
 /* 仅政策利率与波动率指数无免费实时CORS源, 保留最新公布值(非市场tick数据) */
 const CURATED = { vixIndex:'14.2', fedRate:'4.25-4.50%', chinaLPR:'3.10' };
@@ -698,69 +699,120 @@ const TRADE_FLOWS=['🔄 中国-东盟贸易额超越中美(2024起)','📈 印�
 const TECH_AREAS=['🔒 先进半导体(<7nm): 西方封锁 vs 中国自研','🔒 AI大模型: 美国领先 vs 中国追赶','🔒 量子计算: 早期脱钩中','🔓 新能源(光伏/电池/EV): 中国领先','🔓 5G/6G: 华为 vs 爱立信/诺基亚','🔓 稀土加工: 中国垄断(>80%)'];
 
 /* ==================== DATA FETCH (全实时, 无离线回退) ====================
-   外汇/人民币/美元指数 → Frankfurter(ECB官方, 浏览器直连CORS)
-   股指/商品/加密       → Render代理(server.js 服务端抓取 Stooq)
+   全部行情 → 东方财富 push2 公开接口(浏览器直连CORS, 国内可访问)
+   加密货币 → OKX(国内可访问) → Binance 公共数据(备用)
    取数失败 → 抛错, 由 loadAll 显示加载/错误状态(绝不展示假数据)            */
 
-// 美元指数 DXY 官方加权几何公式(ICE)
-function computeDXY(r){
-  const eurusd=1/r.EUR, usdjpy=r.JPY, gbpusd=1/r.GBP, usdcad=r.CAD, usdsek=r.SEK, usdchf=r.CHF;
-  return 50.14348112*Math.pow(eurusd,-0.576)*Math.pow(usdjpy,0.136)*Math.pow(gbpusd,-0.119)
-        *Math.pow(usdcad,0.091)*Math.pow(usdsek,0.042)*Math.pow(usdchf,0.036);
+// 东方财富批量行情: secids 用逗号分隔, 返回 {secid: {price, chg(%), name}}
+async function emQuote(secids){
+  const url=`${EM_BASE}?fltt=2&fields=f12,f13,f14,f2,f3&secids=${secids}&_=${Date.now()}`;
+  const ctrl=new AbortController(); const t=setTimeout(()=>ctrl.abort(),FETCH_TIMEOUT);
+  let r; try{ r=await fetch(url,{signal:ctrl.signal}); } finally { clearTimeout(t); }
+  if(!r.ok) throw new Error('东方财富 HTTP '+r.status);
+  const j=await r.json();
+  const diff=(j.data&&j.data.diff)||[];
+  const m={};
+  diff.forEach(x=>{ m[x.f13+'.'+x.f12]={
+    price:(x.f2!=null&&x.f2!=='-')?Number(x.f2):null,
+    chg:(x.f3!=null&&x.f3!=='-')?Number(x.f3):null,
+    name:x.f14 }; });
+  return m;
 }
 
+// 外汇/人民币/美元指数 → 东方财富(USDCNY等为央行中间价, EURUSD等为实时报价, DXY=美元指数)
+const FX_SECIDS='100.UDI,120.USDCNYC,120.EURCNYC,120.JPYCNYC,120.GBPCNYC,119.EURUSD,119.GBPUSD,119.USDJPY';
 async function fetchFX(){
-  const d2=new Date(), d1=new Date(); d1.setDate(d1.getDate()-9);
-  const f=d=>d.toISOString().slice(0,10);
-  const url=`https://api.frankfurter.dev/v1/${f(d1)}..${f(d2)}?base=USD&symbols=${FX_SYMS.join(',')}`;
-  const ctrl=new AbortController(); const t=setTimeout(()=>ctrl.abort(),FETCH_TIMEOUT);
-  const r=await fetch(url,{signal:ctrl.signal}); clearTimeout(t);
-  if(!r.ok) throw new Error('FX HTTP '+r.status);
-  const j=await r.json();
-  const dates=Object.keys(j.rates).sort();
-  const cur=j.rates[dates[dates.length-1]], prev=j.rates[dates[dates.length-2]]||cur;
-  const o={fxDate:dates[dates.length-1]};
-  // 人民币对
-  o.usdcny=nf(cur.CNY,4);          o.usdcnyChange=pct(cur.CNY,prev.CNY);
-  o.eurcny=nf(cur.CNY/cur.EUR,4);  o.eurcnyChange=pct(cur.CNY/cur.EUR,prev.CNY/prev.EUR);
-  o.jpycny=nf(cur.CNY/cur.JPY,4);  o.jpycnyChange=pct(cur.CNY/cur.JPY,prev.CNY/prev.JPY);
-  o.gbpcny=nf(cur.CNY/cur.GBP,4);  o.gbpcnyChange=pct(cur.CNY/cur.GBP,prev.CNY/prev.GBP);
-  // 主要货币对
-  o.eurusd=nf(1/cur.EUR,4);        o.eurusdChange=pct(1/cur.EUR,1/prev.EUR);
-  o.gbpusd=nf(1/cur.GBP,4);        o.gbpusdChange=pct(1/cur.GBP,1/prev.GBP);
-  o.usdjpy=nf(cur.JPY,2);          o.usdjpyChange=pct(cur.JPY,prev.JPY);
-  // 美元指数
-  o.dxyIndex=nf(computeDXY(cur),2);o.dxyChange=pct(computeDXY(cur),computeDXY(prev));
+  const m=await emQuote(FX_SECIDS);
+  const v=(sid,dec,div)=>{const x=m[sid]; return (x&&x.price!=null)?nf(x.price/(div||1),dec):null;};
+  const c=sid=>{const x=m[sid]; return (x&&x.chg!=null)?x.chg:null;};
+  return {
+    fxDate: new Date().toLocaleDateString('zh-CN'),
+    usdcny:v('120.USDCNYC',4), usdcnyChange:c('120.USDCNYC'),
+    eurcny:v('120.EURCNYC',4), eurcnyChange:c('120.EURCNYC'),
+    jpycny:v('120.JPYCNYC',4,100), jpycnyChange:c('120.JPYCNYC'), // 中间价为每100日元
+    gbpcny:v('120.GBPCNYC',4), gbpcnyChange:c('120.GBPCNYC'),
+    eurusd:v('119.EURUSD',4), eurusdChange:c('119.EURUSD'),
+    gbpusd:v('119.GBPUSD',4), gbpusdChange:c('119.GBPUSD'),
+    usdjpy:v('119.USDJPY',2), usdjpyChange:c('119.USDJPY'),
+    dxyIndex:v('100.UDI',2), dxyChange:c('100.UDI'),
+  };
+}
+
+// 加密货币 BTC/ETH: OKX(国内可访问) 优先 → Binance 公共数据备用 → 失败则留空
+function fetchJSONq(url,ms){
+  const ctrl=new AbortController(); const t=setTimeout(()=>ctrl.abort(),ms);
+  return fetch(url,{signal:ctrl.signal}).then(r=>{clearTimeout(t);if(!r.ok)throw new Error('HTTP '+r.status);return r.json();},e=>{clearTimeout(t);throw e;});
+}
+async function fetchCrypto(){
+  const o={};
+  try{
+    const [b,e]=await Promise.all([
+      fetchJSONq('https://www.okx.com/api/v5/market/ticker?instId=BTC-USDT',5000),
+      fetchJSONq('https://www.okx.com/api/v5/market/ticker?instId=ETH-USDT',5000),
+    ]);
+    const pb=b.data&&b.data[0], pe=e.data&&e.data[0];
+    if(pb&&pe){
+      o.btcPrice=nf(+pb.last,0); o.btcChange=pct(+pb.last,+pb.open24h);
+      o.eth=nf(+pe.last,0);      o.ethChange=pct(+pe.last,+pe.open24h);
+      return o;
+    }
+  }catch(e){}
+  try{
+    const arr=await fetchJSONq('https://data-api.binance.vision/api/v3/ticker/24hr?symbols=%5B%22BTCUSDT%22%2C%22ETHUSDT%22%5D',5000);
+    arr.forEach(x=>{
+      if(x.symbol==='BTCUSDT'){o.btcPrice=nf(+x.lastPrice,0);o.btcChange=Number(x.priceChangePercent);}
+      if(x.symbol==='ETHUSDT'){o.eth=nf(+x.lastPrice,0);o.ethChange=Number(x.priceChangePercent);}
+    });
+  }catch(e){}
   return o;
 }
 
-const MKT_MAP={
-  SP500:['sp500','sp500Change',2], NASDAQ:['nasdaq','nasdaqChange',2], DOW:['dow','dowChange',2],
-  GOLD:['goldPrice','goldChange',2], SILVER:['silver','silverChange',2], OIL:['oil','oilChange',2],
-  NATGAS:['natgas','natgasChange',2], BTC:['btcPrice','btcChange',0], ETH:['eth','ethChange',0],
+// 股指/商品 → 东方财富; 加密 → fetchCrypto. secid → [显示变量, 涨跌变量, 小数位]
+const EM_MKT={
+  '100.SPX'  :['sp500','sp500Change',2],   '100.NDX' :['nasdaq','nasdaqChange',2],
+  '100.DJIA' :['dow','dowChange',2],        '101.GC00Y':['goldPrice','goldChange',2],
+  '101.SI00Y':['silver','silverChange',2],  '102.CL00Y':['oil','oilChange',2],
+  '102.NG00Y':['natgas','natgasChange',3],
 };
 async function fetchMarket(){
-  if(!API_BASE) throw new Error('未配置 API_BASE');
-  const ctrl=new AbortController(); const t=setTimeout(()=>ctrl.abort(),FETCH_TIMEOUT);
-  const r=await fetch(API_BASE+'/api/market',{signal:ctrl.signal}); clearTimeout(t);
-  if(!r.ok) throw new Error('行情 HTTP '+r.status);
-  const j=await r.json();
+  const m=await emQuote(Object.keys(EM_MKT).join(','));
   const o={};
-  for(const k in MKT_MAP){
-    const [vk,ck,dec]=MKT_MAP[k];
-    if(j[k]&&j[k].price!=null){ o[vk]=nf(j[k].price,dec); o[ck]=(j[k].change!=null?j[k].change:null); }
+  for(const sid in EM_MKT){
+    const [vk,ck,dec]=EM_MKT[sid]; const x=m[sid];
+    if(x&&x.price!=null){ o[vk]=nf(x.price,dec); o[ck]=x.chg; }
   }
+  try{ Object.assign(o, await fetchCrypto()); }catch(e){}
   return o;
 }
 
 /* ==================== STOCKS (个股分析) ==================== */
-// 全实时: 美股/港股 → Render代理(Stooq批量); A股指数/ETF → Render代理(腾讯财经)
+// 全实时: 美股/港股/A股 → 东方财富(浏览器直连CORS). [secid, 显示代码, 显示名称]
+const US_LIST=[
+  ['105.AAPL','AAPL','苹果'],   ['105.MSFT','MSFT','微软'],     ['105.GOOGL','GOOGL','谷歌'],
+  ['105.AMZN','AMZN','亚马逊'], ['105.NVDA','NVDA','英伟达'],   ['105.META','META','Meta'],
+  ['105.TSLA','TSLA','特斯拉'], ['105.TQQQ','TQQQ','3倍做多纳指'],['105.SQQQ','SQQQ','3倍做空纳指'],
+  ['106.CRCL','CRCL','Circle'],['106.BABA','BABA','阿里巴巴'], ['105.JD','JD','京东'],
+  ['105.PDD','PDD','拼多多'],   ['106.TME','TME','腾讯音乐'],   ['105.NTES','NTES','网易'],
+  ['105.MU','MU','美光科技'],   ['107.DBA','DBA','农产品ETF'],  ['105.TCOM','TCOM','携程'],
+];
+const HK_LIST=[
+  ['116.00700','0700','腾讯控股'],   ['116.09988','9988','阿里巴巴-W'], ['116.03690','3690','美团-W'],
+  ['116.09992','9992','泡泡玛特'],   ['116.01810','1810','小米集团-W'], ['116.01211','1211','比亚迪股份'],
+  ['116.02800','2800','盈富基金'],   ['116.09999','9999','网易-S'],     ['116.02611','2611','国泰海通'],
+  ['116.00883','0883','中国海洋石油'],['116.09899','9899','网易云音乐'],
+];
+const CN_LIST=[
+  ['1.000001','SH','上证指数'],   ['1.000300','HS300','沪深300'],   ['1.510310','510310','沪深300ETF'],
+  ['1.561380','561380','电网设备ETF'],['0.159827','159827','农业ETF'],
+];
 async function fetchUniverse(){
-  if(!API_BASE) throw new Error('未配置 API_BASE');
-  const ctrl=new AbortController(); const t=setTimeout(()=>ctrl.abort(),FETCH_TIMEOUT);
-  const r=await fetch(API_BASE+'/api/universe',{signal:ctrl.signal}); clearTimeout(t);
-  if(!r.ok) throw new Error('个股 HTTP '+r.status);
-  return await r.json();
+  const all=[...US_LIST,...HK_LIST,...CN_LIST];
+  const m=await emQuote(all.map(x=>x[0]).join(','));
+  const conv=list=>list.map(([sid,id,name])=>{
+    const x=m[sid];
+    return {id, name, price:x?x.price:null, changePct:x?x.chg:null};
+  });
+  return {us:conv(US_LIST), hk:conv(HK_LIST), cn:conv(CN_LIST), asOf:Date.now()};
 }
 function stkPrice(p){
   if(p==null) return null;
@@ -795,7 +847,7 @@ function renderStocks(u){
     stkSection('A股','China A-Shares',u.cn||[],cnCur);
   const ts=new Date(u.asOf||Date.now()).toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
   document.getElementById('stocksContent').innerHTML =
-    `<div class="stk-asof"><span class="dot"></span>实时行情 · 更新于 ${ts} · 数据源 Stooq(美股/港股) + 腾讯财经(A股)</div>` + html;
+    `<div class="stk-asof"><span class="dot"></span>实时行情 · 更新于 ${ts} · 数据源 东方财富 Eastmoney</div>` + html;
 }
 
 /* ==================== RENDER: DASHBOARD ==================== */
@@ -1116,7 +1168,7 @@ function renderCamps(){
   ${disclaimerHTML()}`;
 }
 
-function disclaimerHTML(){return `<div class="disclaimer"><b>风险提示</b> · 本平台所有数据仅供研究参考，不构成任何投资建议。市场有风险，投资需谨慎。数据来源：外汇/人民币/美元指数 Frankfurter(欧洲央行ECB官方参考汇率) · 股指/商品/加密 Stooq(经服务端代理) · 政策利率为最新公布值 · 历史数据不代表未来表现。</div>`}
+function disclaimerHTML(){return `<div class="disclaimer"><b>风险提示</b> · 本平台所有数据仅供研究参考，不构成任何投资建议。市场有风险，投资需谨慎。数据来源：股指/商品/外汇/人民币/美元指数/美股/港股/A股 东方财富(Eastmoney 实时行情) · 加密货币 OKX/Binance · 政策利率为最新公布值 · 历史数据不代表未来表现。</div>`}
 
 /* ==================== APP CONTROL ==================== */
 let cache=null;
@@ -1177,7 +1229,7 @@ async function loadAll(){
   rendered.dashboard=true;
   if(rendered.stocks) loadStocks(true); // 个股已打开过则静默刷新
   const ts=new Date().toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit'});
-  if(ok===2)        setStatus('live','实时数据 · ECB汇率 + Stooq行情 · '+ts);
+  if(ok===2)        setStatus('live','实时数据 · 东方财富行情 · '+ts);
   else if(ok===1)   setStatus('offline','部分数据源不可用('+failed.join('、')+')· 下次自动重试');
   else              setStatus('offline','实时数据获取失败 · 请点击右上角刷新重试');
   refreshing=false;
