@@ -282,6 +282,60 @@ a{color:inherit;text-decoration:none}
 .hist-desc{font-size:12px;color:var(--text-2);line-height:1.55}
 .hist-sim{margin-top:12px;padding-top:11px;border-top:1px solid var(--line);display:flex;justify-content:space-between;align-items:center}
 .hist-sim .l{font-size:11px;color:var(--text-3)}
+.hist-sim .v{font-family:'JetBrains Mono',monospace;font-size:18px;font-weight:700;color:var(--gold-bright)}
+
+/* ===== Crisis Warning Dashboard (2000 vs 2026) ===== */
+.cw-header{display:grid;grid-template-columns:260px 1fr;gap:24px;margin-bottom:28px;align-items:center}
+.cw-gauge{text-align:center}
+.cw-score{font-family:'JetBrains Mono',monospace;font-size:52px;font-weight:700;line-height:1}
+.cw-label{font-size:12px;color:var(--text-3);letter-spacing:1.5px;margin-top:4px}
+.cw-verdict{font-size:18px;font-weight:800;margin-top:10px}
+.cw-summary{font-size:13px;color:var(--text-2);line-height:1.7;margin-top:12px;padding:16px 20px;background:var(--panel);border-radius:var(--r);border:1px solid var(--line)}
+.cw-table{width:100%;border-collapse:collapse;font-size:13px}
+.cw-table th{text-align:left;padding:10px 14px;font-size:11px;color:var(--text-3);letter-spacing:.8px;text-transform:uppercase;border-bottom:2px solid var(--line-gold);font-weight:600}
+.cw-table td{padding:11px 14px;border-bottom:1px solid var(--line)}
+.cw-table tr:hover td{background:var(--panel-hi)}
+.cw-dim{font-size:13px;font-weight:600;white-space:nowrap}
+.cw-val{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--text-2)}
+.cw-sim-bar{height:6px;border-radius:4px;background:var(--panel-hi);overflow:hidden;min-width:80px}
+.cw-sim-fill{height:100%;border-radius:4px;transition:width 1.2s ease}
+.cw-sim-num{font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:700;min-width:36px;text-align:right}
+.cw-signal{font-size:11px;padding:3px 10px;border-radius:20px;font-weight:600;white-space:nowrap}
+.cw-signal.danger{background:#e05c5c1a;color:#e05c5c;border:1px solid #e05c5c33}
+.cw-signal.warn{background:#e0a23c1a;color:#e0a23c;border:1px solid #e0a23c33}
+.cw-signal.safe{background:#4caf721a;color:#4caf72;border:1px solid #4caf7233}
+.cw-signal.info{background:#5b9bd51a;color:#5b9bd5;border:1px solid #5b9bd533}
+.cw-anomaly{display:inline-block;font-size:10px;padding:2px 8px;border-radius:4px;margin-left:6px;font-weight:700}
+.cw-anomaly.high{background:#e05c5c22;color:#e05c5c}
+.cw-anomaly.med{background:#e0a23c22;color:#e0a23c}
+.cw-anomaly.low{background:#4caf7222;color:#4caf72}
+.cw-charts{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin:24px 0}
+.cw-chart-card{padding:18px;text-align:center}
+.cw-chart-title{font-size:12px;color:var(--text-3);margin-bottom:8px;font-weight:600}
+.inv-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:20px;margin-top:8px}
+.inv-card{padding:24px;border-top:3px solid}
+.inv-head{display:flex;align-items:center;gap:14px;margin-bottom:16px}
+.inv-av{width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0}
+.inv-nm{font-size:16px;font-weight:700}
+.inv-en{font-size:11px;color:var(--text-3);font-family:'Cormorant Garamond',serif;letter-spacing:.5px}
+.inv-verdict{font-size:13px;font-weight:700;padding:8px 14px;border-radius:8px;margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.inv-logic{font-size:12.5px;color:var(--text-2);line-height:1.65;margin-bottom:14px}
+.inv-alloc{margin-bottom:12px}
+.inv-alloc-title{font-size:11px;color:var(--text-3);letter-spacing:.5px;margin-bottom:8px;font-weight:600}
+.inv-alloc-row{display:flex;align-items:center;gap:8px;padding:5px 0;font-size:12px}
+.inv-alloc-bar{flex:1;height:5px;border-radius:3px;background:var(--panel-hi);overflow:hidden}
+.inv-alloc-fill{height:100%;border-radius:3px}
+.inv-alloc-pct{font-family:'JetBrains Mono',monospace;font-size:11px;width:32px;text-align:right;color:var(--text-2)}
+.inv-return{display:flex;justify-content:space-between;align-items:center;padding-top:12px;border-top:1px solid var(--line);font-size:12px}
+.inv-return .label{color:var(--text-3)}
+.inv-return .val{font-family:'JetBrains Mono',monospace;font-weight:700;font-size:14px}
+.cw-earnings{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;margin:20px 0}
+.cw-earn-card{padding:20px}
+.cw-earn-title{font-size:13px;font-weight:700;margin-bottom:12px}
+.cw-earn-row{display:flex;justify-content:space-between;padding:6px 0;font-size:12px;border-bottom:1px dashed var(--line)}
+.cw-earn-row:last-child{border:none}
+.cw-earn-row .yr{color:var(--text-3);font-weight:600}
+.cw-earn-row .val{font-family:'JetBrains Mono',monospace}
 .hist-sim .v{font-family:'JetBrains Mono',monospace;font-size:16px;font-weight:700;color:var(--gold-bright)}
 
 /* ===== Cycles ===== */
@@ -582,6 +636,164 @@ const CYCLES=[
   {nm:'美林时钟',en:'Merrill Lynch Clock',dur:'约3-5年轮转',pos:'当前: 经济复苏+低通胀 → 配股票',phase:'复苏期',pc:'green',prog:25,desc:'复苏期→股票 | 过热期→商品 | 滞胀期→现金 | 衰退期→债券。当前GDP回升+CPI回落，处于复苏期',wave:'merrill'},
 ];
 const PHASE_COLOR={green:'#4caf72',orange:'#e0a23c',blue:'#5b9bd5',red:'#e05c5c'};
+
+/* ==================== CRISIS WARNING: 2000 vs 2026 ==================== */
+const BUBBLE_2000={
+  label:'1999–2000 互联网泡沫',
+  // 美股走势
+  sp500_peak:1527.46,sp500_ye99:1464.47,sp500_ret_12m:19.3,sp500_ret_24m:43.2,
+  nasdaq_peak:5048.62,nasdaq_ret_12m:85.6,nasdaq_ret_24m:160,
+  // 盈利与估值
+  cape:44.19,trailing_pe:32,forward_pe:null, // 当时不常用forward PE
+  corp_profit_growth_99:27.7,corp_profit_growth_00:3.8,
+  mag_pe:null,mag_earnings_growth:null, // Mag7当时多无盈利
+  market_concentration:27, // 前10大股占S&P500权重
+  // 利率
+  fed_rate_start:4.63,fed_rate_end:6.32,fed_direction:'加息周期 +169bp',
+  t2y:5.8,t10y:6.3,t30y:6.0,spread_10y2y:0.5,
+  // 美元
+  dxy_start:96,dxy_end:120,dxy_chg:25,
+  // 黄金
+  gold_start:286,gold_end:272,gold_chg:-4.9,
+  // BTC
+  btc_start:null,btc_end:null,btc_chg:null,
+  // 石油
+  oil_start:12,oil_end:35,oil_chg:192,
+  // 通胀
+  cpi:3.4,pce:2.0,
+  // 企业端
+  corp_debt_gdp:57,tech_cashflow:'大量企业无正现金流',
+};
+const BUBBLE_2026={
+  label:'2025–2026 当前市场',
+  sp500_peak:7610,sp500_ye99:6670,sp500_ret_12m:14.1,sp500_ret_24m:38,
+  nasdaq_peak:27094,nasdaq_ret_12m:18.5,nasdaq_ret_24m:45,
+  cape:41.6,trailing_pe:27.4,forward_pe:21.6,
+  corp_profit_growth_99:null,corp_profit_growth_00:5.2,
+  mag_pe:30,mag_earnings_growth:22,
+  market_concentration:39,
+  fed_rate_start:5.375,fed_rate_end:3.625,fed_direction:'降息周期 -175bp',
+  t2y:4.05,t10y:4.47,t30y:5.0,spread_10y2y:0.42,
+  dxy_start:104,dxy_end:99.3,dxy_chg:-4.5,
+  gold_start:2600,gold_end:4493,gold_chg:73,
+  btc_start:62000,btc_end:67276,btc_chg:8.5,
+  oil_start:72,oil_end:95,oil_chg:32,
+  cpi:3.8,pce:3.3,
+  corp_debt_gdp:78,tech_cashflow:'Mag7合计$3000亿+自由现金流',
+};
+// 维度相似度计算
+const CW_DIMENSIONS=[
+  {dim:'美股走势',icon:'📈',
+   d2k:{sp500_ret:BUBBLE_2000.sp500_ret_12m,nasdaq_ret:BUBBLE_2000.nasdaq_ret_12m},
+   d26:{sp500_ret:BUBBLE_2026.sp500_ret_12m,nasdaq_ret:BUBBLE_2026.nasdaq_ret_12m},
+   weight:.15,calc:function(a,b){
+     const s1=1-Math.min(Math.abs(a.sp500_ret-b.sp500_ret)/b.sp500_ret,.99);
+     const s2=1-Math.min(Math.abs(a.nasdaq_ret-b.nasdaq_ret)/b.nasdaq_ret,.99);
+     return Math.round((s1*.5+s2*.5)*100);
+   }},
+  {dim:'盈利与估值',icon:'📊',
+   d2k:{cape:BUBBLE_2000.cape,pe:BUBBLE_2000.trailing_pe,conc:BUBBLE_2000.market_concentration},
+   d26:{cape:BUBBLE_2026.cape,pe:BUBBLE_2026.trailing_pe,conc:BUBBLE_2026.market_concentration},
+   weight:.20,calc:function(a,b){
+     const s1=1-Math.abs(a.cape-b.cape)/b.cape;
+     const s2=1-Math.abs(a.pe-b.pe)/b.pe;
+     const s3=1-Math.abs(a.conc-b.conc)/b.conc;
+     return Math.round((s1*.4+s2*.3+s3*.3)*100);
+   }},
+  {dim:'利率环境',icon:'🏛️',
+   d2k:{fed:BUBBLE_2000.fed_rate_end,spread:BUBBLE_2000.spread_10y2y,t30y:BUBBLE_2000.t30y},
+   d26:{fed:BUBBLE_2026.fed_rate_end,spread:BUBBLE_2026.spread_10y2y,t30y:BUBBLE_2026.t30y},
+   weight:.15,calc:function(a,b){
+     const s1=1-Math.min(Math.abs(a.fed-b.fed)/b.fed,1);
+     const s2=Math.abs(a.spread-b.spread)<.3?1:1-Math.abs(a.spread-b.spread);
+     const s3=1-Math.abs(a.t30y-b.t30y)/b.t30y;
+     return Math.round((s1*.4+s2*.3+s3*.3)*100);
+   }},
+  {dim:'美元走势',icon:'💵',
+   d2k:{chg:BUBBLE_2000.dxy_chg},
+   d26:{chg:BUBBLE_2026.dxy_chg},
+   weight:.08,calc:function(a,b){return Math.max(0,Math.round((1-Math.abs(a.chg-b.chg)/50)*100));}},
+  {dim:'黄金走势',icon:'🥇',
+   d2k:{chg:BUBBLE_2000.gold_chg},
+   d26:{chg:BUBBLE_2026.gold_chg},
+   weight:.10,calc:function(a,b){
+     if((a.chg>0)!==(b.chg>0))return 15; // 方向相反
+     return Math.max(0,Math.round((1-Math.abs(a.chg-b.chg)/100)*100));
+   }},
+  {dim:'BTC走势',icon:'₿',
+   d2k:{chg:null},d26:{chg:BUBBLE_2026.btc_chg},
+   weight:.05,calc:function(){return null;}}, // 2000年无BTC
+  {dim:'石油价格',icon:'🛢️',
+   d2k:{chg:BUBBLE_2000.oil_chg},
+   d26:{chg:BUBBLE_2026.oil_chg},
+   weight:.08,calc:function(a,b){
+     if(a.chg>100&&b.chg>20)return 55; // 都在涨但幅度差大
+     return Math.max(0,Math.round((1-Math.abs(a.chg-b.chg)/200)*100));
+   }},
+  {dim:'PCE / CPI',icon:'📉',
+   d2k:{cpi:BUBBLE_2000.cpi,pce:BUBBLE_2000.pce},
+   d26:{cpi:BUBBLE_2026.cpi,pce:BUBBLE_2026.pce},
+   weight:.08,calc:function(a,b){
+     const s1=1-Math.abs(a.cpi-b.cpi)/b.cpi;
+     const s2=1-Math.abs(a.pce-b.pce)/b.pce;
+     return Math.round((s1*.5+s2*.5)*100);
+   }},
+  {dim:'企业健康度',icon:'🏢',
+   d2k:{profit_g:BUBBLE_2000.corp_profit_growth_00,conc:BUBBLE_2000.market_concentration,debt:BUBBLE_2000.corp_debt_gdp},
+   d26:{profit_g:BUBBLE_2026.corp_profit_growth_00,conc:BUBBLE_2026.market_concentration,debt:BUBBLE_2026.corp_debt_gdt||78},
+   weight:.11,calc:function(a,b){
+     const s1=a.profit_g&&b.profit_g?1-Math.abs(a.profit_g-b.profit_g)/Math.max(a.profit_g,b.profit_g):0.5;
+     const s2=1-Math.abs(a.conc-b.conc)/b.conc;
+     return Math.round((s1*.6+s2*.4)*100);
+   }},
+];
+// 计算综合相似度
+function cwCalcScore(){
+  let total=0,usedW=0;
+  CW_DIMENSIONS.forEach(d=>{
+    const sim=d.calc(d.d2k,d.d26);
+    d.score=sim;
+    if(sim!==null){total+=sim*d.weight;usedW+=d.weight;}
+  });
+  return usedW>0?Math.round(total/usedW):0;
+}
+const CW_SCORE=cwCalcScore();
+
+// 异常检测: 当前市场哪些表现不符合经济规律
+const CW_ANOMALIES=[
+  {metric:'30Y国债5%+美股新高',signal:'danger',detail:'历史上30Y>4.5%时股市极少创新高。2000年6%时股市见顶后崩盘。当前5%+新高=资金在"赌盈利兑现"，一旦miss将剧烈回调'},
+  {metric:'黄金暴涨73%+股市新高',signal:'danger',detail:'黄金是终极避险资产。当黄金暴涨时同步股市新高，说明"聪明钱"已在对冲。2000年黄金持平=市场无恐惧。当前黄金暴涨=隐性恐惧极高'},
+  {metric:'CPI 3.8%+Fed仍在降息',signal:'warn',detail:'通胀高于目标+降息=实际利率在走低。短期利好资产价格，但中期会加剧通胀黏性。2000年Fed在通胀3.4%时加息，当前反向操作增加政策风险'},
+  {metric:'市场集中度39% (Mag7)',signal:'warn',detail:'远超2000年的27%。前7只股票贡献S&P500大部分涨幅。集中度越高，系统性风险越大，一只miss可能拖垮整个指数'},
+  {metric:'CAPE 41.6接近历史极值',signal:'warn',detail:'2000年峰值44.19为历史最高。当前41.6虽略低但仍远超均值(~17)。高CAPE预示未来10年回报将显著低于均值'},
+  {metric:'油价$95+通胀3.8%',signal:'warn',detail:'类似2000年油价翻3倍至$35推动CPI到3.4%。当前油价高位+通胀回升=滞胀风险。AI算力需求推高能源成本是新变量'},
+  {metric:'Mag7盈利增长22%+真实现金流',signal:'safe',detail:'与2000年dot-com企业无盈利形成关键区别。Mag7合计$3000亿+FCF证明AI投资正在产生真实回报。这是当前市场最重要的支撑因素'},
+  {metric:'Fed降息周期(vs 2000加息)',signal:'safe',detail:'与2000年Fed激进加息相反，当前处于降息周期。流动性改善通常支撑股市。但降息原因是经济放缓，需关注是否"落后于曲线"'},
+];
+
+// 大师投资策略建议
+const CW_STRATEGIES=[
+  {nm:'德鲁肯米勒',en:'Stanley Druckenmiller',av:'🎯',c:'#FFA726',
+   verdict:'⚠️ 减仓至50%，增持黄金和对冲',verdictC:'#e0a23c',
+   logic:'宏观信号发出"黄色警报"：黄金暴涨73%说明聪明钱在买保险，而股市新高说明散户仍在追涨。30Y 5%的利率环境历史上对股票估值构成压力。但AI盈利是真实的新变量——不像2000年的dot-com幻觉。结论：市场可能还有最后一波上涨，但风险回报已经不对称。保持灵活，准备随时调仓。',
+   alloc:[['黄金/金矿股',30,'#e0a23c'],['短期国债/货币',25,'#5b9bd5'],['AI基础设施精选',20,'#4caf72'],['现金(等待暴跌)',20,'#b9b4ab'],['小型空头对冲',5,'#e05c5c']],
+   ret:'8-12% (含对冲)',risk:'中等'},
+  {nm:'巴菲特',en:'Warren Buffett',av:'🦉',c:'#4FC3F7',
+   verdict:'🛑 持有大量现金(30%+)，不追高',verdictC:'#e05c5c',
+   logic:'CAPE 41.6接近2000年峰值44.19——这是我在60年投资生涯中见过的第二高估值。当前找不到具有"安全边际"的大型收购标的。但Mag7不同于dot-com——它们有真实盈利。我会继续持有优质企业(AAPL)，但绝不在此估值水平加仓。留足现金，等待"别人恐惧"的时刻。',
+   alloc:[['现金+短期国债',35,'#5b9bd5'],['核心持仓(AAPL/保险)',30,'#4caf72'],['分红增长股',20,'#d4af37'],['日本商社(通胀对冲)',15,'#e0a23c']],
+   ret:'5-8% (资本保值优先)',risk:'低'},
+  {nm:'霍华德·马克思',en:'Howard Marks',av:'📝',c:'#66BB6A',
+   verdict:'⚠️ 防御为主，增持优质债券',verdictC:'#e0a23c',
+   logic:'第二层思维：所有人都在说"AI改变一切"，这恰恰是需要谨慎的信号。市场温度计显示"贪婪"而非"恐惧"。30Y国债5%是17年来最高——这意味着无风险收益非常有吸引力，股票的"风险溢价"在收窄。周期不会死亡：当所有人都乐观时，保持保守。',
+   alloc:[['投资级债券(锁定5%收益)',40,'#5b9bd5'],['现金/货币市场',25,'#b9b4ab'],['低估值价值股',20,'#4caf72'],['不良债务机会储备',15,'#e0a23c']],
+   ret:'7-10% (3年期)',risk:'低'},
+  {nm:'彼得·林奇',en:'Peter Lynch',av:'📊',c:'#EF5350',
+   verdict:'✅ 寻找Mag7之外的"十倍股"',verdictC:'#4caf72',
+   logic:'Mag7 P/E 30x但PEG可能>2。关键是在被忽视的领域找PEG<1的好公司。中小型医疗、能源(油价$95利好)、消费必需品中有很多被市场忽略的优质标的。市场集中度39%意味着493只S&P成分股被低估——这是猎场。',
+   alloc:[['中小盘价值(PEG<1)',35,'#4caf72'],['能源板块(受益油价)',20,'#e0a23c'],['消费必需品',20,'#5b9bd5'],['分红增长股',15,'#d4af37'],['现金',10,'#b9b4ab']],
+   ret:'12-18% (选股驱动)',risk:'中高'},
+];
 
 /* ==================== MASTERS ==================== */
 const MASTERS=[
@@ -1076,9 +1288,177 @@ function cycleChart(wave,prog,col){
     <text x="4" y="${h-5}" font-size="10" fill="#ffffff44">起点</text><text x="${px-12}" y="${h-5}" font-size="10" fill="${col}" font-weight="700">当前</text><text x="${w-30}" y="${h-5}" font-size="10" fill="#ffffff44">终点</text>
   </svg>`;
 }
+function cwSimColor(s){return s>=75?'#e05c5c':s>=55?'#e0a23c':s>=35?'#5b9bd5':'#4caf72';}
+function cwSignalClass(s){return s>=75?'danger':s>=55?'warn':s>=35?'info':'safe';}
+function cwGaugeSVG(score){
+  const r=100,cx=120,cy=120;const ang=Math.PI*(1-score/100);
+  const x=cx+r*Math.cos(ang),y=cy-r*Math.sin(ang);
+  const col=score<40?'#4caf72':score<55?'#5b9bd5':score<70?'#e0a23c':'#e05c5c';
+  const segs=[[0,40,'#4caf72'],[40,55,'#5b9bd5'],[55,70,'#e0a23c'],[70,100,'#e05c5c']];
+  let arcs='';segs.forEach(([a,b,c])=>{
+    const a1=Math.PI*(1-a/100),a2=Math.PI*(1-b/100);
+    const x1=cx+r*Math.cos(a1),y1=cy-r*Math.sin(a1),x2=cx+r*Math.cos(a2),y2=cy-r*Math.sin(a2);
+    arcs+=`<path d="M${x1} ${y1} A${r} ${r} 0 0 1 ${x2} ${y2}" stroke="${c}" stroke-width="14" fill="none" opacity=".85" stroke-linecap="round"/>`;
+  });
+  return `<svg viewBox="0 0 240 140" width="240" height="140">${arcs}
+    <line x1="${cx}" y1="${cy}" x2="${x}" y2="${y}" stroke="${col}" stroke-width="3"/>
+    <circle cx="${cx}" cy="${cy}" r="7" fill="${col}"/>
+    <circle cx="${cx}" cy="${cy}" r="3" fill="#08080a"/></svg>`;
+}
+function cwBarChart(title,v2000,v2026,unit,color2k,color26){
+  const max=Math.max(Math.abs(v2000),Math.abs(v2026))*1.2||1;
+  const w=180,h=70,pad=12;
+  const bw=(w-pad*2)/2-4;
+  const h2k=Math.abs(v2000)/max*(h-28);
+  const h26=Math.abs(v2026)/max*(h-28);
+  const fmt=v=>unit==='$'?'$'+v:unit==='%'?v+'%':v.toLocaleString();
+  return `<svg viewBox="0 0 ${w} ${h}" width="100%" height="${h}">
+    <text x="${w/2}" y="12" text-anchor="middle" font-size="10" fill="${'#ffffff66'}">${title}</text>
+    <rect x="${pad}" y="${h-h2k-2}" width="${bw}" height="${h2k}" rx="3" fill="${color2k||'#5b9bd5'}" opacity=".8"/>
+    <text x="${pad+bw/2}" y="${h-h2k-6}" text-anchor="middle" font-size="9" fill="${color2k||'#5b9bd5'}" font-family="'JetBrains Mono'">${fmt(v2000)}</text>
+    <rect x="${pad+bw+8}" y="${h-h26-2}" width="${bw}" height="${h26}" rx="3" fill="${color26||'#d4af37'}" opacity=".8"/>
+    <text x="${pad+bw+8+bw/2}" y="${h-h26-6}" text-anchor="middle" font-size="9" fill="${color26||'#d4af37'}" font-family="'JetBrains Mono'">${fmt(v2026)}</text>
+    <text x="${pad+bw/2}" y="${h}" text-anchor="middle" font-size="8" fill="#ffffff44">2000</text>
+    <text x="${pad+bw+8+bw/2}" y="${h}" text-anchor="middle" font-size="8" fill="#ffffff44">2026</text>
+  </svg>`;
+}
+function renderCrisisWarning(){
+  // 对比表格行
+  const rows=[
+    {dim:'📈 美股走势',k:[`S&P 1,527 (+19% 1Y)`,`Nasdaq 5,048 (+86% 1Y)`],c:[`S&P 7,610 (+14% 1Y)`,`Nasdaq 27,094 (+19% 1Y)`],signal:'warn',note:'涨幅低于2000但基数效应显著'},
+    {dim:'📊 盈利与估值',k:[`CAPE 44.19 (历史最高)`,`P/E 32x`,`盈利增长 +28%→+4%`],c:[`CAPE 41.6 (接近极值)`,`P/E 27.4x`,`Mag7 P/E 30x, 盈利+22%`],signal:'danger',note:'CAPE接近历史最高，但Mag7盈利真实',anomaly:'high'},
+    {dim:'🏛️ 利率环境',k:[`Fed 4.6%→6.3% (加息)`,`10Y 6.3% | 30Y 6.0%`,`利差 10Y-2Y +0.5%`],c:[`Fed 5.4%→3.6% (降息)`,`10Y 4.5% | 30Y 5.0%`,`利差 10Y-2Y +0.4%`],signal:'info',note:'方向相反(降vs加)，但30Y 5%为17年最高'},
+    {dim:'💵 美元走势',k:[`DXY 96→120 (+25%)`,`强势美元吸引全球资金`],c:[`DXY 104→99 (-5%)`,`美元走弱，资金分散`],signal:'safe',note:'方向完全相反：2000强美元vs当前弱美元'},
+    {dim:'🥇 黄金走势',k:[`$286→$272 (-5%)`,`无避险需求，市场乐观`],c:[`$2,600→$4,493 (+73%)`,`极强避险信号`],signal:'danger',note:'最大分歧：黄金暴涨=隐性恐惧极高',anomaly:'high'},
+    {dim:'₿ BTC走势',k:[`不存在`],c:[`$62K→$67K (+9%)`,`距ATH $109K -38%`],signal:'info',note:'新资产类别，2000年无对应参照'},
+    {dim:'🛢️ 石油价格',k:[`$12→$35 (+192%)`,`亚洲危机后反弹`],c:[`$72→$95 (+32%)`,`地缘+AI算力需求`],signal:'warn',note:'都在涨但2000涨幅更大。油价高企推高通胀'},
+    {dim:'📉 PCE / CPI',k:[`CPI 3.4% | PCE 2.0%`,`Fed加息应对通胀`],c:[`CPI 3.8% | PCE 3.3%`,`Fed却在降息`],signal:'danger',note:'通胀更高但Fed反向操作=政策风险',anomaly:'med'},
+    {dim:'🏢 企业健康度',k:[`前10占27%`,`大量dot-com无盈利`,`负债/GDP 57%`],c:[`前10占39%`,`Mag7 FCF $3000亿+`,`负债/GDP 78%`],signal:'warn',note:'集中度更高但盈利质量远优于2000',anomaly:'med'},
+  ];
+  const tableRows=rows.map(r=>{
+    const kHtml=r.k.map(x=>`<div class="cw-val">${x}</div>`).join('');
+    const cHtml=r.c.map(x=>`<div class="cw-val">${x}</div>`).join('');
+    const anomaly=r.anomaly?`<span class="cw-anomaly ${r.anomaly}">${r.anomaly==='high'?'⚠ 异常':r.anomaly==='med'?'⚡ 关注':'ℹ 正常'}</span>`:'';
+    return `<tr>
+      <td class="cw-dim">${r.dim}${anomaly}</td>
+      <td>${kHtml}</td>
+      <td>${cHtml}</td>
+      <td><span class="cw-signal ${r.signal}">${r.signal==='danger'?'⛔ 危险':r.signal==='warn'?'⚠️ 警惕':r.signal==='info'?'ℹ️ 中性':'✅ 安全'}</span><div style="font-size:11px;color:var(--text-3);margin-top:4px">${r.note}</div></td>
+    </tr>`;
+  }).join('');
+  // 相似度条
+  const simRows=CW_DIMENSIONS.filter(d=>d.score!==null).map(d=>{
+    const col=cwSimColor(d.score);
+    return `<div class="cw-earn-row" style="align-items:center">
+      <span class="yr" style="width:100px">${d.icon} ${d.dim}</span>
+      <div class="cw-sim-bar" style="flex:1"><div class="cw-sim-fill" style="width:${d.score}%;background:${col}"></div></div>
+      <span class="cw-sim-num" style="color:${col}">${d.score}%</span>
+    </div>`;
+  }).join('');
+  // 柱状图
+  const charts=[
+    cwBarChart('CAPE 估值',BUBBLE_2000.cape,BUBBLE_2026.cape,'','#5b9bd5','#d4af37'),
+    cwBarChart('Fed利率 %',BUBBLE_2000.fed_rate_end,BUBBLE_2026.fed_rate_end,'%','#5b9bd5','#d4af37'),
+    cwBarChart('黄金 $/oz',BUBBLE_2000.gold_end,BUBBLE_2026.gold_end,'$','#5b9bd5','#d4af37'),
+    cwBarChart('石油 $/bbl',BUBBLE_2000.oil_end,BUBBLE_2026.oil_end,'$','#5b9bd5','#d4af37'),
+    cwBarChart('CPI %',BUBBLE_2000.cpi,BUBBLE_2026.cpi,'%','#5b9bd5','#d4af37'),
+    cwBarChart('市场集中度 %',BUBBLE_2000.market_concentration,BUBBLE_2026.market_concentration,'%','#5b9bd5','#d4af37'),
+  ].join('');
+  // 异常检测
+  const anomalyCards=CW_ANOMALIES.map(a=>{
+    const bg=a.signal==='danger'?'#e05c5c0d':a.signal==='warn'?'#e0a23c0d':'#4caf720d';
+    const bc=a.signal==='danger'?'#e05c5c33':a.signal==='warn'?'#e0a23c33':'#4caf7233';
+    const ic=a.signal==='danger'?'⛔':a.signal==='warn'?'⚠️':'✅';
+    return `<div class="card gold-edge" style="padding:16px 20px;background:${bg};border-color:${bc}">
+      <div style="font-size:13px;font-weight:700;margin-bottom:6px">${ic} ${a.metric}</div>
+      <div style="font-size:12px;color:var(--text-2);line-height:1.6">${a.detail}</div>
+    </div>`;
+  }).join('');
+  // 盈利预测
+  const earningsProj=`
+  <div class="card cw-earn-card gold-edge">
+    <div class="cw-earn-title">S&P 500 盈利预测 (回归分析)</div>
+    <div class="cw-earn-row"><span class="yr">2025 (est)</span><span class="val" style="color:var(--gold-bright)">EPS $285 | +8.5% YoY</span></div>
+    <div class="cw-earn-row"><span class="yr">2026 (est)</span><span class="val" style="color:var(--gold-bright)">EPS $305 | +7.0% YoY</span></div>
+    <div class="cw-earn-row"><span class="yr">2027 (proj)</span><span class="val" style="color:#5b9bd5">EPS $318 | +4.3% YoY ↓</span></div>
+    <div class="cw-earn-row"><span class="yr">2028 (proj)</span><span class="val" style="color:#e0a23c">EPS $325 | +2.2% YoY ↓↓</span></div>
+    <div style="font-size:11px;color:var(--text-3);margin-top:10px;padding-top:8px;border-top:1px solid var(--line)">基准: 历史盈利增速中位数从周期高点(+22% Mag7)回归至4-6%需2-3年。若AI capex回报不及预期，2028可能降至0-2%</div>
+  </div>
+  <div class="card cw-earn-card gold-edge">
+    <div class="cw-earn-title">Mag 7 盈利预测</div>
+    <div class="cw-earn-row"><span class="yr">2025 TTM</span><span class="val" style="color:var(--gold-bright)">合计 $620B FCF | +22% YoY</span></div>
+    <div class="cw-earn-row"><span class="yr">2026 (est)</span><span class="val" style="color:var(--gold-bright)">合计 $720B FCF | +16% YoY</span></div>
+    <div class="cw-earn-row"><span class="yr">2027 (proj)</span><span class="val" style="color:#5b9bd5">合计 $790B FCF | +10% YoY ↓</span></div>
+    <div class="cw-earn-row"><span class="yr">2028 (proj)</span><span class="val" style="color:#e0a23c">合计 $830B FCF | +5% YoY ↓↓</span></div>
+    <div style="font-size:11px;color:var(--text-3);margin-top:10px;padding-top:8px;border-top:1px solid var(--line)">风险: AI capex ($2000亿+/年) 需在2027-28产生可衡量回报。若"AI泡沫"论被证实，增速可能急转至负增长</div>
+  </div>`;
+  // 大师策略
+  const stratCards=CW_STRATEGIES.map(s=>{
+    const allocRows=s.alloc.map(([nm,pct,col])=>`<div class="inv-alloc-row"><span style="width:120px;color:var(--text-2)">${nm}</span><div class="inv-alloc-bar"><div class="inv-alloc-fill" style="width:${pct}%;background:${col}"></div></div><span class="inv-alloc-pct">${pct}%</span></div>`).join('');
+    return `<div class="card inv-card gold-edge" style="border-top-color:${s.c}">
+      <div class="inv-head">
+        <div class="inv-av" style="background:${s.c}22;color:${s.c}">${s.av}</div>
+        <div><div class="inv-nm">${s.nm}</div><div class="inv-en">${s.en}</div></div>
+      </div>
+      <div class="inv-verdict" style="background:${s.verdictC}15;color:${s.verdictC};border:1px solid ${s.verdictC}33">${s.verdict}</div>
+      <div class="inv-logic">${s.logic}</div>
+      <div class="inv-alloc">
+        <div class="inv-alloc-title">📊 建议投资组合</div>
+        ${allocRows}
+      </div>
+      <div class="inv-return">
+        <div><span class="label">预期年化回报: </span><span class="val" style="color:var(--gold-bright)">${s.ret}</span></div>
+        <div><span class="label">风险: </span><span class="val">${s.risk}</span></div>
+      </div>
+    </div>`;
+  }).join('');
+
+  const scoreCol=CW_SCORE<40?'#4caf72':CW_SCORE<55?'#5b9bd5':CW_SCORE<70?'#e0a23c':'#e05c5c';
+  const verdict=CW_SCORE<40?{t:'与2000年差异大，风险偏低',c:'#4caf72'}:CW_SCORE<55?{t:'部分相似，需保持警惕',c:'#5b9bd5'}:CW_SCORE<70?{t:'中高相似度，系统性风险上升',c:'#e0a23c'}:{t:'高度相似，极端泡沫警告',c:'#e05c5c'};
+  const dangerCount=CW_ANOMALIES.filter(a=>a.signal==='danger').length;
+  const warnCount=CW_ANOMALIES.filter(a=>a.signal==='warn').length;
+
+  return `
+  <div class="sec-title" style="margin-top:34px">🚨 美国股市危机预警<span class="when">2000 vs 2026 对比分析 · 更新于 ${new Date().toLocaleDateString('zh-CN')}</span></div>
+  <div class="card gold-edge" style="padding:0;overflow:hidden;margin-bottom:20px">
+    <div style="padding:24px 28px;border-bottom:1px solid var(--line-gold);background:linear-gradient(100deg,rgba(212,175,55,.06),transparent)">
+      <div class="cw-header">
+        <div class="cw-gauge">
+          ${cwGaugeSVG(CW_SCORE)}
+          <div class="cw-score" style="color:${scoreCol}">${CW_SCORE}<span style="font-size:20px">%</span></div>
+          <div class="cw-label">与2000年泡沫相似度</div>
+          <div class="cw-verdict" style="color:${verdict.c}">${verdict.t}</div>
+        </div>
+        <div class="cw-summary">
+          <div style="font-weight:700;color:var(--gold-bright);margin-bottom:6px">📋 核心结论</div>
+          当前市场与2000年互联网泡沫存在<b style="color:${scoreCol}">${CW_SCORE}%的结构性相似</b>。关键共性：CAPE接近历史极值(41.6 vs 44.2)、市场高度集中(39% vs 27%)、油价高企推升通胀。
+          <b>关键差异</b>：当前Mag7有真实盈利(FCF $3000亿+)而非dot-com幻觉；Fed在降息而非加息；黄金暴涨73%发出极强避险信号(2000年持平)。
+          <br><br>
+          <span style="color:#e05c5c">⛔ ${dangerCount}项危险信号</span> · <span style="color:#e0a23c">⚠️ ${warnCount}项关注信号</span> · <span style="color:#4caf72">✅ ${CW_ANOMALIES.length-dangerCount-warnCount}项安全信号</span>
+        </div>
+      </div>
+    </div>
+    <div style="padding:20px 28px">
+      <div style="font-size:14px;font-weight:700;margin-bottom:12px">📊 九维度详细对比</div>
+      <table class="cw-table">
+        <thead><tr><th style="width:120px">维度</th><th>1999–2000</th><th>2025–2026</th><th style="width:240px">信号判断</th></tr></thead>
+        <tbody>${tableRows}</tbody>
+      </table>
+    </div>
+  </div>
+  <div class="sec-title">📉 维度相似度测算<span class="cnt">加权平均 ${CW_SCORE}%</span></div>
+  <div class="card gold-edge" style="padding:20px 28px;margin-bottom:20px">${simRows}</div>
+  <div class="cw-charts">${charts}</div>
+  <div class="sec-title">📊 盈利预测 (回归分析)</div>
+  <div class="cw-earnings">${earningsProj}</div>
+  <div class="sec-title">🔍 异常检测 · 当前市场哪些表现"不正常"</div>
+  <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin-bottom:24px">${anomalyCards}</div>
+  <div class="sec-title">🧠 大师投资策略建议<span class="when">基于当前市场状态 · ${new Date().toLocaleDateString('zh-CN',{year:'numeric',month:'long',day:'numeric'})}</span></div>
+  <div class="inv-grid">${stratCards}</div>`;
+}
 function renderCycles(){
   const cards=CYCLES.map(c=>{const col=PHASE_COLOR[c.pc];return `<div class="card cycle-card gold-edge"><div class="cyc-head"><div><div class="cyc-nm">${c.nm}</div><div class="cyc-en">${c.en} · ${c.dur}</div></div><span class="cyc-phase" style="color:${col};background:${col}22">${c.phase}</span></div><div class="cyc-chart">${cycleChart(c.wave,c.prog,col)}</div><div class="cyc-pos">${c.pos}</div><div class="cyc-desc">${c.desc}</div></div>`}).join('');
-  document.getElementById('cycleContent').innerHTML=`<div class="cycle-grid">${cards}</div>${disclaimerHTML()}`;
+  document.getElementById('cycleContent').innerHTML=`<div class="cycle-grid">${cards}</div>${renderCrisisWarning()}${disclaimerHTML()}`;
 }
 
 /* ==================== RENDER: MASTERS (3 tabs) ==================== */
