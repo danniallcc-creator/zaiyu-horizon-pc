@@ -945,14 +945,40 @@ const CW_DIMENSIONS=[
    }},
 ];
 // 计算综合相似度
+// 综合相似度: IQR 法剔除偏离过大的异常维度后再加权平均
+// 步骤: 计算各维 sim → 排序取 Q1/Q3 → IQR=Q3-Q1 → 下界=max(Q1-1.5*IQR, 20)
+// 排除 sim<下界 的异常项; 若无离群则强制剔除 sim 最低 1 项; 用剩余维度的权重重新归一化
 function cwCalcScore(){
-  let total=0,usedW=0;
+  const items=[];
   CW_DIMENSIONS.forEach(d=>{
     const sim=d.calc(d.d2k,d.d26);
     d.score=sim;
-    if(sim!==null){total+=sim*d.weight;usedW+=d.weight;}
+    if(sim!=null) items.push({sim,w:d.weight,nm:d.nm});
   });
-  return usedW>0?Math.round(total/usedW):0;
+  if(!items.length) return 0;
+  // 计算分位数
+  const sorted=[...items.map(x=>x.sim)].sort((a,b)=>a-b);
+  const pct=p=>{const i=(sorted.length-1)*p,lo=Math.floor(i),hi=Math.ceil(i);return sorted[lo]+(sorted[hi]-sorted[lo])*(i-lo)};
+  const Q1=pct(0.25),Q3=pct(0.75),IQR=Q3-Q1;
+  const lowerBound=Math.max(Q1-1.5*IQR, 20);
+  // 主筛: 剔除 sim < lowerBound 的离群维度
+  let kept=items.filter(x=>x.sim>=lowerBound);
+  let removed=items.filter(x=>x.sim<lowerBound);
+  // 兜底: 未检出离群时强制剔除最低 1 项(避免被极端拉低)
+  if(!removed.length && items.length>=4){
+    const minSim=Math.min(...items.map(x=>x.sim));
+    kept=items.filter(x=>x.sim!==minSim);
+    removed=items.filter(x=>x.sim===minSim);
+  }
+  // 用剩余维度的权重重新归一化加权
+  const totalW=kept.reduce((a,b)=>a+b.w,0);
+  const score=totalW>0?kept.reduce((a,b)=>a+b.sim*b.w,0)/totalW:0;
+  // 暴露给渲染层: 已剔除的维度名称
+  cwCalcScore._removed=removed.map(x=>x.nm);
+  cwCalcScore._kept=kept.length;
+  cwCalcScore._total=items.length;
+  cwCalcScore._raw=Math.round(items.reduce((a,b)=>a+b.sim*b.w,0)/items.reduce((a,b)=>a+b.w,0));
+  return Math.round(score);
 }
 const CW_SCORE=cwCalcScore();
 
@@ -1744,6 +1770,7 @@ function renderCrisisWarning(){
           <div class="cw-score" style="color:${scoreCol}">${CW_SCORE}<span style="font-size:20px">%</span></div>
           <div class="cw-label">与2000年泡沫相似度</div>
           <div class="cw-verdict" style="color:${verdict.c}">${verdict.t}</div>
+          <div style="font-size:11px;color:var(--text-3);margin-top:6px;line-height:1.5">原始均值 ${cwCalcScore._raw}% · IQR剔除${cwCalcScore._removed&&cwCalcScore._removed.length?cwCalcScore._removed.length+'维异常['+cwCalcScore._removed.join('/')+']':'0维'} · 保留${cwCalcScore._kept}/${cwCalcScore._total}维加权</div>
         </div>
         <div class="cw-summary">
           <div style="font-weight:700;color:var(--gold-bright);margin-bottom:6px">📋 核心结论</div>
