@@ -878,107 +878,157 @@ const BUBBLE_2026={
   cpi:3.8,pce:3.3,
   corp_debt_gdp:78,tech_cashflow:'Mag7合计$3000亿+自由现金流',
 };
-// 维度相似度计算
+// 维度相似度计算: 参数化 calcFn(benchmark) 可对比任意历史危机
+// 2026 端数据固定取自 BUBBLE_2026; 基准端通过 _bDim(bench) 提取对应字段
+const _calcFns={
+  equity:(bk,bc)=>{
+    const s1=1-Math.min(Math.abs(bk.sp500_ret-bc.sp500_ret)/bc.sp500_ret,.99);
+    const s2=1-Math.min(Math.abs(bk.nasdaq_ret-bc.nasdaq_ret)/bc.nasdaq_ret,.99);
+    return Math.round((s1*.5+s2*.5)*100);
+  },
+  earn:(bk,bc)=>{
+    const s1=bk.cape!=null?1-Math.abs(bk.cape-bc.cape)/bc.cape:0.5;
+    const s2=bk.pe!=null?1-Math.abs(bk.pe-bc.pe)/bc.pe:0.5;
+    const s3=1-Math.abs(bk.conc-bc.conc)/bc.conc;
+    return Math.round((s1*.4+s2*.3+s3*.3)*100);
+  },
+  rates:(bk,bc)=>{
+    const s1=bk.t30y!=null?1-Math.abs(bk.t30y-bc.t30y)/bc.t30y:0.5;
+    const s2=1-Math.abs(bk.t10y-bc.t10y)/bc.t10y;
+    const s3=bk.t5y!=null?1-Math.abs(bk.t5y-bc.t5y)/bc.t5y:0.5;
+    return Math.round((s1*.50+s2*.30+s3*.20)*100);
+  },
+  dxy:(bk,bc)=>Math.max(0,Math.round((1-Math.abs(bk.chg-bc.chg)/50)*100)),
+  gold:(bk,bc)=>{
+    if((bk.chg>0)!==(bc.chg>0))return 15;
+    return Math.max(0,Math.round((1-Math.abs(bk.chg-bc.chg)/100)*100));
+  },
+  btc:()=>null, // 2000/2008 时期无 BTC
+  oil:(bk,bc)=>{
+    if(bk.chg>100&&bc.chg>20)return 55;
+    return Math.max(0,Math.round((1-Math.abs(bk.chg-bc.chg)/200)*100));
+  },
+  infl:(bk,bc)=>{
+    const s1=1-Math.abs(bk.cpi-bc.cpi)/bc.cpi;
+    const s2=bk.pce!=null?1-Math.abs(bk.pce-bc.pce)/bc.pce:0.5;
+    return Math.round((s1*.5+s2*.5)*100);
+  },
+  corp:(bk,bc)=>{
+    const s1=(bk.profit_g!=null&&bc.profit_g!=null)?1-Math.abs(bk.profit_g-bc.profit_g)/Math.max(Math.abs(bk.profit_g),Math.abs(bc.profit_g)):0.5;
+    const s2=1-Math.abs(bk.conc-bc.conc)/bc.conc;
+    return Math.round((s1*.6+s2*.4)*100);
+  },
+};
+// 从任意基准 bubble 提取各维度所需字段
+function _bDim(b){return {
+  equity:{sp500_ret:b.sp500_ret_12m,nasdaq_ret:b.nasdaq_ret_12m},
+  earn:{cape:b.cape,pe:b.trailing_pe,conc:b.market_concentration},
+  rates:{t30y:b.t30y,t10y:b.t10y,t5y:b.t5y},
+  dxy:{chg:b.dxy_chg},gold:{chg:b.gold_chg},
+  btc:{chg:b.btc_chg},oil:{chg:b.oil_chg},
+  infl:{cpi:b.cpi,pce:b.pce},
+  corp:{profit_g:b.corp_profit_growth_00,conc:b.market_concentration,debt:b.corp_debt_gdp||b.corp_debt_gdt||65},
+};}
+const BUBBLE_2026_dims=_bDim(BUBBLE_2026);
+
+// 2008 全球金融危机基准(雷曼倒闭前后: 2007.10 顶部 → 2008.10 底部)
+const BUBBLE_2008={
+  label:'2008 全球金融危机',
+  sp500_ret_12m:-18.0,nasdaq_ret_12m:-22.0,
+  cape:27.5,trailing_pe:22,market_concentration:20,
+  t30y:5.1,t10y:5.0,t5y:5.2,
+  dxy_chg:10,gold_chg:28,btc_chg:null,oil_chg:-56,
+  cpi:3.8,pce:2.3,
+  corp_profit_growth_00:-22,corp_debt_gdp:76,
+};
+// 2020 新冠疫情冲击基准(2020.2 顶部 → 2020.3 底部)
+const BUBBLE_2020={
+  label:'2020 新冠疫情冲击',
+  sp500_ret_12m:5.7,nasdaq_ret_12m:18.0,
+  cape:31.8,trailing_pe:22,market_concentration:27,
+  t30y:2.0,t10y:1.7,t5y:1.4,
+  dxy_chg:1.5,gold_chg:15,btc_chg:-30,oil_chg:-40,
+  cpi:2.3,pce:1.8,
+  corp_profit_growth_00:-24,corp_debt_gdp:78,
+};
+// 2022 激进加息周期基准(2022.1 顶部 → 2022.10 底部)
+const BUBBLE_2022={
+  label:'2022 激进加息周期',
+  sp500_ret_12m:-18.1,nasdaq_ret_12m:-29.0,
+  cape:28.8,trailing_pe:20,market_concentration:28,
+  t30y:4.2,t10y:3.9,t5y:4.1,
+  dxy_chg:10,gold_chg:-1,btc_chg:-63,oil_chg:10,
+  cpi:6.5,pce:5.0,
+  corp_profit_growth_00:5,corp_debt_gdp:72,
+};
+
+// 基准组合权重(用户指定: 2000占80%, 其他合计20%均分)
+const CRISIS_BENCHMARKS=[
+  {id:'2000',label:'2000 互联网泡沫',bubble:BUBBLE_2000,weight:0.8000},
+  {id:'2008',label:'2008 金融危机',bubble:BUBBLE_2008,weight:0.0667},
+  {id:'2020',label:'2020 疫情冲击',bubble:BUBBLE_2020,weight:0.0667},
+  {id:'2022',label:'2022 加息冲击',bubble:BUBBLE_2022,weight:0.0666},
+];
+
+// CW_DIMENSIONS: 每个维度的 calc 现在接收单一基准对象 bk
 const CW_DIMENSIONS=[
-  {dim:'美股走势',icon:'📈',
-   d2k:{sp500_ret:BUBBLE_2000.sp500_ret_12m,nasdaq_ret:BUBBLE_2000.nasdaq_ret_12m},
-   d26:{sp500_ret:BUBBLE_2026.sp500_ret_12m,nasdaq_ret:BUBBLE_2026.nasdaq_ret_12m},
-   weight:.15,calc:function(a,b){
-     const s1=1-Math.min(Math.abs(a.sp500_ret-b.sp500_ret)/b.sp500_ret,.99);
-     const s2=1-Math.min(Math.abs(a.nasdaq_ret-b.nasdaq_ret)/b.nasdaq_ret,.99);
-     return Math.round((s1*.5+s2*.5)*100);
-   }},
-  {dim:'盈利与估值',icon:'📊',
-   d2k:{cape:BUBBLE_2000.cape,pe:BUBBLE_2000.trailing_pe,conc:BUBBLE_2000.market_concentration},
-   d26:{cape:BUBBLE_2026.cape,pe:BUBBLE_2026.trailing_pe,conc:BUBBLE_2026.market_concentration},
-   weight:.20,calc:function(a,b){
-     const s1=1-Math.abs(a.cape-b.cape)/b.cape;
-     const s2=1-Math.abs(a.pe-b.pe)/b.pe;
-     const s3=1-Math.abs(a.conc-b.conc)/b.conc;
-     return Math.round((s1*.4+s2*.3+s3*.3)*100);
-   }},
-  {dim:'利率环境',icon:'🏛️',
-   d2k:{t30y:BUBBLE_2000.t30y,t10y:BUBBLE_2000.t10y,t5y:BUBBLE_2000.t5y},
-   d26:{t30y:BUBBLE_2026.t30y,t10y:BUBBLE_2026.t10y,t5y:BUBBLE_2026.t5y},
-   weight:.15,calc:function(a,b){
-     const s1=1-Math.abs(a.t30y-b.t30y)/b.t30y;
-     const s2=1-Math.abs(a.t10y-b.t10y)/b.t10y;
-     const s3=1-Math.abs(a.t5y-b.t5y)/b.t5y;
-     return Math.round((s1*.50+s2*.30+s3*.20)*100);
-   }},
-  {dim:'美元走势',icon:'💵',
-   d2k:{chg:BUBBLE_2000.dxy_chg},
-   d26:{chg:BUBBLE_2026.dxy_chg},
-   weight:.08,calc:function(a,b){return Math.max(0,Math.round((1-Math.abs(a.chg-b.chg)/50)*100));}},
-  {dim:'黄金走势',icon:'🥇',
-   d2k:{chg:BUBBLE_2000.gold_chg},
-   d26:{chg:BUBBLE_2026.gold_chg},
-   weight:.10,calc:function(a,b){
-     if((a.chg>0)!==(b.chg>0))return 15; // 方向相反
-     return Math.max(0,Math.round((1-Math.abs(a.chg-b.chg)/100)*100));
-   }},
-  {dim:'BTC走势',icon:'₿',
-   d2k:{chg:null},d26:{chg:BUBBLE_2026.btc_chg},
-   weight:.05,calc:function(){return null;}}, // 2000年无BTC
-  {dim:'石油价格',icon:'🛢️',
-   d2k:{chg:BUBBLE_2000.oil_chg},
-   d26:{chg:BUBBLE_2026.oil_chg},
-   weight:.08,calc:function(a,b){
-     if(a.chg>100&&b.chg>20)return 55; // 都在涨但幅度差大
-     return Math.max(0,Math.round((1-Math.abs(a.chg-b.chg)/200)*100));
-   }},
-  {dim:'PCE / CPI',icon:'📉',
-   d2k:{cpi:BUBBLE_2000.cpi,pce:BUBBLE_2000.pce},
-   d26:{cpi:BUBBLE_2026.cpi,pce:BUBBLE_2026.pce},
-   weight:.08,calc:function(a,b){
-     const s1=1-Math.abs(a.cpi-b.cpi)/b.cpi;
-     const s2=1-Math.abs(a.pce-b.pce)/b.pce;
-     return Math.round((s1*.5+s2*.5)*100);
-   }},
-  {dim:'企业健康度',icon:'🏢',
-   d2k:{profit_g:BUBBLE_2000.corp_profit_growth_00,conc:BUBBLE_2000.market_concentration,debt:BUBBLE_2000.corp_debt_gdp},
-   d26:{profit_g:BUBBLE_2026.corp_profit_growth_00,conc:BUBBLE_2026.market_concentration,debt:BUBBLE_2026.corp_debt_gdt||78},
-   weight:.11,calc:function(a,b){
-     const s1=a.profit_g&&b.profit_g?1-Math.abs(a.profit_g-b.profit_g)/Math.max(a.profit_g,b.profit_g):0.5;
-     const s2=1-Math.abs(a.conc-b.conc)/b.conc;
-     return Math.round((s1*.6+s2*.4)*100);
-   }},
+  {dim:'美股走势',icon:'📈',weight:.15,calc:function(bk){return _calcFns.equity(_bDim(bk).equity,BUBBLE_2026_dims.equity);}},
+  {dim:'盈利与估值',icon:'📊',weight:.20,calc:function(bk){return _calcFns.earn(_bDim(bk).earn,BUBBLE_2026_dims.earn);}},
+  {dim:'利率环境',icon:'🏛️',weight:.15,calc:function(bk){return _calcFns.rates(_bDim(bk).rates,BUBBLE_2026_dims.rates);}},
+  {dim:'美元走势',icon:'💵',weight:.08,calc:function(bk){return _calcFns.dxy(_bDim(bk).dxy,BUBBLE_2026_dims.dxy);}},
+  {dim:'黄金走势',icon:'🥇',weight:.10,calc:function(bk){return _calcFns.gold(_bDim(bk).gold,BUBBLE_2026_dims.gold);}},
+  {dim:'BTC走势',icon:'₿',weight:.05,calc:function(bk){return _calcFns.btc();}},
+  {dim:'石油价格',icon:'🛢️',weight:.08,calc:function(bk){return _calcFns.oil(_bDim(bk).oil,BUBBLE_2026_dims.oil);}},
+  {dim:'PCE / CPI',icon:'📉',weight:.08,calc:function(bk){return _calcFns.infl(_bDim(bk).infl,BUBBLE_2026_dims.infl);}},
+  {dim:'企业健康度',icon:'🏢',weight:.11,calc:function(bk){return _calcFns.corp(_bDim(bk).corp,BUBBLE_2026_dims.corp);}},
 ];
 // 计算综合相似度
 // 综合相似度: IQR 法剔除偏离过大的异常维度后再加权平均
 // 步骤: 计算各维 sim → 排序取 Q1/Q3 → IQR=Q3-Q1 → 下界=max(Q1-1.5*IQR, 20)
 // 排除 sim<下界 的异常项; 若无离群则强制剔除 sim 最低 1 项; 用剩余维度的权重重新归一化
-function cwCalcScore(){
+// 综合相似度: 多危机基准加权平均(2000 占 80% + 2008/2020/2022 共占 20%)
+// 步骤: 对每个基准计算其 9 维相似度(IQR 剔除异常后加权) → 再按基准权重聚合
+function _calcScoreForBenchmark(bubble){
   const items=[];
   CW_DIMENSIONS.forEach(d=>{
-    const sim=d.calc(d.d2k,d.d26);
-    d.score=sim;
-    if(sim!=null) items.push({sim,w:d.weight,nm:d.nm});
+    const sim=d.calc(bubble);
+    if(sim!=null) items.push({sim,w:d.weight,nm:d.dim});
   });
-  if(!items.length) return 0;
-  // 计算分位数
+  if(!items.length) return {trimmed:0,raw:0,removed:[],kept:0,total:0};
   const sorted=[...items.map(x=>x.sim)].sort((a,b)=>a-b);
   const pct=p=>{const i=(sorted.length-1)*p,lo=Math.floor(i),hi=Math.ceil(i);return sorted[lo]+(sorted[hi]-sorted[lo])*(i-lo)};
   const Q1=pct(0.25),Q3=pct(0.75),IQR=Q3-Q1;
-  const lowerBound=Math.max(Q1-1.5*IQR, 20);
-  // 主筛: 剔除 sim < lowerBound 的离群维度
+  const lowerBound=Math.max(Q1-1.5*IQR,20);
   let kept=items.filter(x=>x.sim>=lowerBound);
   let removed=items.filter(x=>x.sim<lowerBound);
-  // 兜底: 未检出离群时强制剔除最低 1 项(避免被极端拉低)
   if(!removed.length && items.length>=4){
     const minSim=Math.min(...items.map(x=>x.sim));
     kept=items.filter(x=>x.sim!==minSim);
     removed=items.filter(x=>x.sim===minSim);
   }
-  // 用剩余维度的权重重新归一化加权
-  const totalW=kept.reduce((a,b)=>a+b.w,0);
-  const score=totalW>0?kept.reduce((a,b)=>a+b.sim*b.w,0)/totalW:0;
-  // 暴露给渲染层: 已剔除的维度名称
-  cwCalcScore._removed=removed.map(x=>x.nm);
-  cwCalcScore._kept=kept.length;
-  cwCalcScore._total=items.length;
-  cwCalcScore._raw=Math.round(items.reduce((a,b)=>a+b.sim*b.w,0)/items.reduce((a,b)=>a+b.w,0));
-  return Math.round(score);
+  const totalW=kept.reduce((a,b)=>a+b.w,0)||1;
+  const trimmed=Math.round(kept.reduce((a,b)=>a+b.sim*b.w,0)/totalW);
+  const raw=Math.round(items.reduce((a,b)=>a+b.sim*b.w,0)/items.reduce((a,b)=>a+b.w,0));
+  return {trimmed,raw,removed:removed.map(x=>x.nm),kept:kept.length,total:items.length};
+}
+function cwCalcScore(){
+  // 主维度: 用 2000 基准, IQR 剔除后写入 d.score 供 renderCrisisWarning 渲染
+  CW_DIMENSIONS.forEach(d=>{d.score=d.calc(BUBBLE_2000);});
+  // 4 个基准各自的 trimmed 相似度
+  const perBench=CRISIS_BENCHMARKS.map(b=>{
+    const r=_calcScoreForBenchmark(b.bubble);
+    return {id:b.id,label:b.label,weight:b.weight,trimmed:r.trimmed,raw:r.raw,removed:r.removed,kept:r.kept,total:r.total};
+  });
+  // 总综合评分: 2000 占 80%, 其他各占 ~6.67%
+  const totalScore=perBench.reduce((a,b)=>a+b.trimmed*b.weight,0);
+  // 暴露给渲染层
+  cwCalcScore._perBench=perBench;
+  const main=perBench.find(p=>p.id==='2000')||perBench[0];
+  cwCalcScore._removed=main.removed;
+  cwCalcScore._kept=main.kept;
+  cwCalcScore._total=main.total;
+  cwCalcScore._raw=main.raw;
+  return Math.round(totalScore);
 }
 const CW_SCORE=cwCalcScore();
 
@@ -1756,32 +1806,55 @@ function renderCrisisWarning(){
   }).join('');
 
   const scoreCol=CW_SCORE<40?'#4caf72':CW_SCORE<55?'#5b9bd5':CW_SCORE<70?'#e0a23c':'#e05c5c';
-  const verdict=CW_SCORE<40?{t:'与2000年差异大，风险偏低',c:'#4caf72'}:CW_SCORE<55?{t:'部分相似，需保持警惕',c:'#5b9bd5'}:CW_SCORE<70?{t:'中高相似度，系统性风险上升',c:'#e0a23c'}:{t:'高度相似，极端泡沫警告',c:'#e05c5c'};
+  const verdict=CW_SCORE<40?{t:'综合风险偏低',c:'#4caf72'}:CW_SCORE<55?{t:'部分相似，需保持警惕',c:'#5b9bd5'}:CW_SCORE<70?{t:'中高相似度，系统性风险上升',c:'#e0a23c'}:{t:'高度相似，极端泡沫警告',c:'#e05c5c'};
   const dangerCount=CW_ANOMALIES.filter(a=>a.signal==='danger').length;
   const warnCount=CW_ANOMALIES.filter(a=>a.signal==='warn').length;
+  // 4 基准对比表
+  const benchRows=(cwCalcScore._perBench||[]).map(b=>{
+    const wPct=Math.round(b.weight*100);
+    const c=b.trimmed<40?'#4caf72':b.trimmed<55?'#5b9bd5':b.trimmed<70?'#e0a23c':'#e05c5c';
+    const rem=b.removed&&b.removed.length?`<div style="font-size:10px;color:var(--text-3);margin-top:3px">剔除: ${b.removed.join(', ')}</div>`:'';
+    return `<tr><td style="font-weight:700">${b.label}</td><td style="text-align:center;font-family:'JetBrains Mono'">${wPct}%</td><td style="text-align:center;font-family:'JetBrains Mono';color:${c};font-weight:700">${b.trimmed}%</td><td style="text-align:center;font-family:'JetBrains Mono';color:var(--text-3)">${b.raw}%</td><td style="text-align:center;font-family:'JetBrains Mono';font-size:11px">${b.kept}/${b.total}${rem}</td></tr>`;
+  }).join('');
 
   return `
-  <div class="sec-title" style="margin-top:34px">🚨 美国股市危机预警<span class="when">2000 vs 2026 对比分析 · 更新于 ${new Date().toLocaleDateString('zh-CN')}</span></div>
+  <div class="sec-title" style="margin-top:34px">🚨 美国股市危机预警<span class="when">2000/2008/2020/2022 vs 2026 综合对比 · 更新于 ${new Date().toLocaleDateString('zh-CN')}</span></div>
   <div class="card gold-edge" style="padding:0;overflow:hidden;margin-bottom:20px">
     <div style="padding:24px 28px;border-bottom:1px solid var(--line-gold);background:linear-gradient(100deg,rgba(212,175,55,.06),transparent)">
       <div class="cw-header">
         <div class="cw-gauge">
           ${cwGaugeSVG(CW_SCORE)}
           <div class="cw-score" style="color:${scoreCol}">${CW_SCORE}<span style="font-size:20px">%</span></div>
-          <div class="cw-label">与2000年泡沫相似度</div>
+          <div class="cw-label">综合系统性风险指数</div>
           <div class="cw-verdict" style="color:${verdict.c}">${verdict.t}</div>
-          <div style="font-size:11px;color:var(--text-3);margin-top:6px;line-height:1.5">原始均值 ${cwCalcScore._raw}% · IQR剔除${cwCalcScore._removed&&cwCalcScore._removed.length?cwCalcScore._removed.length+'维异常['+cwCalcScore._removed.join('/')+']':'0维'} · 保留${cwCalcScore._kept}/${cwCalcScore._total}维加权</div>
+          <div style="font-size:11px;color:var(--text-3);margin-top:6px;line-height:1.5">综合 = 2000年×80% + (2008+2020+2022)×20% · 各基准IQR剔除异常后加权</div>
         </div>
         <div class="cw-summary">
           <div style="font-weight:700;color:var(--gold-bright);margin-bottom:6px">📋 核心结论</div>
-          当前市场与2000年互联网泡沫存在<b style="color:${scoreCol}">${CW_SCORE}%的结构性相似</b>。关键共性：CAPE接近历史极值(41.6 vs 44.2)、市场高度集中(39% vs 27%)、油价高企推升通胀。
-          <b>关键差异</b>：当前Mag7有真实盈利(FCF $3000亿+)而非dot-com幻觉；Fed在降息而非加息；黄金暴涨73%发出极强避险信号(2000年持平)。
+          当前市场与历史危机综合相似度<b style="color:${scoreCol}">${CW_SCORE}%</b>。其中与2000年互联网泡沫相似度最高，主导了整体评分。
           <br><br>
           <span style="color:#e05c5c">⛔ ${dangerCount}项危险信号</span> · <span style="color:#e0a23c">⚠️ ${warnCount}项关注信号</span> · <span style="color:#4caf72">✅ ${CW_ANOMALIES.length-dangerCount-warnCount}项安全信号</span>
         </div>
       </div>
     </div>
-    <div style="padding:20px 28px">
+
+  <div class="sec-title">📊 四基准综合相似度<span class="cnt">2000(80%)+2008/2020/2022(各~6.7%)</span></div>
+  <div class="card gold-edge" style="overflow-x:auto;margin-bottom:20px">
+    <table style="width:100%;border-collapse:collapse;font-size:13px">
+      <thead>
+        <tr style="color:var(--gold-bright);border-bottom:1px solid var(--line-gold)">
+          <th style="text-align:left;padding:8px 6px">基准危机</th>
+          <th style="padding:8px 6px">权重</th>
+          <th style="padding:8px 6px">相似度(IQR后)</th>
+          <th style="padding:8px 6px">原始均值</th>
+          <th style="padding:8px 6px">保留/总维</th>
+        </tr>
+      </thead>
+      <tbody>${benchRows}</tbody>
+    </table>
+    <div style="font-size:11px;color:var(--text-3);margin-top:10px;padding-top:8px;border-top:1px dashed var(--line)">综合评分 = Σ(各基准相似度 × 基准权重)，各基准内部 IQR 法剔除异常维度后再加权平均</div>
+  </div>
+  <div style="padding:20px 28px">
       <div style="font-size:14px;font-weight:700;margin-bottom:12px">📊 九维度详细对比</div>
       <table class="cw-table">
         <thead><tr><th style="width:120px">维度</th><th>1999–2000</th><th>2025–2026</th><th style="width:240px">信号判断</th></tr></thead>
