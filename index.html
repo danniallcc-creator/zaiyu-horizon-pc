@@ -251,11 +251,25 @@ a{color:inherit;text-decoration:none}
 .ai-verdict{font-size:16px;font-weight:700}
 .ai-dims{display:flex;flex-direction:column;gap:10px}
 .ai-dim{display:flex;align-items:center;gap:10px}
-.ai-lbl{font-size:12px;color:var(--text-2);width:50px;flex-shrink:0}
+.ai-lbl{font-size:12px;color:var(--text-2);width:80px;flex-shrink:0}
 .ai-bar{flex:1;height:8px;border-radius:5px;background:var(--panel-hi);overflow:hidden}
 .ai-fill{height:100%;border-radius:5px;transition:width .6s ease}
 .ai-pct{font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:700;color:var(--text-2);width:28px;text-align:right}
 .ai-meta{margin-top:14px;font-size:11px;color:var(--text-3);padding-top:12px;border-top:1px dashed var(--line)}
+/* Fibonacci */
+.stk-fib{font-size:13px}
+.fib-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;padding-bottom:8px;border-bottom:1px dashed var(--line)}
+.fib-dir{font-weight:700;color:var(--text-1)}
+.fib-range{font-size:11px;color:var(--text-3)}
+.fib-levels{display:flex;flex-direction:column;gap:8px}
+.fib-row{display:flex;align-items:center;gap:12px}
+.fib-pct{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--text-2);width:48px}
+.fib-price{font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:700;flex:1}
+.fib-dist{font-family:'JetBrains Mono',monospace;font-size:11px;width:52px;text-align:right}
+.fib-support{margin-top:12px;display:flex;gap:10px;flex-wrap:wrap}
+.fib-tag{font-size:11px;padding:3px 10px;border-radius:4px;font-weight:600}
+.fib-tag.support{background:rgba(76,175,114,.12);color:#4caf72;border:1px solid rgba(76,175,114,.3)}
+.fib-tag.resist{background:rgba(224,92,92,.1);color:#e05c5c;border:1px solid rgba(224,92,92,.3)}
 
 /* Calendar */
 .cal-row{display:flex;align-items:center;gap:14px;padding:13px 20px;border-bottom:1px solid var(--line)}
@@ -1535,41 +1549,157 @@ function calcBoll(data,period,mult){
   });
 }
 
-// ===== AI 综合评分(5维度) =====
+// ===== 斐波那契回撤计算 =====
+function calcFibonacci(data){
+  // 找120日内最高点和最低点
+  const n=data.length;if(n<20)return null;
+  let highIdx=0,lowIdx=0;
+  for(let i=0;i<n;i++){if(data[i].high>data[highIdx].high)highIdx=i;if(data[i].low<data[lowIdx].low)lowIdx=i;}
+  const high=data[highIdx].high,low=data[lowIdx].low;
+  const range=high-low;if(range<0.01)return null;
+  const last=data[n-1].close;
+  // 判断趋势方向: 高点在低点之后=下跌趋势(从高回撤), 否则=上涨趋势(从低回弹)
+  const downTrend=highIdx>lowIdx;
+  let levels;
+  if(downTrend){
+    // 从高点回撤
+    levels={
+      'r236':+(high-range*0.236).toFixed(2),
+      'r382':+(high-range*0.382).toFixed(2),
+      'r500':+(high-range*0.500).toFixed(2),
+      'r618':+(high-range*0.618).toFixed(2),
+      'r786':+(high-range*0.786).toFixed(2),
+    };
+  }else{
+    // 从低点反弹
+    levels={
+      'r236':+(low+range*0.236).toFixed(2),
+      'r382':+(low+range*0.382).toFixed(2),
+      'r500':+(low+range*0.500).toFixed(2),
+      'r618':+(low+range*0.618).toFixed(2),
+      'r786':+(low+range*0.786).toFixed(2),
+    };
+  }
+  // 最大三档回撤价格: 38.2% / 50% / 61.8%
+  const retraceLevels=[
+    {pct:'38.2%',price:levels.r382},
+    {pct:'50.0%',price:levels.r500},
+    {pct:'61.8%',price:levels.r618},
+  ];
+  // 支撑/阻力判定
+  const nearestSupport=retraceLevels.filter(l=>l.price<last).sort((a,b)=>b.price-a.price)[0]||null;
+  const nearestResist=retraceLevels.filter(l=>l.price>last).sort((a,b)=>a.price-b.price)[0]||null;
+  // 评分: 价格在关键位附近 → 信号更强
+  let fibScore=50;
+  const distPct=Math.abs(last-(nearestSupport?nearestSupport.price:last))/last*100;
+  if(nearestSupport&&distPct<2)fibScore=70; // 接近支撑=看多
+  if(nearestResist&&Math.abs(last-nearestResist.price)/last*100<2)fibScore=30; // 接近阻力=看空
+  if(downTrend&&last<levels.r618)fibScore=Math.max(fibScore-15,10); // 深度回撤=风险
+  if(!downTrend&&last>levels.r618)fibScore=Math.min(fibScore+15,90); // 强势突破
+  return{high,low,levels,retraceLevels,nearestSupport,nearestResist,fibScore,downTrend,last};
+}
+
+// ===== 主力资金成本线(量价加权均价 VWAP) =====
+function calcVWAP(data){
+  // 近N日成交量加权平均价(Volume Weighted Average Price)
+  let sumPV=0,sumV=0;
+  const vwap=data.map((d,i)=>{
+    const tp=(d.high+d.low+d.close)/3; // typical price
+    sumPV+=tp*d.vol; sumV+=d.vol;
+    return sumV>0?+(sumPV/sumV).toFixed(2):null;
+  });
+  return vwap;
+}
+
+// ===== AI 综合评分(5新维度: 技术指标/斐波那契/宏观货币政策/财报基本面/市场情绪) =====
 function aiScore(data,fund){
   const n=data.length;if(n<20)return null;
   const last=data[n-1].close,ma5=calcMA(data,5),ma20=calcMA(data,20),rsi=calcRSI(data,14);
   const macd=calcMACD(data);const boll=calcBoll(data,20,2);
   const lastRSI=rsi[n-1]||50,lastMACD=macd.hist[n-1]||0;
   const lastBoll=boll[n-1];
-  const ret5=(last-data[n-6].close)/data[n-6].close*100;
-  const ret20=(last-data[n-21].close)/data[n-21].close*100;
-  // 1.技术面
-  let tech=0;
-  if(lastRSI<30)tech+=2;else if(lastRSI<40)tech+=1;else if(lastRSI>70)tech-=2;else if(lastRSI>60)tech-=1;
-  if(lastMACD>0)tech+=1;else tech-=1;
-  if(ma5[n-1]>ma20[n-1])tech+=1;else tech-=1;
-  if(lastBoll&&lastBoll.lower&&last<lastBoll.lower)tech+=1;
-  if(lastBoll&&lastBoll.upper&&last>lastBoll.upper)tech-=1;
-  const techPct=Math.min(100,Math.max(0,50+tech*10));
-  // 2.估值面
-  let val=50;
-  if(fund){
-    if(fund.pe!=null){if(fund.pe<15&&fund.pe>0)val+=15;else if(fund.pe<25)val+=5;else if(fund.pe>50)val-=15;else if(fund.pe>35)val-=5;}
-    if(fund.roe!=null){if(fund.roe>20)val+=10;else if(fund.roe>10)val+=5;else if(fund.roe<5)val-=5;}
-    if(fund.pb!=null&&fund.pb<1&&fund.pb>0)val+=10;
+  const ret5=n>=6?(last-data[n-6].close)/data[n-6].close*100:0;
+  const ret20=n>=21?(last-data[n-21].close)/data[n-21].close*100:0;
+  const fib=calcFibonacci(data);
+
+  // ===== 1. 技术指标 (RSI/MACD/MA/布林/VWAP综合) =====
+  let techScore=50;
+  // RSI
+  if(lastRSI<30)techScore+=12;else if(lastRSI<40)techScore+=6;else if(lastRSI>70)techScore-=12;else if(lastRSI>60)techScore-=6;
+  // MACD
+  if(lastMACD>0){techScore+=8;if(macd.hist[n-2]<=0)techScore+=5;} // 金叉加分
+  else{techScore-=8;if(macd.hist[n-2]>0)techScore-=5;} // 死叉扣分
+  // MA金叉/死叉
+  if(ma5[n-1]>ma20[n-1])techScore+=6;else techScore-=6;
+  // 布林位置
+  if(lastBoll&&lastBoll.lower&&last<=lastBoll.lower)techScore+=8; // 触及下轨=超卖
+  if(lastBoll&&lastBoll.upper&&last>=lastBoll.upper)techScore-=8; // 触及上轨=超买
+  // VWAP位置
+  const vwap=calcVWAP(data);
+  const lastVWAP=vwap[n-1];
+  if(lastVWAP&&last>lastVWAP)techScore+=4; // 在成本线上方=强势
+  else if(lastVWAP)techScore-=4;
+  techScore=Math.min(100,Math.max(0,techScore));
+
+  // ===== 2. 斐波那契 =====
+  const fibScore=fib?fib.fibScore:50;
+
+  // ===== 3. 宏观货币政策 (基于市场环境推断) =====
+  // 使用: 长期趋势(60日MA vs 120日均线)作为宏观宽松/紧缩proxy
+  let macroScore=50;
+  if(n>=60){
+    const ma60avg=data.slice(-60).reduce((s,d)=>s+d.close,0)/60;
+    const ma30avg=data.slice(-30).reduce((s,d)=>s+d.close,0)/30;
+    if(ma30avg>ma60avg*1.05)macroScore=70; // 中期强势=宽松环境
+    else if(ma30avg>ma60avg)macroScore=60;
+    else if(ma30avg<ma60avg*0.95)macroScore=30; // 中期弱势=紧缩环境
+    else macroScore=40;
   }
-  val=Math.min(100,Math.max(0,val));
-  // 3.动量
-  const mom=Math.min(100,Math.max(0,50+ret5*3));
-  // 4.趋势
-  const trend=ma5[n-1]>ma20[n-1]?65:35;
-  // 5.情绪(波动)
-  const maxDD=Math.min(...data.slice(-20).map(d=>d.low))/Math.max(...data.slice(-20).map(d=>d.high))*100;
-  const sent=Math.min(100,Math.max(0,50+(100-Math.abs(maxDD-100))*0.5));
-  const overall=Math.round(techPct*.25+val*.25+mom*.2+trend*.15+sent*.15);
-  const verdict=overall>=70?{t:'偏多',c:'#4caf72'}:overall>=55?{t:'中性偏多',c:'#5b9bd5'}:overall>=45?{t:'中性',c:'#e0a23c'}:overall>=30?{t:'中性偏空',c:'#e0a23c'}:{t:'偏空',c:'#e05c5c'};
-  return{techPct,val,mom,trend,sent,overall,verdict,lastRSI,lastMACD,ret5:+ret5.toFixed(2),ret20:+ret20.toFixed(2)};
+  // 波动率补充: 近20日波动率高→市场不确定性↑
+  const vol20=data.slice(-20);
+  const avgClose20=vol20.reduce((s,d)=>s+d.close,0)/vol20.length;
+  const stdDev=Math.sqrt(vol20.reduce((s,d)=>s+(d.close-avgClose20)**2,0)/vol20.length);
+  const volatility=stdDev/avgClose20*100;
+  if(volatility>4)macroScore=Math.max(macroScore-10,10); // 高波动扣分
+  macroScore=Math.min(100,Math.max(0,macroScore));
+
+  // ===== 4. 财报基本面 =====
+  let fundScore=50;
+  if(fund){
+    if(fund.pe!=null&&fund.pe>0){
+      if(fund.pe<12)fundScore+=18;else if(fund.pe<20)fundScore+=10;else if(fund.pe<30)fundScore+=3;
+      else if(fund.pe>60)fundScore-=15;else if(fund.pe>40)fundScore-=8;
+    }
+    if(fund.roe!=null){
+      if(fund.roe>25)fundScore+=12;else if(fund.roe>15)fundScore+=7;else if(fund.roe>8)fundScore+=2;
+      else if(fund.roe<3)fundScore-=8;
+    }
+    if(fund.pb!=null){
+      if(fund.pb>0&&fund.pb<1.5)fundScore+=8;else if(fund.pb>5)fundScore-=8;
+    }
+    if(fund.eps!=null&&fund.eps>0)fundScore+=5;
+  }
+  fundScore=Math.min(100,Math.max(0,fundScore));
+
+  // ===== 5. 市场情绪 =====
+  let sentScore=50;
+  // 动量: 近5日涨跌
+  sentScore+=Math.min(20,Math.max(-20,ret5*3));
+  // 成交量趋势: 近5日均量 vs 近20日均量
+  if(n>=20){
+    const vol5=data.slice(-5).reduce((s,d)=>s+d.vol,0)/5;
+    const volAll=data.slice(-20).reduce((s,d)=>s+d.vol,0)/20;
+    if(vol5>volAll*1.5)sentScore+=10; // 放量=情绪高涨
+    else if(vol5<volAll*0.5)sentScore-=8; // 缩量=情绪低迷
+  }
+  // RSI情绪补充
+  if(lastRSI>65)sentScore+=5;else if(lastRSI<35)sentScore-=5;
+  sentScore=Math.min(100,Math.max(0,sentScore));
+
+  // ===== 综合评分 (5维度等权20%各) =====
+  const overall=Math.round(techScore*0.20+fibScore*0.20+macroScore*0.20+fundScore*0.20+sentScore*0.20);
+  const verdict=overall>=70?{t:'强烈看多',c:'#4caf72'}:overall>=60?{t:'偏多',c:'#5b9bd5'}:overall>=50?{t:'中性偏多',c:'#8bc34a'}:overall>=40?{t:'中性',c:'#e0a23c'}:overall>=30?{t:'偏空',c:'#e05c5c'}:{t:'强烈看空',c:'#d32f2f'};
+  return{techScore,fibScore,macroScore,fundScore,sentScore,overall,verdict,fib,lastRSI,lastMACD,ret5:+ret5.toFixed(2),ret20:+ret20.toFixed(2),volatility:+volatility.toFixed(2),lastVWAP,lastBoll};
 }
 
 // ===== 个股详情页渲染 =====
@@ -1604,11 +1734,34 @@ function renderDetailContent(container,secid,info,kdata,fund){
   // K线SVG
   let klineSVG='';
   if(kdata.length>5){
-    const W=800,H=260,padL=60,padR=20,padT=20,padB=30;
+    const W=800,H=300,padL=60,padR=20,padT=20,padB=30;
     const gw=(W-padL-padR)/kdata.length;
-    const prices=kdata.flatMap(d=>[d.high,d.low]);
-    const pMax=Math.max(...prices),pMin=Math.min(...prices),pRange=pMax-pMin||1;
+    // 计算布林线和VWAP用于确定价格范围
+    const bollData=calcBoll(kdata,20,2);
+    const vwapData=calcVWAP(kdata);
+    const allPrices=kdata.flatMap((d,i)=>{
+      const extras=[];
+      if(bollData[i]&&bollData[i].upper)extras.push(bollData[i].upper,bollData[i].lower);
+      return [d.high,d.low,...extras];
+    });
+    const pMax=Math.max(...allPrices),pMin=Math.min(...allPrices),pRange=pMax-pMin||1;
     const py=v=>padT+(pMax-v)/pRange*(H-padT-padB);
+    // 布林带填充区域
+    let bollPath='';
+    const bollUpper=[],bollLower=[];
+    bollData.forEach((b,i)=>{
+      if(b.upper!=null){bollUpper.push(`${padL+i*gw+gw/2},${py(b.upper)}`);bollLower.push(`${padL+i*gw+gw/2},${py(b.lower)}`);}
+    });
+    if(bollUpper.length>2){
+      bollPath=`<polygon points="${bollUpper.join(' ')} ${bollLower.reverse().join(' ')}" fill="rgba(91,155,213,0.08)" stroke="none"/>`;
+      bollPath+=`<polyline points="${bollUpper.join(' ')}" fill="none" stroke="#5b9bd5" stroke-width="1" opacity=".5" stroke-dasharray="4,3"/>`;
+      bollPath+=`<polyline points="${bollLower.reverse().join(' ')}" fill="none" stroke="#5b9bd5" stroke-width="1" opacity=".5" stroke-dasharray="4,3"/>`;
+    }
+    // VWAP成本线
+    let vwapLine='';
+    const vwapPts=vwapData.map((v,i)=>v!=null?`${padL+i*gw+gw/2},${py(v)}`:null).filter(Boolean);
+    if(vwapPts.length>1)vwapLine=`<polyline points="${vwapPts.join(' ')}" fill="none" stroke="#ff6f00" stroke-width="1.8" opacity=".75" stroke-dasharray="6,3"/>`;
+    // 蜡烛图
     let candles='';
     kdata.forEach((d,i)=>{
       const x=padL+i*gw+gw*0.15,w=gw*0.7;
@@ -1625,7 +1778,9 @@ function renderDetailContent(container,secid,info,kdata,fund){
     let yLabels='';for(let i=0;i<=4;i++){const v=pMin+pRange*i/4;yLabels+=`<text x="${padL-5}" y="${py(v)}" text-anchor="end" font-size="10" fill="#9a948c">${v.toFixed(v>100?0:2)}</text>`;}
     // X-axis (every 20 days)
     let xLabels='';kdata.forEach((d,i)=>{if(i%20===0)xLabels+=`<text x="${padL+i*gw+gw/2}" y="${H-5}" text-anchor="middle" font-size="9" fill="#76726c">${d.date.slice(5)}</text>`;});
-    klineSVG=`<svg viewBox="0 0 ${W} ${H}" class="kline-svg">${candles}${maLine(ma5,'#d4af37')}${maLine(ma20,'#5b9bd5')}${yLabels}${xLabels}<text x="${W-10}" y="15" text-anchor="end" font-size="10" fill="#d4af37">MA5</text><text x="${W-10}" y="28" text-anchor="end" font-size="10" fill="#5b9bd5">MA20</text></svg>`;
+    // 图例
+    const legend=`<text x="${W-10}" y="15" text-anchor="end" font-size="10" fill="#d4af37">MA5</text><text x="${W-10}" y="28" text-anchor="end" font-size="10" fill="#5b9bd5">MA20</text><text x="${W-10}" y="41" text-anchor="end" font-size="10" fill="#5b9bd5" opacity=".6">BOLL</text><text x="${W-10}" y="54" text-anchor="end" font-size="10" fill="#ff6f00">主力成本</text>`;
+    klineSVG=`<svg viewBox="0 0 ${W} ${H}" class="kline-svg">${bollPath}${candles}${maLine(ma5,'#d4af37')}${maLine(ma20,'#5b9bd5')}${vwapLine}${yLabels}${xLabels}${legend}</svg>`;
   }
   // 基本面卡
   let fundHTML='<div class="stk-fund-na">基本面数据暂不可用</div>';
@@ -1641,29 +1796,57 @@ function renderDetailContent(container,secid,info,kdata,fund){
       ${fItem('所属行业',fund.industry,'',false)}
     </div>`;
   }
-  // AI评分
+  // 斐波那契回撤
+  let fibHTML='';
+  if(score&&score.fib){
+    const f=score.fib;
+    const dirLabel=f.downTrend?'高点回撤':'低点反弹';
+    const fibRow=(pct,price)=>{
+      const dist=((price-f.last)/f.last*100).toFixed(1);
+      const isSupport=price<f.last;
+      const col=isSupport?'#4caf72':'#e05c5c';
+      return `<div class="fib-row"><span class="fib-pct">${pct}</span><span class="fib-price" style="color:${col}">${price.toFixed(2)}</span><span class="fib-dist" style="color:${col}">${dist>0?'+':''}${dist}%</span></div>`;
+    };
+    fibHTML=`<div class="stk-fib">
+      <div class="fib-header">
+        <span class="fib-dir">${dirLabel}</span>
+        <span class="fib-range">高 ${f.high.toFixed(2)} → 低 ${f.low.toFixed(2)}</span>
+      </div>
+      <div class="fib-levels">
+        ${f.retraceLevels.map(l=>fibRow(l.pct,l.price)).join('')}
+      </div>
+      <div class="fib-support">
+        ${f.nearestSupport?`<span class="fib-tag support">支撑 ${f.nearestSupport.pct} = ${f.nearestSupport.price.toFixed(2)}</span>`:''}
+        ${f.nearestResist?`<span class="fib-tag resist">阻力 ${f.nearestResist.pct} = ${f.nearestResist.price.toFixed(2)}</span>`:''}
+      </div>
+    </div>`;
+  }
+  // AI评分(5新维度)
   let scoreHTML='';
   if(score){
     const bar=(label,pct,col)=>`<div class="ai-dim"><span class="ai-lbl">${label}</span><div class="ai-bar"><div class="ai-fill" style="width:${pct}%;background:${col||'var(--gold)'}"></div></div><span class="ai-pct">${pct}</span></div>`;
     scoreHTML=`<div class="stk-ai">
       <div class="ai-overall"><span class="ai-score" style="color:${score.verdict.c}">${score.overall}</span><span class="ai-verdict" style="color:${score.verdict.c}">${score.verdict.t}</span></div>
       <div class="ai-dims">
-        ${bar('技术面',score.techPct,'#d4af37')}
-        ${bar('估值面',score.val,'#5b9bd5')}
-        ${bar('动量',score.mom,'#4caf72')}
-        ${bar('趋势',score.trend,'#e0a23c')}
-        ${bar('情绪',score.sent,'#ab47bc')}
+        ${bar('技术指标',score.techScore,'#d4af37')}
+        ${bar('斐波那契',score.fibScore,'#5b9bd5')}
+        ${bar('宏观货币政策',score.macroScore,'#ab47bc')}
+        ${bar('财报基本面',score.fundScore,'#4caf72')}
+        ${bar('市场情绪',score.sentScore,'#e0a23c')}
       </div>
-      <div class="ai-meta">RSI(14) <b>${score.lastRSI}</b> · MACD ${score.lastMACD>0?'金叉':'死叉'} · 5日涨跌 <b style="color:${score.ret5>=0?'#4caf72':'#e05c5c'}">${score.ret5>=0?'+':''}${score.ret5}%</b> · 20日涨跌 <b style="color:${score.ret20>=0?'#4caf72':'#e05c5c'}">${score.ret20>=0?'+':''}${score.ret20}%</b></div>
+      <div class="ai-meta">RSI(14) <b>${score.lastRSI}</b> · MACD ${score.lastMACD>0?'金叉':'死叉'} · 波动率 <b>${score.volatility}%</b> · VWAP <b>${score.lastVWAP||'—'}</b> · 5日 <b style="color:${score.ret5>=0?'#4caf72':'#e05c5c'}">${score.ret5>=0?'+':''}${score.ret5}%</b> · 20日 <b style="color:${score.ret20>=0?'#4caf72':'#e05c5c'}">${score.ret20>=0?'+':''}${score.ret20}%</b></div>
     </div>`;
   }
 
   container.insertAdjacentHTML('beforeend',`
-    <div class="sec-title">📈 日K线(120日)<span class="cnt">MA5 · MA20</span></div>
+    <div class="sec-title">📈 日K线(120日)<span class="cnt">MA5 · MA20 · BOLL · VWAP主力成本</span></div>
     <div class="card gold-edge stk-chart-card">${klineSVG||'<div class="stk-fund-na">K线数据不可用</div>'}</div>
     <div class="grid g-2" style="margin-top:20px;align-items:start">
-      <div><div class="sec-title">📊 基本面</div><div class="card gold-edge" style="padding:20px">${fundHTML}</div></div>
-      <div><div class="sec-title">🤖 AI 综合评分<span class="cnt">5维度</span></div><div class="card gold-edge" style="padding:20px">${scoreHTML||'<div class="stk-fund-na">数据不足，无法评分</div>'}</div></div>
+      <div>
+        <div class="sec-title">📊 基本面</div><div class="card gold-edge" style="padding:20px">${fundHTML}</div>
+        ${fibHTML?`<div class="sec-title" style="margin-top:18px">📐 斐波那契回撤</div><div class="card gold-edge" style="padding:16px">${fibHTML}</div>`:''}
+      </div>
+      <div><div class="sec-title">🤖 综合评分<span class="cnt">5维度</span></div><div class="card gold-edge" style="padding:20px">${scoreHTML||'<div class="stk-fund-na">数据不足，无法评分</div>'}</div></div>
     </div>
   `);
 }
