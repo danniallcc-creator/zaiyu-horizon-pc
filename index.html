@@ -523,6 +523,26 @@ a{color:inherit;text-decoration:none}
 .m-sig{display:flex;flex-direction:column;gap:6px}
 .m-sig .row{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--text-2)}
 .m-sig .d{width:6px;height:6px;border-radius:50%}
+/* master detail */
+.md-back{display:inline-flex;align-items:center;gap:8px;font-size:13px;color:var(--gold-bright);cursor:pointer;margin-bottom:22px;opacity:.85;transition:.2s}
+.md-back:hover{opacity:1;transform:translateX(-3px)}
+.md-header{display:flex;align-items:center;gap:20px;margin-bottom:28px}
+.md-av{width:72px;height:72px;border-radius:18px;display:flex;align-items:center;justify-content:center;font-size:38px;flex-shrink:0;border:1px solid var(--line-gold)}
+.md-info .md-nm{font-family:'Noto Serif SC',serif;font-size:24px;font-weight:700;color:var(--text-1)}
+.md-info .md-en{font-size:13px;color:var(--text-3);font-family:'Cormorant Garamond',serif;letter-spacing:1px;margin:2px 0}
+.md-info .md-ti{font-size:13px;color:var(--gold-pale)}
+.md-philo{font-size:14px;color:var(--text-2);line-height:1.85;padding:20px 24px;margin-bottom:28px;border-left:3px solid var(--gold);background:rgba(212,175,55,.04);border-radius:0 12px 12px 0}
+.md-philo b{color:var(--gold-bright);font-weight:600}
+.md-cases{display:flex;flex-direction:column;gap:20px}
+.md-case{padding:22px 26px;position:relative;border-left:3px solid var(--gold);transition:.2s}
+.md-case:hover{border-left-color:var(--gold-bright);background:rgba(212,175,55,.03)}
+.md-case-yr{font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--gold-bright);font-weight:700;margin-bottom:4px}
+.md-case-nm{font-family:'Noto Serif SC',serif;font-size:17px;font-weight:700;color:var(--text-1);margin-bottom:10px}
+.md-case-row{display:flex;gap:8px;margin-bottom:8px;font-size:13px;line-height:1.7}
+.md-case-row .lbl{color:var(--gold);font-weight:600;flex-shrink:0;min-width:52px}
+.md-case-row .val{color:var(--text-2)}
+.md-case-lesson{font-size:12.5px;color:var(--text-3);font-style:italic;background:rgba(212,175,55,.05);padding:10px 14px;border-radius:8px;margin-top:10px;line-height:1.6}
+.master-card .m-cases-hint{font-size:11px;color:var(--gold);margin-top:10px;opacity:.7;display:flex;align-items:center;gap:4px}
 
 /* ===== Scenario ===== */
 .scen-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-bottom:8px}
@@ -1148,6 +1168,50 @@ const MASTERS=[
   {id:'li',nm:'李录',en:'Li Lu',title:'喜马拉雅资本创始人',style:'价值投资 / 中国视角',tech:'安全边际信号',cycle:'中国经济周期定位',av:'🏮',c:'#F44336'},
   {id:'ackman',nm:'比尔·阿克曼',en:'Bill Ackman',title:'潘兴广场创始人',style:'激进维权 / 集中持仓',tech:'估值洼地信号',cycle:'企业变革周期',av:'🦅',c:'#78909C'},
 ];
+
+/* ==================== 大师经典案例 ==================== */
+const MASTER_CASES={
+dalio:{philosophy:'通过"风险平价"原则构建全天候投资组合，将资产配置到不同经济环境中，追求在任何宏观环境下都能获得稳定回报。核心是分散风险而非分散资产，利用杠杆平衡不同资产类别的风险贡献。',cases:[
+{year:2008,name:'Pure Alpha基金逆势盈利',entry:'2007年起通过债务周期模型判断信贷泡沫即将破裂，大幅减持信贷资产，增持国债和黄金',result:'2008年Pure Alpha上涨9.5%，同期标普500下跌37%',lesson:'系统性宏观框架和对债务周期的深刻理解能在危机中保护资本并获利'},
+{year:1996,name:'全天候(All Weather)组合设计',entry:'基于四象限经济环境框架，按风险贡献配置：30%股票、55%长期国债、15%大宗商品和黄金',result:'自1996年年化约7.5%，最大回撤远低于纯股票组合，2008年仅跌约3.9%',lesson:'通过风险平价实现真正分散化，无需预测未来，为所有经济环境做好准备'},
+{year:2011,name:'欧债危机中做空欧洲',entry:'分析欧元区结构性缺陷和债务不可持续性，做空欧洲国债和欧元',result:'2011年Pure Alpha全年约23%回报，远超行业平均',lesson:'政治体制的结构性缺陷如何导致经济危机，宏观基本面分析提供巨大alpha'}]},
+simons:{philosophy:'完全依赖数学模型和统计套利，利用海量历史数据挖掘微小但持续的价格异常模式。高频交易、极短持仓周期、大量分散化头寸，通过概率优势和交易次数的复利实现惊人回报。排除一切人类情绪干预。',cases:[
+{year:1988,name:'Medallion基金创立与早期爆发',entry:'运用隐马尔可夫模型和信号处理技术识别商品期货和外汇市场中的短期价格模式',result:'1988-2018年间Medallion年均毛回报约66%（扣费后约39%），累计回报超$1000亿',lesson:'用科学方法取代直觉判断，将交易视为统计学问题是量化革命的开端'},
+{year:2008,name:'金融危机中逆势暴赚',entry:'模型捕捉市场极端波动中的价格回归和动量信号，在恐慌抛售时执行系统化交易',result:'2008年Medallion回报约80%（扣费前），同期大多数对冲基金亏损超20%',lesson:'纯量化系统在极端行情中表现更好，人类恐慌制造了更多可被模型捕捉的定价错误'},
+{year:2000,name:'互联网泡沫破裂中获利',entry:'模型只捕捉统计异常和价格动量反转，在科技股崩盘中快速切换多空方向',result:'2000年回报98.5%（扣费前），科技泡沫对模型几乎无影响',lesson:'不依赖市场方向判断，从短期价格波动中提取alpha，几乎不受系统性风险影响'}]},
+marks:{philosophy:'在市场极度恐慌时买入被过度抛售的不良债务资产，通过深入信用分析评估真实回收价值。核心是理解市场周期中的钟摆效应——市场总在极度乐观和极度悲观之间摆动，而非停留中间。',cases:[
+{year:2008,name:'金融危机不良债务抄底',entry:'2007年发出著名备忘录警告泡沫，提前准备资金。2008年9月雷曼倒闭后大规模买入被恐慌抛售的公司债，部署$110亿专项基金',result:'部署资金在随后几年获超20%年化回报，Oaktree资管规模从$530亿增至$730亿',lesson:'在恐慌高峰时出手需极大勇气和事先准备，最好的投资机会来自被迫卖出者的损失'},
+{year:2001,name:'安然/世通后的"堕落天使"投资',entry:'互联网泡沫破裂和企业丑闻导致大量投资级债券被降级为垃圾债，市场恐慌性抛售',result:'Oaktree不良债务基金在2001-2003年间实现约30%年化回报',lesson:'信用评级下调往往造成非理性抛售，机构被迫卖出创造巨大价格错位'},
+{year:2020,name:'新冠疫情初期信贷市场抄底',entry:'2020年3月发备忘录呼吁"现在是买入时机"，大规模买入被抛售的公司债和杠杆贷款',result:'2020年Oaktree基金录得30%以上强劲回报',lesson:'真正的逆向投资不是简单的"别人卖我就买"，而是基于对内在价值的深刻理解'}]},
+druck:{philosophy:'自上而下的全球宏观交易，当判断明确时敢于极度集中下注。强调灵活性和快速认错，亏损时立即砍仓，盈利时加大仓位。核心是识别大的宏观经济失衡并在拐点下重注。',cases:[
+{year:1992,name:'做空英镑——"击溃英格兰银行"',entry:'判断英国经济疲软无法维持ERM汇率机制下的高利率，英镑被严重高估。建议将仓位从$15亿加到$100亿',result:'1992年"黑色星期三"英镑被迫退出ERM，单笔交易获利约$10亿',lesson:'宏观基本面与政策承诺严重矛盾时政策必须向现实屈服，关键是识别不对称赌注'},
+{year:1989,name:'做多德国马克——柏林墙倒塌',entry:'柏林墙倒塌当晚判断德国统一将导致大规模财政刺激和货币紧缩，凌晨4点大规模做多马克',result:'德国马克大幅升值，Duquesne和量子基金获利数亿美元',lesson:'对地缘政治事件的经济含义做出快速判断并果断行动，重大历史事件带来最大交易机会'},
+{year:1999,name:'互联网泡沫——由空翻多的惨痛教训',entry:'1999年初做空$2亿科技股后被逼空，反手做多$60亿科技股追涨',result:'2000年泡沫破裂后量子基金亏损约$30亿，被迫离开索罗斯基金',lesson:'即使最优秀的交易者也会因FOMO犯错，违背自己的判断追涨是致命的'}]},
+lynch:{philosophy:'"买你了解的东西"——从日常生活中发现投资机会，用PEG比率筛选被低估的成长股。将股票分为六类（缓慢增长/稳定增长/快速增长/周期股/困境反转/资产隐蔽型），针对每类采用不同策略。',cases:[
+{year:1982,name:'克莱斯勒(Chrysler)困境反转',entry:'濒临破产时（股价约$2），分析获得政府贷款担保、新管理层艾柯卡的改革计划',result:'股价从$2涨至1987年$50+，为Magellan基金贡献巨额利润，涨幅超20倍',lesson:'困境反转股风险高但回报惊人，关键是判断公司是否有足够现金撑过危机'},
+{year:1985,name:'房利美(Fannie Mae)长期持有',entry:'在不被华尔街关注时买入，看好美国住房市场长期增长和抵押贷款证券化中的垄断地位',result:'持有期间股价上涨超10倍，单只股票贡献数亿美元利润',lesson:'最大赢家往往是长期持有的"十倍股"，不要因涨一倍就急于卖出'},
+{year:1977,name:'Dunkin\' Donuts——"买你了解的"典范',entry:'观察到门店永远排长队，产品简单可复制，管理层稳健扩张，估值合理',result:'持续快速扩张，持有期间上涨数倍',lesson:'普通消费者拥有华尔街分析师没有的信息优势——亲身体验产品和服务'}]},
+gross:{philosophy:'开创债券"总回报"策略——不仅赚票息，更通过主动管理久期、信用和收益率曲线形态获取资本利得。核心是对宏观经济周期和央行政策的前瞻性判断，在利率拐点前调整组合久期。',cases:[
+{year:2007,name:'次贷危机前清仓MBS',entry:'2006-2007年判断美国房地产泡沫将破裂，大幅减持次级MBS，增持高质量国债和现金',result:'PIMCO Total Return Fund 2007年回报9.1%，2008年回报4.8%，大幅跑赢同行',lesson:'回避有毒资产比选择好资产更重要，"不亏钱"是复利的第一法则'},
+{year:2011,name:'清仓美国国债——职业生涯最大失误',entry:'判断QE2结束后美债将暴跌，Total Return Fund清仓全部美国国债',result:'2011年美债不跌反涨（欧债危机避险），全年仅4.2%回报，跑输70%同行',lesson:'即使"债券之王"也可能错判宏观，极端押注即使在高信念时也可能出错'},
+{year:1980,name:'开创"总回报"债券投资策略',entry:'利率从20%高位开始下降的历史性拐点，大胆拉长久期，大量买入长期国债',result:'1980-2000年PIMCO Total Return年化超8%，管理规模从$20亿增至$2700亿',lesson:'利率大周期拐点是债券千载难逢的机会，主动管理久期可产生类似股票的超额回报'}]},
+jones:{philosophy:'全球宏观交易结合技术分析，极度重视风险管理。使用200日均线作为趋势判断核心，善于在市场情绪极端时反向操作。追求不对称风险回报比，宁愿错过也不承受大额亏损。',cases:[
+{year:1987,name:'"黑色星期一"做空美股暴赚',entry:'通过研究1929年崩盘前形态，发现1987年市场走势高度相似。在崩盘前建立大规模S&P 500期货空头',result:'1987年10月19日道琼斯暴跌22.6%，Tudor BVI当月获利62%，全年回报125.9%',lesson:'历史虽不简单重复但会押韵，市场结构性脆弱是崩盘前提条件'},
+{year:1990,name:'做空日本股市泡沫',entry:'判断日本资产泡沫不可持续（日经38000点），在日央行加息后做空日经期货',result:'日经从38957跌至23848，跌幅近40%',lesson:'当央行从宽松转向紧缩时泡沫资产最脆弱，等待催化剂再入场'},
+{year:2008,name:'金融危机中的宏观对冲',entry:'早期识别信贷恶化信号，做空金融股和信贷产品，做多国债和黄金',result:'2008年未出现重大亏损（同期标普-37%），成功保护资本',lesson:'严格的风险管理和止损纪律比抓住大行情更重要，"活下来"是最重要的原则'}]},
+raschke:{philosophy:'专注短线波段交易（1-5天），利用动量和均值回归的节奏性切换获利。核心信念是"市场有惯性"——强趋势中的回调是买入机会。强调交易纪律和执行力，好的交易更多关乎过程而非结果。',cases:[
+{year:1992,name:'"圣杯"(Holy Grail)策略系统化',entry:'当ADX>30确认强趋势后，等待价格回调至20日EMA均线附近逢低买入/逢高卖出',result:'在S&P期货和商品市场中持续盈利超20年，成为其最核心交易方法',lesson:'最好的交易策略往往最简单，趋势中的回调提供低风险入场点'},
+{year:1987,name:'从场内做市商转型期货交易',entry:'因受伤无法站立交易，转向S&P 500期货屏幕交易，利用Taylor三日周期法则',result:'成功转型为独立期货交易者，连续多年正回报，被收录于《新市场奇才》',lesson:'交易核心技能是模式识别和纪律执行，不依赖特定市场或方式'},
+{year:2002,name:'LBR Group熊市中保持正收益',entry:'运用开盘区间突破、Turtle Soup反转、动量回调等多种短线策略组合',result:'在2000-2002年熊市中保持正收益，年化约15-20%，最大回撤极低',lesson:'短线交易不依赖市场方向，牛熊市均可盈利，关键是控制每笔交易风险'}]},
+li:{philosophy:'深度价值投资结合对中国经济转型的独特理解，寻找具有巨大竞争优势和成长空间的亚洲企业。受芒格影响深远，强调"能力圈"和"安全边际"，真正的投资机会极少，一生只需抓住几个大机会。',cases:[
+{year:2003,name:'投资比亚迪(BYD)——生涯最大赢家',entry:'深入研究后认为王传福是杰出企业家，比亚迪的电池技术和制造能力被严重低估，以约1港元/股买入',result:'比亚迪股价至今上涨超50倍（5600%+回报），后推荐给芒格和伯克希尔',lesson:'最好的投资来自对企业和企业家的深入了解，要有勇气重仓并有耐心持有十年以上'},
+{year:2003,name:'Timberland——经典价值洼地',entry:'发现账上现金几乎等于市值，品牌价值完全未被市场定价，管理层回购显示内部人信心',result:'股价在随后几年上涨数倍',lesson:'寻找"免费"的商业资产——市值接近净现金时，你在免费获得整个品牌和业务'},
+{year:2018,name:'重仓美光科技(Micron)',entry:'判断存储芯片行业整合后形成寡头垄断，周期性减弱、盈利能力永久提升，市场仍按周期股低估',result:'一度占投资组合超20%，持有期间获可观回报',lesson:'行业结构性变化（完全竞争→寡头垄断）可能导致市场长期错误定价'}]},
+ackman:{philosophy:'集中持有少数优质公司（6-10只），通过积极股东行动推动管理层改革、释放被低估的企业价值。偏好高壁垒的简单商业模式、强大现金流，敢于在公开市场发起激进对抗改变公司治理。',cases:[
+{year:2020,name:'新冠疫情CDS对冲——史诗级交易',entry:'2020年2月以$2700万买入信用违约互换，押注疫情将导致信贷市场崩溃',result:'30天内价值从$2700万飙升至$26亿，回报率接近100倍，随后平仓抄底股市',lesson:'不对称风险回报是交易圣杯——输最多输$2700万，赢可以赢几十亿'},
+{year:2012,name:'加拿大太平洋铁路(CP Rail)激进改革',entry:'以14%持股成为最大股东，公开批评管理层，发起代理权争夺战更换CEO为Hunter Harrison',result:'股价从$60涨至$200+，获利约$26亿',lesson:'"好公司差管理"时积极股东行动最有效，管理层变革可释放巨大价值'},
+{year:2012,name:'做空Herbalife——著名败仗',entry:'以$10亿做空康宝莱，公开指控其为"金字塔骗局"',result:'FTC罚款$2亿但股价未崩，2018年认赔约$5亿',lesson:'做空风险无限，即使判断正确，对手方介入和时间成本也可能导致失败'}]}
+};
 
 /* ==================== 巴菲特股东信知识库 ==================== */
 const BUFFETT_STATS=[
@@ -3278,7 +3342,7 @@ function initCrisisChart(){
 /* ==================== RENDER: MASTERS (3 tabs) ==================== */
 let masterTab='frameworks';
 function renderMFrameworks(){
-  const cards=MASTERS.map(m=>`<div class="card master-card gold-edge"><div class="mh"><div class="m-av" style="background:${m.c}22;color:${m.c}">${m.av}</div><div><div class="m-nm">${m.nm}</div><div class="m-en">${m.en}</div><div class="m-title">${m.title}</div></div></div><div class="m-style"><b>交易风格</b>${m.style}</div><div class="m-sig"><div class="row"><span class="d" style="background:#5b9bd5"></span>技术面: ${m.tech}</div><div class="row"><span class="d" style="background:#4caf72"></span>周期面: ${m.cycle}</div></div></div>`).join('');
+  const cards=MASTERS.map(m=>`<div class="card master-card gold-edge" onclick="showMasterDetail('${m.id}')"><div class="mh"><div class="m-av" style="background:${m.c}22;color:${m.c}">${m.av}</div><div><div class="m-nm">${m.nm}</div><div class="m-en">${m.en}</div><div class="m-title">${m.title}</div></div></div><div class="m-style"><b>交易风格</b>${m.style}</div><div class="m-sig"><div class="row"><span class="d" style="background:#5b9bd5"></span>技术面: ${m.tech}</div><div class="row"><span class="d" style="background:#4caf72"></span>周期面: ${m.cycle}</div></div><div class="m-cases-hint">▸ 点击查看经典案例 (${(MASTER_CASES[m.id]||{cases:[]}).cases.length})</div></div>`).join('');
   return `<div class="master-grid">${cards}</div>`;
 }
 function renderBuffettKB(){
@@ -3318,6 +3382,20 @@ function renderMarksKB(){
 function renderMasters(){
   const body=masterTab==='buffett'?renderBuffettKB():masterTab==='marks'?renderMarksKB():renderMFrameworks();
   document.getElementById('mastersContent').innerHTML=body+disclaimerHTML();
+}
+function showMasterDetail(id){
+  const m=MASTERS.find(x=>x.id===id);if(!m)return;
+  const mc=MASTER_CASES[id];if(!mc)return;
+  const casesHTML=mc.cases.map(c=>`<div class="card md-case gold-edge"><div class="md-case-yr">${c.year}</div><div class="md-case-nm">${c.name}</div><div class="md-case-row"><span class="lbl">入场▸</span><span class="val">${c.entry}</span></div><div class="md-case-row"><span class="lbl">结果▸</span><span class="val">${c.result}</span></div><div class="md-case-lesson">💡 ${c.lesson}</div></div>`).join('');
+  document.getElementById('mastersContent').innerHTML=`
+  <div class="md-back" onclick="renderMasters()">← 返回十位大师框架</div>
+  <div class="md-header"><div class="md-av" style="background:${m.c}22;color:${m.c}">${m.av}</div><div class="md-info"><div class="md-nm">${m.nm}</div><div class="md-en">${m.en}</div><div class="md-ti">${m.title}</div></div></div>
+  <div class="sec-title" style="margin-bottom:14px">🧭 核心交易哲学</div>
+  <div class="card md-philo gold-edge">${mc.philosophy}</div>
+  <div class="sec-title" style="margin-bottom:14px">📈 经典案例<span class="cnt">${mc.cases.length}</span></div>
+  <div class="md-cases">${casesHTML}</div>
+  `+disclaimerHTML();
+  window.scrollTo({top:0,behavior:'smooth'});
 }
 
 /* ==================== RENDER: SCENARIO ==================== */
