@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#08080a">
+<title>载堉视界 · Mobile</title>
+<link rel="icon" href="../favicon.ico">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#08080a;--card:#121217;--card2:#1a1a22;--gold:#d4af37;--gold-bright:#f5d574;--gold-pale:#c9a94e;--line:#26262f;--line-gold:rgba(212,175,55,.18);--text-1:#eae6df;--text-2:#b9b4ab;--text-3:#76726c;--green:#4caf72;--red:#e05c5c;--safe-top:env(safe-area-inset-top,0px);--safe-bot:env(safe-area-inset-bottom,0px)}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Noto Sans SC',system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--text-1);font-size:14px;line-height:1.6;-webkit-font-smoothing:antialiased;overflow-x:hidden;padding-top:var(--safe-top);padding-bottom:calc(60px + var(--safe-bot))}
+/* Header */
+.header{position:sticky;top:0;z-index:100;background:rgba(8,8,10,.92);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);padding:12px 16px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between}
+.header .logo{font-size:18px;font-weight:700;background:linear-gradient(135deg,var(--gold-bright),var(--gold));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.header .status{font-size:11px;color:var(--text-3);display:flex;align-items:center;gap:5px}
+.header .dot{width:7px;height:7px;border-radius:50%;background:var(--text-3)}
+.header .dot.live{background:var(--green);box-shadow:0 0 6px var(--green)}
+.header .dot.loading{background:var(--gold);animation:pulse 1s infinite}
+@keyframes pulse{50%{opacity:.4}}
+/* Bottom Tabs */
+.tabs{position:fixed;bottom:0;left:0;right:0;z-index:100;background:rgba(8,8,10,.95);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-top:1px solid var(--line);display:flex;padding-bottom:var(--safe-bot)}
+.tab{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:10px 0 6px;color:var(--text-3);font-size:10px;cursor:pointer;transition:.2s;-webkit-tap-highlight-color:transparent}
+.tab.active{color:var(--gold-bright)}
+.tab .ic{font-size:20px}
+/* Views */
+.view{display:none;padding:16px;min-height:calc(100vh - 120px)}
+.view.active{display:block}
+/* Cards */
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 16px;margin-bottom:12px}
+.card.gold-edge{border-color:var(--line-gold)}
+/* Market grid */
+.mkt-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:16px}
+.mkt-card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 14px}
+.mkt-card .lbl{font-size:11px;color:var(--text-3);margin-bottom:4px}
+.mkt-card .val{font-family:'JetBrains Mono',monospace;font-size:16px;font-weight:700}
+.mkt-card .chg{font-family:'JetBrains Mono',monospace;font-size:12px;margin-top:2px}
+.up{color:var(--green)}.dn{color:var(--red)}
+/* Section title */
+.sec-t{font-size:16px;font-weight:700;color:var(--text-1);margin:20px 0 12px;display:flex;align-items:center;gap:8px}
+.sec-t::before{content:'';width:3px;height:16px;border-radius:2px;background:var(--gold)}
+/* CB list */
+.cb-item{display:flex;align-items:center;gap:10px;padding:12px 0;border-bottom:1px solid var(--line)}
+.cb-item:last-child{border:none}
+.cb-flag{font-size:22px}
+.cb-info{flex:1}
+.cb-name{font-size:13px;font-weight:600}
+.cb-rate{font-size:11px;color:var(--gold-pale)}
+.cb-next{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-2);text-align:right}
+/* Cycle */
+.cyc-card{padding:16px}
+.cyc-nm{font-size:15px;font-weight:700;margin-bottom:4px}
+.cyc-en{font-size:11px;color:var(--text-3);margin-bottom:8px}
+.cyc-bar{height:6px;background:var(--line);border-radius:3px;margin:8px 0;overflow:hidden}
+.cyc-bar .fill{height:100%;border-radius:3px;transition:width .6s}
+.cyc-pos{font-size:12px;color:var(--text-2)}
+.cyc-phase{font-size:11px;font-weight:600;margin-top:4px}
+/* Masters */
+.m-card{display:flex;align-items:center;gap:12px;padding:14px 16px;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.m-card:active{background:rgba(212,175,55,.05)}
+.m-av{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;border:1px solid var(--line-gold)}
+.m-nm{font-size:15px;font-weight:700}
+.m-en{font-size:10px;color:var(--text-3)}
+.m-style{font-size:11px;color:var(--gold-pale);margin-top:2px}
+.m-arrow{color:var(--text-3);font-size:16px;margin-left:auto}
+/* Master Detail */
+.md-back{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--gold-bright);margin-bottom:16px;cursor:pointer}
+.md-hdr{display:flex;align-items:center;gap:14px;margin-bottom:18px}
+.md-hdr .av{width:56px;height:56px;border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:30px;border:1px solid var(--line-gold)}
+.md-hdr .nm{font-size:20px;font-weight:700}
+.md-hdr .en{font-size:11px;color:var(--text-3)}
+.md-hdr .ti{font-size:12px;color:var(--gold-pale)}
+.md-philo{font-size:13px;color:var(--text-2);line-height:1.8;padding:14px 16px;border-left:3px solid var(--gold);background:rgba(212,175,55,.04);border-radius:0 12px 12px 0;margin-bottom:20px}
+.md-case{border-left:3px solid var(--gold);padding:14px 16px;margin-bottom:14px}
+.md-case .yr{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--gold-bright);font-weight:700}
+.md-case .nm{font-size:15px;font-weight:700;margin:4px 0 8px}
+.md-case .row{font-size:12px;color:var(--text-2);margin-bottom:6px;line-height:1.6}
+.md-case .row b{color:var(--gold);font-weight:600}
+.md-case .lesson{font-size:11px;color:var(--text-3);font-style:italic;background:rgba(212,175,55,.05);padding:8px 12px;border-radius:8px;margin-top:8px;line-height:1.6}
+/* Stocks */
+.stk-item{display:flex;align-items:center;padding:12px 0;border-bottom:1px solid var(--line);cursor:pointer;-webkit-tap-highlight-color:transparent}
+.stk-item:active{background:rgba(212,175,55,.03)}
+.stk-name{flex:1}
+.stk-name .code{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:600}
+.stk-name .cn{font-size:11px;color:var(--text-3)}
+.stk-price{font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:600;text-align:right;min-width:70px}
+.stk-chg{font-family:'JetBrains Mono',monospace;font-size:12px;text-align:right;min-width:60px;padding:3px 8px;border-radius:6px}
+.stk-chg.up{background:rgba(76,175,114,.15)}.stk-chg.dn{background:rgba(224,92,92,.15)}
+/* Stock Detail */
+.sd-back{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--gold-bright);margin-bottom:12px;cursor:pointer}
+.sd-hdr{margin-bottom:16px}
+.sd-hdr .nm{font-size:20px;font-weight:700}
+.sd-hdr .price{font-family:'JetBrains Mono',monospace;font-size:28px;font-weight:700;margin:4px 0}
+.sd-hdr .chg{font-family:'JetBrains Mono',monospace;font-size:14px}
+.sd-chart{background:var(--card);border-radius:12px;padding:12px;margin-bottom:16px;overflow-x:auto}
+.sd-fund{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.sd-fund .item{text-align:center;padding:10px 8px;background:var(--card);border-radius:10px;border:1px solid var(--line)}
+.sd-fund .item .v{font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:700;color:var(--gold-bright)}
+.sd-fund .item .l{font-size:10px;color:var(--text-3);margin-top:3px}
+/* Crisis */
+.cmp-card{padding:14px 16px;margin-bottom:10px}
+.cmp-dim{font-size:14px;font-weight:700;margin-bottom:6px;display:flex;align-items:center;gap:6px}
+.cmp-h{font-size:11px;color:var(--text-3);margin-bottom:4px}
+.cmp-cur{font-size:12px;color:var(--text-2);margin-bottom:6px}
+.cmp-bar{height:5px;background:var(--line);border-radius:3px;overflow:hidden}
+.cmp-bar .fill{height:100%;border-radius:3px;background:linear-gradient(90deg,var(--green),var(--gold),var(--red))}
+.cmp-sim{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--gold-bright);margin-top:4px}
+/* Score badge */
+.score-badge{text-align:center;padding:20px;margin-bottom:16px;background:var(--card);border:1px solid var(--line-gold);border-radius:16px}
+.score-badge .num{font-family:'JetBrains Mono',monospace;font-size:48px;font-weight:700;background:linear-gradient(135deg,var(--gold-bright),var(--gold));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.score-badge .lbl{font-size:12px;color:var(--text-3);margin-top:4px}
+/* Subtabs */
+.stabs{display:flex;gap:8px;margin-bottom:16px;overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:4px}
+.stab{font-size:12px;font-weight:600;color:var(--text-3);background:var(--card);border:1px solid var(--line);border-radius:20px;padding:8px 16px;white-space:nowrap;cursor:pointer;flex-shrink:0}
+.stab.active{color:#08080a;background:linear-gradient(120deg,var(--gold-bright),var(--gold));border-color:transparent}
+/* Loading */
+.loading-box{text-align:center;padding:40px;color:var(--text-3)}
+.spin{display:inline-block;width:20px;height:20px;border:2px solid var(--line);border-top-color:var(--gold);border-radius:50%;animation:sp .6s linear infinite}
+@keyframes sp{to{transform:rotate(360deg)}}
+/* Disclaimer */
+.disclaimer{font-size:10px;color:var(--text-3);padding:16px 0;margin-top:20px;border-top:1px solid var(--line);line-height:1.6}
+/* PC link */
+.pc-link{display:block;text-align:center;font-size:11px;color:var(--text-3);padding:12px;text-decoration:none}
+.pc-link:hover{color:var(--gold)}
+/* Truth check */
+.tc-card{padding:12px 16px;margin-bottom:10px;border-left:3px solid var(--gold)}
+.tc-item{font-size:13px;font-weight:600;margin-bottom:4px}
+.tc-verdict{font-size:12px;font-weight:700;margin-bottom:4px}
+.tc-reason{font-size:11px;color:var(--text-3);line-height:1.6}
+/* Advice cards */
+.adv-card{padding:14px 16px;margin-bottom:12px;border-top:2px solid var(--gold)}
+.adv-nm{font-size:14px;font-weight:700;margin-bottom:2px}
+.adv-stance{font-size:12px;font-weight:600;margin-bottom:8px}
+.adv-logic{font-size:12px;color:var(--text-2);margin-bottom:8px;line-height:1.6}
+.adv-port{font-size:11px;color:var(--gold-pale);background:rgba(212,175,55,.05);padding:8px 12px;border-radius:8px;line-height:1.5}
+</style>
+</head>
+<body>
+<div class="header">
+  <div class="logo">载堉视界</div>
+  <div class="status"><span class="dot" id="statusDot"></span><span id="statusText">加载中…</span></div>
+</div>
+
+<div class="view active" id="v-dash"></div>
+<div class="view" id="v-crisis"></div>
+<div class="view" id="v-cycle"></div>
+<div class="view" id="v-masters"></div>
+<div class="view" id="v-stocks"></div>
+
+<nav class="tabs">
+  <div class="tab active" data-v="dash"><div class="ic">📊</div>首页</div>
+  <div class="tab" data-v="crisis"><div class="ic">⚠️</div>危机</div>
+  <div class="tab" data-v="cycle"><div class="ic">🔄</div>周期</div>
+  <div class="tab" data-v="masters"><div class="ic">🎓</div>大师</div>
+  <div class="tab" data-v="stocks"><div class="ic">📈</div>个股</div>
+</nav>
+
+<script>
+/* ===== CONFIG ===== */
+const EM_BASE="https://push2.eastmoney.com/api/qt/ulist.np/get";
+const CURATED={vixIndex:'14.2',fedRate:'3.50-3.75%',chinaLPR:'3.00'};
+function nf(n,d){return Number(n).toLocaleString('en-US',{minimumFractionDigits:d,maximumFractionDigits:d})}
+function chgStr(c){return c==null?'—':(c>=0?'+':'')+Number(c).toFixed(2)+'%'}
+
+/* ===== CACHE ===== */
+const _cache={};
+function cacheGet(k,ttl){const e=_cache[k];return e&&Date.now()-e.t<ttl?e.v:null}
+function cacheSet(k,v){_cache[k]={v,t:Date.now()}}
+
+/* ===== EM FETCH ===== */
+async function emQuote(secids){
+  const url=EM_BASE+`?fltt=2&fields=f2,f3,f12,f13,f14&secids=${secids}`;
+  const c=new AbortController();const t=setTimeout(()=>c.abort(),8000);
+  try{const r=await fetch(url,{signal:c.signal});const j=await r.json();clearTimeout(t);
+  const m={};if(j.data&&j.data.diff)j.data.diff.forEach(d=>{if(d.f2==='-'||d.f2==null)return;m[d.f13+'.'+d.f12]={price:d.f2,chg:d.f3,name:d.f14}});return m;}
+  catch(e){clearTimeout(t);throw e;}}
+
+/* ===== CENTRAL BANKS ===== */
+const CENTRAL_BANKS=[
+  {flag:'🇺🇸',name:'美联储 FED',rate:'3.50-3.75%',meetings:['2026-01-28','2026-03-18','2026-04-29','2026-06-17','2026-07-29','2026-09-16','2026-10-28','2026-12-16']},
+  {flag:'🇪🇺',name:'欧洲央行 ECB',rate:'2.00%',meetings:['2026-01-29','2026-03-12','2026-04-16','2026-06-04','2026-07-23','2026-09-10','2026-10-29','2026-12-17']},
+  {flag:'🇨🇳',name:'中国人民银行',rate:'3.00%',monthlyDay:20},
+  {flag:'🇯🇵',name:'日本央行 BOJ',rate:'0.75%',meetings:['2026-01-23','2026-03-19','2026-04-28','2026-06-17','2026-07-30','2026-09-18','2026-10-30','2026-12-18']},
+  {flag:'🇬🇧',name:'英格兰银行 BOE',rate:'3.75%',meetings:['2026-02-05','2026-03-19','2026-05-07','2026-06-18','2026-08-06','2026-09-17','2026-11-05','2026-12-17']},
+  {flag:'🇨🇦',name:'加拿大央行 BOC',rate:'2.50%',meetings:['2026-01-28','2026-03-11','2026-04-15','2026-06-03','2026-07-29','2026-09-16','2026-10-28','2026-12-09']},
+  {flag:'🇦🇺',name:'澳洲联储 RBA',rate:'3.60%',meetings:['2026-02-03','2026-03-31','2026-05-05','2026-06-16','2026-08-11','2026-09-29','2026-11-03','2026-12-08']},
+  {flag:'🇨🇭',name:'瑞士央行 SNB',rate:'0.25%',meetings:['2026-03-19','2026-06-18','2026-09-24','2026-12-17']},
+];
+function nextMeeting(b){
+  const today=new Date();today.setHours(0,0,0,0);let next=null;
+  if(b.monthlyDay){next=new Date(today.getFullYear(),today.getMonth(),b.monthlyDay);if(next<today)next=new Date(today.getFullYear(),today.getMonth()+1,b.monthlyDay);}
+  else if(b.meetings){for(const s of b.meetings){const dt=new Date(s+'T00:00:00');if(dt>=today){next=dt;break;}}}
+  if(!next)return'待公布';const days=Math.round((next-today)/86400000);
+  return `${next.getMonth()+1}/${next.getDate()} · ${days===0?'今日':days+'天后'}`;
+}
+
+/* ===== CYCLES ===== */
+const CYCLES=[
+  {nm:'库兹涅茨周期',en:'Kuznets',dur:'15-25年',pos:'去全球化→再全球化',phase:'中段',pc:'#5b9bd5',prog:55},
+  {nm:'朱格拉周期',en:'Juglar',dur:'7-11年',pos:'AI驱动CAPEX上升(2024-2028)',phase:'上升期',pc:'#4caf72',prog:35},
+  {nm:'基钦周期',en:'Kitchin',dur:'3-5年',pos:'主动补库存中后段(2026Q2)',phase:'扩张期',pc:'#4caf72',prog:65},
+  {nm:'美林时钟',en:'Merrill Clock',dur:'~3-5年轮转',pos:'复苏+低通胀→配股票',phase:'复苏期',pc:'#4caf72',prog:25},
+];
+
+/* ===== MASTERS ===== */
+const MASTERS=[
+  {id:'dalio',nm:'瑞·达里欧',en:'Ray Dalio',title:'桥水基金创始人',style:'全天候/风险平价',av:'🧠',c:'#4FC3F7'},
+  {id:'simons',nm:'吉姆·西蒙斯',en:'Jim Simons',title:'文艺复兴科技创始人',style:'量化/统计套利',av:'🔢',c:'#AB47BC'},
+  {id:'marks',nm:'霍华德·马克思',en:'Howard Marks',title:'橡树资本联合创始人',style:'第二层思维/非对称',av:'📝',c:'#66BB6A'},
+  {id:'druck',nm:'德鲁肯米勒',en:'S. Druckenmiller',title:'杜肯资本创始人',style:'集中押注/宏观',av:'🎯',c:'#FFA726'},
+  {id:'lynch',nm:'彼得·林奇',en:'Peter Lynch',title:'麦哲伦基金经理',style:'成长股/PEG估值',av:'📊',c:'#EF5350'},
+  {id:'gross',nm:'比尔·格罗斯',en:'Bill Gross',title:'债券之王/PIMCO',style:'利率预测/债券',av:'📉',c:'#5C6BC0'},
+  {id:'jones',nm:'保罗·琼斯',en:'P. Tudor Jones',title:'都铎投资创始人',style:'宏观/趋势跟踪',av:'🌐',c:'#26A69A'},
+  {id:'raschke',nm:'琳达·拉施克',en:'Linda Raschke',title:'短线波段大师',style:'短线/技术分析',av:'⚡',c:'#FFCA28'},
+  {id:'li',nm:'李录',en:'Li Lu',title:'喜马拉雅资本',style:'价值/中国视角',av:'🏮',c:'#F44336'},
+  {id:'ackman',nm:'比尔·阿克曼',en:'Bill Ackman',title:'潘兴广场创始人',style:'激进维权/集中',av:'🦅',c:'#78909C'},
+];
+const MASTER_CASES={
+dalio:{philosophy:'通过"风险平价"原则构建全天候组合，将资产配置到不同经济环境中。核心是分散风险而非分散资产，利用杠杆平衡不同资产类别的风险贡献。',cases:[
+{year:2008,name:'Pure Alpha逆势盈利',entry:'判断信贷泡沫即将破裂，减持信贷资产，增持国债和黄金',result:'2008年上涨9.5%，同期标普-37%',lesson:'系统性宏观框架能在危机中保护资本'},
+{year:1996,name:'全天候组合设计',entry:'四象限框架按风险贡献配置：30%股票、55%国债、15%商品黄金',result:'年化约7.5%，2008年仅跌3.9%',lesson:'风险平价实现真正分散化'},
+{year:2011,name:'欧债危机做空欧洲',entry:'分析欧元区结构性缺陷，做空欧洲国债和欧元',result:'全年约23%回报',lesson:'政治结构缺陷导致经济危机'}]},
+simons:{philosophy:'完全依赖数学模型和统计套利，利用海量数据挖掘微小价格异常。高频交易、极短持仓、大量分散头寸，排除人类情绪干预。',cases:[
+{year:1988,name:'Medallion基金创立',entry:'隐马尔可夫模型识别短期价格模式',result:'1988-2018年均毛回报约66%',lesson:'科学方法取代直觉判断'},
+{year:2008,name:'金融危机逆势暴赚',entry:'模型捕捉极端波动中的回归和动量信号',result:'2008年回报约80%',lesson:'量化系统在极端行情表现更好'},
+{year:2000,name:'互联网泡沫中获利',entry:'只捕捉统计异常，快速切换多空',result:'2000年回报98.5%',lesson:'不依赖市场方向从短期波动提取alpha'}]},
+marks:{philosophy:'在市场极度恐慌时买入被过度抛售的不良债务资产。核心是理解钟摆效应——市场总在极度乐观和悲观之间摆动。',cases:[
+{year:2008,name:'金融危机不良债务抄底',entry:'提前备弹药，雷曼倒闭后部署$110亿买入被抛售公司债',result:'随后年化超20%回报',lesson:'恐慌高峰出手需勇气和事先准备'},
+{year:2001,name:'"堕落天使"投资',entry:'互联网泡沫后大量投资级被降为垃圾级，恐慌性抛售',result:'2001-2003年年化约30%',lesson:'评级下调造成非理性抛售'},
+{year:2020,name:'新冠疫情信贷抄底',entry:'3月发备忘录"现在是买入时机"，大规模买入公司债',result:'2020年30%+回报',lesson:'逆向投资需基于对内在价值的理解'}]},
+druck:{philosophy:'自上而下全球宏观交易，判断明确时极度集中下注。强调灵活性和快速认错，核心是识别宏观失衡并在拐点下重注。',cases:[
+{year:1992,name:'做空英镑"击溃英格兰银行"',entry:'判断英国无法维持ERM高利率，建议将仓位加到$100亿做空英镑',result:'单笔获利约$10亿',lesson:'政策与基本面矛盾时政策必须屈服'},
+{year:1989,name:'做多德国马克',entry:'柏林墙倒塌当晚凌晨4点大规模做多马克',result:'获利数亿美元',lesson:'地缘政治事件快速判断果断行动'},
+{year:1999,name:'互联网泡沫追涨(教训)',entry:'做空被逼后反手$60亿做多科技股',result:'泡沫破裂后亏$30亿',lesson:'FOMO是致命的，违背判断追涨必败'}]},
+lynch:{philosophy:'"买你了解的东西"——从日常生活发现投资机会，用PEG筛选被低估成长股。将股票分六类采用不同策略。',cases:[
+{year:1982,name:'克莱斯勒困境反转',entry:'濒临破产时买入($2)，看好政府贷款担保+新管理层改革',result:'涨至$50+，20倍+',lesson:'困境反转风险高但回报惊人'},
+{year:1985,name:'房利美长期持有',entry:'不被关注时买入，看好住房市场+垄断地位',result:'上涨超10倍',lesson:'十倍股需要长期持有的耐心'},
+{year:1977,name:'Dunkin\' Donuts',entry:'门店排长队+简单模式+稳健扩张+合理估值',result:'持有期间数倍涨幅',lesson:'消费者拥有华尔街没有的信息优势'}]},
+gross:{philosophy:'开创债券"总回报"策略——不仅赚票息，更通过主动管理久期获取资本利得。核心是对利率拐点的前瞻性判断。',cases:[
+{year:2007,name:'次贷危机前清仓MBS',entry:'判断房地产泡沫将破，减持次级MBS，增持国债',result:'2007年9.1%，2008年4.8%，跑赢同行',lesson:'回避有毒资产比选好资产更重要'},
+{year:2011,name:'清仓美债(最大失误)',entry:'判断QE2后美债暴跌，清仓全部国债',result:'美债不跌反涨，仅4.2%跑输70%同行',lesson:'极端押注即使高信念也可能出错'},
+{year:1980,name:'开创"总回报"策略',entry:'利率从20%拐点大胆拉长久期，买入长期国债',result:'1980-2000年年化超8%，规模$20亿→$2700亿',lesson:'利率大周期拐点是千载难逢的机会'}]},
+jones:{philosophy:'全球宏观+技术分析，极度重视风险管理。用200日均线判断趋势，追求不对称风险回报比。',cases:[
+{year:1987,name:'"黑色星期一"做空暴赚',entry:'研究1929年形态发现高度相似，建立大规模空头',result:'当月获利62%，全年125.9%',lesson:'市场结构性脆弱是崩盘前提'},
+{year:1990,name:'做空日本泡沫',entry:'判断日本资产泡沫不可持续，日央行加息后做空日经',result:'日经从38957跌至23848',lesson:'央行宽松→紧缩时泡沫最脆弱'},
+{year:2008,name:'金融危机宏观对冲',entry:'做空金融股+信贷，做多国债+黄金',result:'未重大亏损(同期标普-37%)',lesson:'风险管理比抓行情更重要'}]},
+raschke:{philosophy:'专注短线波段(1-5天)，利用动量和均值回归的节奏切换获利。核心信念"市场有惯性"，强调纪律和执行力。',cases:[
+{year:1992,name:'"圣杯"策略系统化',entry:'ADX>30确认趋势后，等价格回调至20EMA逢低买入',result:'S&P期货连续盈利超20年',lesson:'最好的策略往往最简单'},
+{year:1987,name:'转型期货交易',entry:'因伤从场内做市商转向S&P期货屏幕交易',result:'连续多年正回报，入选《新市场奇才》',lesson:'核心技能是模式识别和纪律'},
+{year:2002,name:'LBR Group熊市正收益',entry:'多种短线策略组合在纳斯达克期货波段操作',result:'熊市中年化15-20%',lesson:'短线不依赖方向，牛熊均可盈利'}]},
+li:{philosophy:'深度价值投资+中国经济转型理解，寻找巨大竞争优势的亚洲企业。真正的机会极少，一生只需抓住几个大机会。',cases:[
+{year:2003,name:'投资比亚迪(BYD)',entry:'认为王传福杰出+电池技术被严重低估，约1港元/股买入',result:'上涨超50倍(5600%+)，后推荐给芒格',lesson:'对企业和企业家的深入了解是最好的投资'},
+{year:2003,name:'Timberland价值洼地',entry:'账上现金≈市值，品牌未被定价，管理层回购',result:'随后几年上涨数倍',lesson:'市值接近净现金=免费获得品牌和业务'},
+{year:2018,name:'重仓美光科技',entry:'存储芯片整合为寡头垄断，市场仍按周期股低估',result:'占组合超20%获可观回报',lesson:'行业结构性变化导致长期错误定价'}]},
+ackman:{philosophy:'集中持有少数优质公司(6-10只)，通过积极股东行动推动管理层改革释放价值。偏好高壁垒简单模式。',cases:[
+{year:2020,name:'新冠CDS对冲(史诗级)',entry:'$2700万买入信用违约互换押注信贷崩溃',result:'30天内飙升至$26亿，100倍回报',lesson:'不对称风险回报是交易圣杯'},
+{year:2012,name:'CP Rail激进改革',entry:'14%持股发起代理权争夺更换CEO',result:'$60→$200+，获利$26亿',lesson:'好公司差管理时行动主义最有效'},
+{year:2012,name:'做空Herbalife(败仗)',entry:'$10亿做空指控为"金字塔骗局"',result:'2018年认赔约$5亿',lesson:'做空风险无限，时间成本可致命'}]}
+};
+
+/* ===== COMPARE (Crisis 1999 vs 2026) ===== */
+const COMPARE_DIMS=[
+  {dim:'美股走势',ic:'📈',sim:80,h:'1999标普+19.5%/纳指+85.6%',cur:'AI牛市续创新高'},
+  {dim:'盈利与估值',ic:'💰',sim:82,h:'CAPE 44(史上峰值)',cur:'CAPE~39·前瞻PE~22'},
+  {dim:'长中短期利率',ic:'🏦',sim:42,h:'联邦基金6.5%·深度倒挂',cur:'联邦基金3.50-3.75%·曲线已转正'},
+  {dim:'美元走势',ic:'💵',sim:66,h:'DXY升向110',cur:'DXY偏强~99'},
+  {dim:'黄金走势',ic:'🥇',sim:8,h:'低迷~$280/oz',cur:'创历史新高$4500+'},
+  {dim:'石油价格',ic:'🛢️',sim:60,h:'$12→$35(+192%)',cur:'WTI高位坚挺'},
+  {dim:'PCE/CPI',ic:'🌡️',sim:58,h:'CPI 3.4%·PCE 1.7%',cur:'CPI~3.3%·PCE~2.7%'},
+  {dim:'企业基本面',ic:'🏭',sim:24,h:'多数互联网公司负现金流',cur:'Mag7高盈利强现金流'},
+];
+function overlapScore(){
+  const sims=COMPARE_DIMS.map(d=>d.sim);
+  const sorted=[...sims].sort((a,b)=>a-b);
+  const q=p=>{const i=(sorted.length-1)*p,lo=Math.floor(i),hi=Math.ceil(i);return sorted[lo]+(sorted[hi]-sorted[lo])*(i-lo)};
+  const med=q(.5),iqr=q(.75)-q(.25),thr=Math.max(iqr,12);
+  const kept=COMPARE_DIMS.filter(d=>Math.abs(d.sim-med)<=thr);
+  const raw=Math.round(sims.reduce((a,b)=>a+b,0)/sims.length);
+  const trimmed=Math.round(kept.reduce((a,b)=>a+b.sim,0)/kept.length);
+  return{raw,trimmed,kept:kept.length,total:sims.length};
+}
+
+/* ===== TRUTH CHECK ===== */
+const TRUTH_CHECK=[
+  {item:'30Y美债5%收益率',v:'真实·健康',c:'#4caf72',reason:'接近长期历史均值，是中性利率上移的正常化'},
+  {item:'美股持续创新高',v:'半真半虚',c:'#e0a23c',reason:'Mag7真实盈利支撑为"真"，CAPE~39透支未来为"虚"'},
+  {item:'石油价格坚挺',v:'偏虚',c:'#e0a23c',reason:'供给约束+地缘驱动而非需求强劲'},
+  {item:'美元汇率升高',v:'矛盾信号',c:'#e05c5c',reason:'利差支撑部分真实，但金价同创新高暗示去美元化'},
+];
+
+/* ===== MASTER ADVICE ===== */
+const MASTER_ADVICE=[
+  {nm:'德鲁肯米勒',av:'🎯',c:'#e0a23c',stance:'减仓·灵活',port:'现金35%·AI龙头30%·黄金15%·能源10%·做空10%'},
+  {nm:'巴菲特',av:'🏰',c:'#e0a23c',stance:'持币·观望',port:'现金30%·消费金融35%·能源15%·核心科技20%'},
+  {nm:'霍华德·马克思',av:'⚖️',c:'#e05c5c',stance:'防御为主',port:'高评级债40%·现金15%·防御股25%·另类预备20%'},
+  {nm:'彼得·林奇',av:'🔍',c:'#4caf72',stance:'精选·买入',port:'GARP成长50%·价值周期25%·现金15%·红利10%'},
+];
+
+/* ===== STOCKS ===== */
+const US_LIST=[['105.AAPL','AAPL','苹果'],['105.MSFT','MSFT','微软'],['105.GOOGL','GOOGL','谷歌'],['105.AMZN','AMZN','亚马逊'],['105.NVDA','NVDA','英伟达'],['105.META','META','Meta'],['105.TSLA','TSLA','特斯拉'],['105.TQQQ','TQQQ','3倍多纳指'],['105.SQQQ','SQQQ','3倍空纳指'],['106.CRCL','CRCL','Circle'],['106.BABA','BABA','阿里巴巴'],['105.JD','JD','京东'],['105.PDD','PDD','拼多多'],['106.TME','TME','腾讯音乐'],['105.NTES','NTES','网易'],['105.MU','MU','美光'],['107.DBA','DBA','农产品ETF'],['105.TCOM','TCOM','携程']];
+const HK_LIST=[['116.00700','0700','腾讯'],['116.09988','9988','阿里-W'],['116.03690','3690','美团-W'],['116.09992','9992','泡泡玛特'],['116.01810','1810','小米-W'],['116.01211','1211','比亚迪'],['116.02800','2800','盈富基金'],['116.09999','9999','网易-S'],['116.02611','2611','国泰海通'],['116.00883','0883','中海油'],['116.09899','9899','网易云音乐']];
+const CN_LIST=[['1.000001','SH','上证指数'],['1.000300','HS300','沪深300'],['1.510310','510310','沪深300ETF'],['1.561380','561380','电网设备ETF'],['0.159827','159827','农业ETF']];
+const ALL_STK=[...US_LIST,...HK_LIST,...CN_LIST];
+
+/* ===== FX SECIDS ===== */
+const EM_FX={'100.UDI':['dxyIndex',2],'120.USDCNYC':['usdcny',4],'120.EURCNYC':['eurcny',4],'120.JPYCNYC':['jpycny',4],'120.GBPCNYC':['gbpcny',4],'119.EURUSD':['eurusd',4],'119.GBPUSD':['gbpusd',4],'119.USDJPY':['usdjpy',2]};
+const EM_MKT={'100.SPX':['sp500',2],'100.NDX':['nasdaq',2],'100.DJIA':['dow',2],'101.GC00Y':['goldPrice',2],'101.SI00Y':['silver',2],'102.CL00Y':['oil',2],'102.NG00Y':['natgas',3]};
+
+async function fetchFX(){
+  const m=await emQuote(Object.keys(EM_FX).join(','));
+  const o={};for(const sid in EM_FX){const[k,dec]=EM_FX[sid];const x=m[sid];if(x){o[k]=nf(x.price,dec);o[k+'Change']=x.chg;}}
+  // JPY/CNY is per 100 yen
+  if(o.jpycny){o.jpycny=nf(parseFloat(o.jpycny.replace(/,/g,''))/100,4);}
+  return o;
+}
+async function fetchMarket(){
+  const m=await emQuote(Object.keys(EM_MKT).join(','));
+  const o={};for(const sid in EM_MKT){const[k,dec]=EM_MKT[sid];const x=m[sid];if(x){o[k]=nf(x.price,dec);o[k+'Change']=x.chg;}}
+  // crypto
+  try{
+    const arr=await fetch('https://data-api.binance.vision/api/v3/ticker/24hr?symbols=%5B%22BTCUSDT%22%2C%22ETHUSDT%22%5D').then(r=>r.json());
+    arr.forEach(x=>{if(x.symbol==='BTCUSDT'){o.btcPrice=nf(+x.lastPrice,0);o.btcChange=+x.priceChangePercent}if(x.symbol==='ETHUSDT'){o.eth=nf(+x.lastPrice,0);o.ethChange=+x.priceChangePercent}});
+  }catch(e){}
+  return o;
+}
+async function fetchUniverse(){
+  const ck='univ';const cached=cacheGet(ck,25000);if(cached)return cached;
+  const m=await emQuote(ALL_STK.map(x=>x[0]).join(','));
+  const conv=list=>list.map(([sid,id,name])=>{const x=m[sid];return{id,name,price:x?x.price:null,changePct:x?x.chg:null,secid:sid}});
+  const r={us:conv(US_LIST),hk:conv(HK_LIST),cn:conv(CN_LIST)};cacheSet(ck,r);return r;
+}
+async function fetchKline(secid,days){
+  const ck='kl_'+secid;const cached=cacheGet(ck,300000);if(cached)return cached;
+  const url=`https://push2his.eastmoney.com/api/qt/stock/kline/get?secid=${secid}&fields1=f1,f2,f3,f4,f5,f6&fields2=f51,f52,f53,f54,f55,f56,f57&klt=101&fqt=1&end=20500101&lmt=${days||120}&_=${Date.now()}`;
+  try{const j=await fetch(url).then(r=>r.json());const kl=j.data&&j.data.klines;if(!kl||!kl.length)return[];
+  const r=kl.map(k=>{const p=k.split(',');return{date:p[0],open:+p[1],close:+p[2],high:+p[3],low:+p[4],vol:+p[5]}});cacheSet(ck,r);return r;}catch(e){return[];}
+}
+async function fetchFundamentals(secid){
+  const ck='fund_'+secid;const cached=cacheGet(ck,300000);if(cached)return cached;
+  const url=`https://push2.eastmoney.com/api/qt/stock/get?secid=${secid}&fields=f57,f58,f162,f163,f167,f173,f116,f117,f127,f183,f186&_=${Date.now()}`;
+  try{const j=await fetch(url).then(r=>r.json());const d=j.data;if(!d||!d.f57)return null;
+  const r={code:d.f57,name:d.f58,pe:d.f163!=null&&d.f163!=='-'?+(+d.f163/100).toFixed(2):null,pb:d.f167!=null&&d.f167!=='-'?+(+d.f167/100).toFixed(2):null,roe:d.f173!=null&&d.f173!=='-'?+(+d.f173/100).toFixed(2):null,mktCap:d.f116!=null&&d.f116!=='-'?d.f116:null};cacheSet(ck,r);return r;}catch(e){return null;}
+}
+
+/* ===== RENDER: DASHBOARD ===== */
+function renderDash(md){
+  const mc=(k,l,pre,suf)=>{const v=md[k],c=md[k+'Change'];
+    return `<div class="mkt-card"><div class="lbl">${l}</div><div class="val">${pre||''}${v||'—'}${suf||''}</div><div class="chg ${c>=0?'up':'dn'}">${chgStr(c)}</div></div>`;};
+  const cbHTML=CENTRAL_BANKS.map(b=>`<div class="cb-item"><div class="cb-flag">${b.flag}</div><div class="cb-info"><div class="cb-name">${b.name}</div><div class="cb-rate">${b.rate}</div></div><div class="cb-next">${nextMeeting(b)}</div></div>`).join('');
+  document.getElementById('v-dash').innerHTML=`
+    <div class="sec-t">全球市场</div>
+    <div class="mkt-grid">
+      ${mc('sp500','标普500')}${mc('nasdaq','纳斯达克')}${mc('dow','道琼斯')}
+      ${mc('goldPrice','黄金','$')}${mc('silver','白银','$')}${mc('oil','原油WTI','$')}
+      ${mc('natgas','天然气','$')}${mc('btcPrice','比特币','$')}${mc('eth','以太坊','$')}${mc('dxyIndex','美元DXY')}
+    </div>
+    <div class="sec-t">人民币汇率</div>
+    <div class="mkt-grid">
+      ${mc('usdcny','USD/CNY')}${mc('eurcny','EUR/CNY')}${mc('jpycny','JPY/CNY')}${mc('gbpcny','GBP/CNY')}
+    </div>
+    <div class="sec-t">主要汇率</div>
+    <div class="mkt-grid">
+      ${mc('eurusd','EUR/USD')}${mc('gbpusd','GBP/USD')}${mc('usdjpy','USD/JPY')}
+    </div>
+    <div class="sec-t">政策利率与波动率</div>
+    <div class="mkt-grid">
+      <div class="mkt-card"><div class="lbl">VIX恐慌指数</div><div class="val">${md.vixIndex||'—'}</div></div>
+      <div class="mkt-card"><div class="lbl">美联储利率</div><div class="val">${md.fedRate||'—'}</div></div>
+      <div class="mkt-card"><div class="lbl">中国LPR</div><div class="val">${md.chinaLPR||'—'}%</div></div>
+    </div>
+    <div class="sec-t">央行议息日历</div>
+    <div class="card gold-edge">${cbHTML}</div>
+    <div class="disclaimer"><b>风险提示</b> · 数据仅供研究参考，不构成投资建议。来源：东方财富(实时) · Binance(加密) · 政策利率为最新公布值。</div>
+    <a class="pc-link" href="../">💻 返回PC完整版</a>`;
+}
+
+/* ===== RENDER: CRISIS ===== */
+function renderCrisis(){
+  const sc=overlapScore();
+  const dimsHTML=COMPARE_DIMS.map(d=>`<div class="card cmp-card gold-edge"><div class="cmp-dim">${d.ic} ${d.dim}</div><div class="cmp-h">1999: ${d.h}</div><div class="cmp-cur">2026: ${d.cur}</div><div class="cmp-bar"><div class="fill" style="width:${d.sim}%"></div></div><div class="cmp-sim">相似度 ${d.sim}%</div></div>`).join('');
+  const tcHTML=TRUTH_CHECK.map(t=>`<div class="card tc-card gold-edge" style="border-left-color:${t.c}"><div class="tc-item">${t.item}</div><div class="tc-verdict" style="color:${t.c}">${t.v}</div><div class="tc-reason">${t.reason}</div></div>`).join('');
+  const advHTML=MASTER_ADVICE.map(a=>`<div class="card adv-card gold-edge" style="border-top-color:${a.c}"><div class="adv-nm">${a.av} ${a.nm}</div><div class="adv-stance" style="color:${a.c}">${a.stance}</div><div class="adv-port">${a.port}</div></div>`).join('');
+  document.getElementById('v-crisis').innerHTML=`
+    <div class="score-badge"><div class="num">${sc.trimmed}%</div><div class="lbl">1999互联网泡沫 vs 2026 总体相似度<br>(IQR去异常后 · ${sc.kept}/${sc.total}维度)</div></div>
+    <div class="sec-t">多维对比</div>${dimsHTML}
+    <div class="sec-t">真假繁荣判断</div>${tcHTML}
+    <div class="sec-t">四位大师当前布局</div>${advHTML}
+    <div class="disclaimer"><b>风险提示</b> · 历史对比仅供参考，不构成投资建议。</div>`;
+}
+
+/* ===== RENDER: CYCLES ===== */
+function renderCycles(){
+  const html=CYCLES.map(c=>`<div class="card cyc-card gold-edge"><div class="cyc-nm">${c.nm}</div><div class="cyc-en">${c.en} · ${c.dur}</div><div class="cyc-bar"><div class="fill" style="width:${c.prog}%;background:${c.pc}"></div></div><div class="cyc-pos">${c.pos}</div><div class="cyc-phase" style="color:${c.pc}">${c.phase} · ${c.prog}%</div></div>`).join('');
+  document.getElementById('v-cycle').innerHTML=`<div class="sec-t">经济周期定位</div>${html}<div class="disclaimer"><b>风险提示</b> · 周期定位为主观研判，不构成投资建议。</div>`;
+}
+
+/* ===== RENDER: MASTERS ===== */
+let masterView='list';
+function renderMastersList(){
+  const html=MASTERS.map(m=>`<div class="card m-card gold-edge" onclick="showMDetail('${m.id}')"><div class="m-av" style="background:${m.c}22;color:${m.c}">${m.av}</div><div><div class="m-nm">${m.nm}</div><div class="m-en">${m.en}</div><div class="m-style">${m.style}</div></div><div class="m-arrow">›</div></div>`).join('');
+  document.getElementById('v-masters').innerHTML=`<div class="sec-t">十位投研大师</div>${html}<div class="disclaimer"><b>风险提示</b> · 大师逻辑仅供学习参考。</div>`;
+}
+function showMDetail(id){
+  const m=MASTERS.find(x=>x.id===id);if(!m)return;
+  const mc=MASTER_CASES[id];if(!mc)return;
+  const casesHTML=mc.cases.map(c=>`<div class="card md-case gold-edge"><div class="yr">${c.year}</div><div class="nm">${c.name}</div><div class="row"><b>入场▸ </b>${c.entry}</div><div class="row"><b>结果▸ </b>${c.result}</div><div class="lesson">💡 ${c.lesson}</div></div>`).join('');
+  document.getElementById('v-masters').innerHTML=`
+    <div class="md-back" onclick="renderMastersList()">← 返回</div>
+    <div class="md-hdr"><div class="av" style="background:${m.c}22;color:${m.c}">${m.av}</div><div><div class="nm">${m.nm}</div><div class="en">${m.en}</div><div class="ti">${m.title}</div></div></div>
+    <div class="sec-t">核心交易哲学</div>
+    <div class="card md-philo gold-edge">${mc.philosophy}</div>
+    <div class="sec-t">经典案例</div>${casesHTML}`;
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+/* ===== RENDER: STOCKS ===== */
+let stockView='list';
+function renderStockList(data){
+  const renderSection=(title,list)=>{
+    const items=list.map(s=>{
+      const cls=s.changePct>=0?'up':'dn';
+      const priceStr=s.price!=null?s.price.toLocaleString():'—';
+      return `<div class="stk-item" onclick="showStockDetail('${s.secid}','${s.id}','${s.name}')"><div class="stk-name"><div class="code">${s.id}</div><div class="cn">${s.name}</div></div><div class="stk-price">${priceStr}</div><div class="stk-chg ${cls}">${chgStr(s.changePct)}</div></div>`;
+    }).join('');
+    return `<div class="sec-t">${title}</div><div class="card gold-edge" style="padding:0 14px">${items}</div>`;
+  };
+  document.getElementById('v-stocks').innerHTML=
+    renderSection('🇺🇸 美股',data.us)+renderSection('🇭🇰 港股',data.hk)+renderSection('🇨🇳 A股',data.cn)+
+    `<div class="disclaimer"><b>数据来源</b> · 东方财富 Eastmoney 实时行情</div>`;
+}
+async function showStockDetail(secid,code,name){
+  const el=document.getElementById('v-stocks');
+  el.innerHTML=`<div class="sd-back" onclick="reloadStocks()">← 返回列表</div><div class="sd-hdr"><div class="nm">${name} (${code})</div></div><div class="loading-box"><span class="spin"></span> 加载K线…</div>`;
+  const [kline,fund]=await Promise.all([fetchKline(secid,120),fetchFundamentals(secid)]);
+  // Build SVG K-line
+  let chartHTML='<div style="color:var(--text-3);text-align:center;padding:20px">暂无K线数据</div>';
+  if(kline.length>10){
+    const W=window.innerWidth-64,H=200,pad=4;
+    const prices=kline.flatMap(k=>[k.high,k.low]);
+    const hi=Math.max(...prices),lo=Math.min(...prices);
+    const rng=hi-lo||1;
+    const bw=Math.max(2,(W-pad*2)/kline.length-1);
+    const yOf=v=>pad+(1-(v-lo)/rng)*(H-pad*2);
+    let bars='';
+    kline.forEach((k,i)=>{
+      const x=pad+i*(bw+1);
+      const col=k.close>=k.open?'#4caf72':'#e05c5c';
+      const bodyTop=Math.min(k.open,k.close),bodyBot=Math.max(k.open,k.close);
+      bars+=`<line x1="${x+bw/2}" y1="${yOf(k.high)}" x2="${x+bw/2}" y2="${yOf(k.low)}" stroke="${col}" stroke-width="1"/>`;
+      bars+=`<rect x="${x}" y="${yOf(bodyBot)}" width="${bw}" height="${Math.max(1,yOf(bodyTop)-yOf(bodyBot))}" fill="${col}" rx="1"/>`;
+    });
+    chartHTML=`<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">${bars}</svg><div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text-3);margin-top:4px"><span>${kline[0].date}</span><span>120日K线</span><span>${kline[kline.length-1].date}</span></div>`;
+  }
+  // Fundamentals
+  let fundHTML='';
+  if(fund){
+    const items=[
+      {l:'市盈率PE',v:fund.pe!=null?fund.pe:'—'},
+      {l:'市净率PB',v:fund.pb!=null?fund.pb:'—'},
+      {l:'ROE(%)',v:fund.roe!=null?fund.roe+'%':'—'},
+      {l:'总市值',v:fund.mktCap!=null?(fund.mktCap>1e12?(fund.mktCap/1e12).toFixed(1)+'万亿':fund.mktCap>1e8?(fund.mktCap/1e8).toFixed(0)+'亿':fund.mktCap):'—'},
+    ];
+    fundHTML=`<div class="sec-t">基本面</div><div class="sd-fund">${items.map(i=>`<div class="item"><div class="v">${i.v}</div><div class="l">${i.l}</div></div>`).join('')}</div>`;
+  }
+  el.innerHTML=`<div class="sd-back" onclick="reloadStocks()">← 返回列表</div><div class="sd-hdr"><div class="nm">${name} (${code})</div></div><div class="sd-chart">${chartHTML}</div>${fundHTML}`;
+}
+async function reloadStocks(){
+  const el=document.getElementById('v-stocks');
+  el.innerHTML='<div class="loading-box"><span class="spin"></span> 加载行情…</div>';
+  try{const d=await fetchUniverse();renderStockList(d);}catch(e){el.innerHTML='<div class="loading-box">行情加载失败，请稍后重试</div>';}
+}
+
+/* ===== APP CONTROL ===== */
+const views=['dash','crisis','cycle','masters','stocks'];
+document.querySelectorAll('.tab').forEach(t=>t.addEventListener('click',()=>{
+  const v=t.dataset.v;
+  document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));t.classList.add('active');
+  document.querySelectorAll('.view').forEach(x=>x.classList.remove('active'));
+  document.getElementById('v-'+v).classList.add('active');
+  // Lazy render
+  if(v==='crisis'&&!document.getElementById('v-crisis').innerHTML)renderCrisis();
+  if(v==='cycle'&&!document.getElementById('v-cycle').innerHTML)renderCycles();
+  if(v==='masters'&&!document.getElementById('v-masters').innerHTML)renderMastersList();
+  if(v==='stocks'&&!document.getElementById('v-stocks').innerHTML)reloadStocks();
+  window.scrollTo({top:0,behavior:'smooth'});
+}));
+
+function setStatus(state,txt){
+  document.getElementById('statusDot').className='dot '+state;
+  document.getElementById('statusText').textContent=txt;
+}
+
+async function loadAll(){
+  setStatus('loading','加载中…');
+  const md=Object.assign({},CURATED);
+  try{
+    const [fx,mkt]=await Promise.allSettled([fetchFX(),fetchMarket()]);
+    if(fx.status==='fulfilled')Object.assign(md,fx.value);
+    if(mkt.status==='fulfilled')Object.assign(md,mkt.value);
+    renderDash(md);
+    const ts=new Date().toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit'});
+    setStatus('live','实时 · '+ts);
+  }catch(e){
+    renderDash(md);
+    setStatus('','离线');
+  }
+}
+loadAll();
+setInterval(loadAll,300000);
+</script>
+</body>
+</html>
