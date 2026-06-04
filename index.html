@@ -1448,7 +1448,23 @@ const CN_LIST=[
   ['1.000001','SH','上证指数'],   ['1.000300','HS300','沪深300'],   ['1.510310','510310','沪深300ETF'],
   ['1.561380','561380','电网设备ETF'],['0.159827','159827','农业ETF'],
 ];
-const ALL_STOCKS=[...US_LIST,...HK_LIST,...CN_LIST];
+const COMMOD_LIST=[
+  ['102.CL00Y','WTI','WTI原油'],
+  ['122.XAU','XAU','伦敦金现(黄金)'],
+];
+const BOND_US_LIST=[
+  ['171.US2Y','US2Y','美国2年期国债'],['171.US5Y','US5Y','美国5年期国债'],
+  ['171.US10Y','US10Y','美国10年期国债'],['171.US30Y','US30Y','美国30年期国债'],
+];
+const BOND_CN_LIST=[
+  ['171.CN2Y','CN2Y','中国2年期国债'],['171.CN5Y','CN5Y','中国5年期国债'],
+  ['171.CN10Y','CN10Y','中国10年期国债'],['171.CN30Y','CN30Y','中国30年期国债'],
+];
+const BOND_JP_LIST=[
+  ['171.JP2Y','JP2Y','日本2年期国债'],['171.JP5Y','JP5Y','日本5年期国债'],
+  ['171.JP10Y','JP10Y','日本10年期国债'],['171.JP30Y','JP30Y','日本30年期国债'],
+];
+const ALL_STOCKS=[...US_LIST,...HK_LIST,...CN_LIST,...COMMOD_LIST,...BOND_US_LIST,...BOND_CN_LIST,...BOND_JP_LIST];
 // secid → 列表项的快查
 const STOCK_MAP={};ALL_STOCKS.forEach(x=>STOCK_MAP[x[0]]=x);
 
@@ -1456,13 +1472,13 @@ async function fetchUniverse(){
   const ck='universe';
   const cached=cacheGet(ck,25000); // 25s缓存(列表频繁刷新不必要)
   if(cached)return cached;
-  const all=[...US_LIST,...HK_LIST,...CN_LIST];
+  const all=[...US_LIST,...HK_LIST,...CN_LIST,...COMMOD_LIST,...BOND_US_LIST,...BOND_CN_LIST,...BOND_JP_LIST];
   const m=await emQuote(all.map(x=>x[0]).join(','));
   const conv=list=>list.map(([sid,id,name])=>{
     const x=m[sid];
     return {id, name, price:x?x.price:null, changePct:x?x.chg:null, secid:sid};
   });
-  const result={us:conv(US_LIST), hk:conv(HK_LIST), cn:conv(CN_LIST), asOf:Date.now()};
+  const result={us:conv(US_LIST), hk:conv(HK_LIST), cn:conv(CN_LIST), commod:conv(COMMOD_LIST), bondUS:conv(BOND_US_LIST), bondCN:conv(BOND_CN_LIST), bondJP:conv(BOND_JP_LIST), asOf:Date.now()};
   cacheSet(ck,result);
   return result;
 }
@@ -1868,21 +1884,22 @@ function stkPrice(p){
   const dec = p<10 ? 3 : 2;
   return Number(p).toLocaleString('en-US',{minimumFractionDigits:dec,maximumFractionDigits:dec});
 }
-function scard(s,cur){
+function scard(s,cur,isYield){
   if(s.price==null){
     return `<div class="scard flat" data-secid="${s.secid||''}"><div class="s-top"><span class="s-nm">${s.name}</span><span class="s-code">${(s.id||'').toUpperCase()}</span></div><div class="s-na">— 暂无数据</div></div>`;
   }
   const c=s.changePct;
   const cls=c>0?'up':c<0?'down':'flat';
   const ar=c>0?'▲':c<0?'▼':'■';
+  const suffix=isYield?'%':'';
   return `<div class="scard ${cls}" data-secid="${s.secid||''}">
     <div class="s-top"><span class="s-nm">${s.name}</span><span class="s-code">${(s.id||'').toUpperCase()}</span></div>
-    <div class="s-price">${cur?`<span class="cur">${cur}</span>`:''}${stkPrice(s.price)}</div>
+    <div class="s-price">${cur?`<span class="cur">${cur}</span>`:''}${stkPrice(s.price)}${suffix}</div>
     <div class="s-chg ${cls}">${ar} ${Math.abs(c||0).toFixed(2)}%</div>
   </div>`;
 }
-function stkSection(title,en,rows,curFn){
-  const cards=rows.map(s=>scard(s,curFn(s))).join('');
+function stkSection(title,en,rows,curFn,isYield){
+  const cards=rows.map(s=>scard(s,curFn(s),isYield)).join('');
   return `<div class="stk-sec">
     <div class="stk-head"><span class="mk">${title}</span><span class="mk-en">${en}</span><span class="mk-cnt">${rows.length} 标的</span></div>
     <div class="stk-grid">${cards}</div>
@@ -1893,7 +1910,11 @@ function renderStocks(u){
   const html =
     stkSection('美股','US Equities',u.us||[],()=> '$') +
     stkSection('港股','HK Equities',u.hk||[],()=> 'HK$') +
-    stkSection('A股','China A-Shares',u.cn||[],cnCur);
+    stkSection('A股','China A-Shares',u.cn||[],cnCur) +
+    stkSection('大宗商品','Commodities',u.commod||[],()=> '$') +
+    stkSection('🇺🇸 美国国债收益率','US Treasury Yields',u.bondUS||[],()=> '',true) +
+    stkSection('🇨🇳 中国国债收益率','China Gov Bond Yields',u.bondCN||[],()=> '',true) +
+    stkSection('🇯🇵 日本国债收益率','Japan Gov Bond Yields',u.bondJP||[],()=> '',true);
   const ts=new Date(u.asOf||Date.now()).toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
   document.getElementById('stocksContent').innerHTML =
     `<div class="stk-asof"><span class="dot"></span>实时行情 · 更新于 ${ts} · 数据源 东方财富 Eastmoney · <b>点击任意个股查看详细分析</b></div>` + html;
