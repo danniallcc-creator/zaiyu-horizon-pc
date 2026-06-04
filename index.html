@@ -1586,14 +1586,25 @@ function calcFibonacci(data){
     {pct:'50.0%',price:levels.r500},
     {pct:'61.8%',price:levels.r618},
   ];
-  // 支撑/阻力判定
-  const nearestSupport=retraceLevels.filter(l=>l.price<last).sort((a,b)=>b.price-a.price)[0]||null;
-  const nearestResist=retraceLevels.filter(l=>l.price>last).sort((a,b)=>a.price-b.price)[0]||null;
+  // 所有关键位(含23.6%和78.6%)用于找支撑/阻力
+  const allLevels=[
+    {pct:'23.6%',price:levels.r236},
+    {pct:'38.2%',price:levels.r382},
+    {pct:'50.0%',price:levels.r500},
+    {pct:'61.8%',price:levels.r618},
+    {pct:'78.6%',price:levels.r786},
+  ];
+  // 支撑: 当前价下方最近的关键位, 没有则用区间低点
+  let nearestSupport=allLevels.filter(l=>l.price<last).sort((a,b)=>b.price-a.price)[0]||null;
+  if(!nearestSupport) nearestSupport={pct:'低点',price:low};
+  // 阻力: 当前价上方最近的关键位, 没有则用区间高点
+  let nearestResist=allLevels.filter(l=>l.price>last).sort((a,b)=>a.price-b.price)[0]||null;
+  if(!nearestResist) nearestResist={pct:'高点',price:high};
   // 评分: 价格在关键位附近 → 信号更强
   let fibScore=50;
-  const distPct=Math.abs(last-(nearestSupport?nearestSupport.price:last))/last*100;
-  if(nearestSupport&&distPct<2)fibScore=70; // 接近支撑=看多
-  if(nearestResist&&Math.abs(last-nearestResist.price)/last*100<2)fibScore=30; // 接近阻力=看空
+  const distPct=Math.abs(last-nearestSupport.price)/last*100;
+  if(distPct<2)fibScore=70; // 接近支撑=看多
+  if(Math.abs(last-nearestResist.price)/last*100<2)fibScore=30; // 接近阻力=看空
   if(downTrend&&last<levels.r618)fibScore=Math.max(fibScore-15,10); // 深度回撤=风险
   if(!downTrend&&last>levels.r618)fibScore=Math.min(fibScore+15,90); // 强势突破
   return{high,low,levels,retraceLevels,nearestSupport,nearestResist,fibScore,downTrend,last};
@@ -1697,7 +1708,7 @@ function aiScore(data,fund){
   sentScore=Math.min(100,Math.max(0,sentScore));
 
   // ===== 综合评分 (5维度等权20%各) =====
-  const overall=Math.round(techScore*0.20+fibScore*0.20+macroScore*0.20+fundScore*0.20+sentScore*0.20);
+  const overall=Math.round(techScore*0.10+fibScore*0.15+macroScore*0.30+fundScore*0.15+sentScore*0.30);
   const verdict=overall>=70?{t:'强烈看多',c:'#4caf72'}:overall>=60?{t:'偏多',c:'#5b9bd5'}:overall>=50?{t:'中性偏多',c:'#8bc34a'}:overall>=40?{t:'中性',c:'#e0a23c'}:overall>=30?{t:'偏空',c:'#e05c5c'}:{t:'强烈看空',c:'#d32f2f'};
   return{techScore,fibScore,macroScore,fundScore,sentScore,overall,verdict,fib,lastRSI,lastMACD,ret5:+ret5.toFixed(2),ret20:+ret20.toFixed(2),volatility:+volatility.toFixed(2),lastVWAP,lastBoll};
 }
@@ -1816,8 +1827,8 @@ function renderDetailContent(container,secid,info,kdata,fund){
         ${f.retraceLevels.map(l=>fibRow(l.pct,l.price)).join('')}
       </div>
       <div class="fib-support">
-        ${f.nearestSupport?`<span class="fib-tag support">支撑 ${f.nearestSupport.pct} = ${f.nearestSupport.price.toFixed(2)}</span>`:''}
-        ${f.nearestResist?`<span class="fib-tag resist">阻力 ${f.nearestResist.pct} = ${f.nearestResist.price.toFixed(2)}</span>`:''}
+        <span class="fib-tag support">支撑 ${f.nearestSupport.pct} = ${f.nearestSupport.price.toFixed(2)}</span>
+        <span class="fib-tag resist">阻力 ${f.nearestResist.pct} = ${f.nearestResist.price.toFixed(2)}</span>
       </div>
     </div>`;
   }
@@ -1828,11 +1839,11 @@ function renderDetailContent(container,secid,info,kdata,fund){
     scoreHTML=`<div class="stk-ai">
       <div class="ai-overall"><span class="ai-score" style="color:${score.verdict.c}">${score.overall}</span><span class="ai-verdict" style="color:${score.verdict.c}">${score.verdict.t}</span></div>
       <div class="ai-dims">
-        ${bar('技术指标',score.techScore,'#d4af37')}
-        ${bar('斐波那契',score.fibScore,'#5b9bd5')}
-        ${bar('宏观货币政策',score.macroScore,'#ab47bc')}
-        ${bar('财报基本面',score.fundScore,'#4caf72')}
-        ${bar('市场情绪',score.sentScore,'#e0a23c')}
+        ${bar('宏观货币政策 30%',score.macroScore,'#ab47bc')}
+        ${bar('市场情绪 30%',score.sentScore,'#e0a23c')}
+        ${bar('斐波那契 15%',score.fibScore,'#5b9bd5')}
+        ${bar('财报基本面 15%',score.fundScore,'#4caf72')}
+        ${bar('技术指标 10%',score.techScore,'#d4af37')}
       </div>
       <div class="ai-meta">RSI(14) <b>${score.lastRSI}</b> · MACD ${score.lastMACD>0?'金叉':'死叉'} · 波动率 <b>${score.volatility}%</b> · VWAP <b>${score.lastVWAP||'—'}</b> · 5日 <b style="color:${score.ret5>=0?'#4caf72':'#e05c5c'}">${score.ret5>=0?'+':''}${score.ret5}%</b> · 20日 <b style="color:${score.ret20>=0?'#4caf72':'#e05c5c'}">${score.ret20>=0?'+':''}${score.ret20}%</b></div>
     </div>`;
