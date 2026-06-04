@@ -754,7 +754,7 @@ const EM_BASE = "https://push2.eastmoney.com/api/qt/ulist.np/get";
 const FETCH_TIMEOUT = 8000; // 中国→东方财富应在3s内响应, 8s超时足够
 
 /* 仅政策利率与波动率指数无免费实时CORS源, 保留最新公布值(非市场tick数据) */
-const CURATED = { vixIndex:'14.2', fedRate:'3.50-3.75%', chinaLPR:'3.00' };
+const CURATED = { vixIndex:'14.2', fedRate:'4.25-4.50%', chinaLPR:'3.00' };
 
 /* Chart.js defaults for cycle charts */
 if(typeof Chart!=='undefined'){
@@ -773,7 +773,7 @@ function chgStr(c){return c===null||c===undefined?'—':(c>=0?'+':'')+Number(c).
 
 // 各央行 2026 年预定议息日历 (ISO date). nextMeeting() 每日动态推算下一次决议日期
 const CENTRAL_BANKS = [
-  {flag:'🇺🇸',name:'美联储 FED',rate:'3.50-3.75%',action:'2026 渐进降息',meetings:['2026-01-28','2026-03-18','2026-04-29','2026-06-17','2026-07-29','2026-09-16','2026-10-28','2026-12-16']},
+  {flag:'🇺🇸',name:'美联储 FED',rate:'4.25-4.50%',action:'2026 暂停降息观望',meetings:['2026-01-28','2026-03-18','2026-04-29','2026-06-17','2026-07-29','2026-09-16','2026-10-28','2026-12-16']},
   {flag:'🇪🇺',name:'欧洲央行 ECB',rate:'2.00%',action:'2026 维持/微调',meetings:['2026-01-29','2026-03-12','2026-04-16','2026-06-04','2026-07-23','2026-09-10','2026-10-29','2026-12-17']},
   {flag:'🇨🇳',name:'中国人民银行',rate:'3.00%',action:'LPR 稳中偏松',monthlyDay:20},
   {flag:'🇯🇵',name:'日本央行 BOJ',rate:'0.75%',action:'2026 渐进加息',meetings:['2026-01-23','2026-03-19','2026-04-28','2026-06-17','2026-07-30','2026-09-18','2026-10-30','2026-12-18']},
@@ -827,12 +827,12 @@ const COMPARE_DIMS=[
    sim:80,note:'同处长牛末段、由少数科技龙头领涨并加速冲顶'},
   {dim:'盈利与估值',en:'Earnings & Valuation',ic:'💰',
    h:'估值史上极端 · Shiller CAPE 44(2000.1 历史峰值) · 标普前瞻 PE ~25 · 纳指 PE >100',
-   cur:md=>'估值高位 · CAPE ~39 · 标普前瞻 PE ~22 · 股权风险溢价偏薄',
-   sim:82,note:'估值同处历史顶部区间，2000 更极端(纳指几无盈利支撑)'},
+   cur:md=>'估值高位 · CAPE ~39.8 · 标普 TTM PE 25.9 · 前瞻 PE ~21 · Nasdaq-100 PE 37',
+   sim:78,note:'估值同处历史顶部区间，但 2000 更极端(纳指 PE >100 且多无盈利支撑)'},
   {dim:'长中短期利率',en:'Rates & Curve',ic:'🏦',
    h:'高利率+深度倒挂 · 联邦基金 6.5% · 10Y ~6.5% · 2Y>10Y',
-   cur:md=>'利率正常化 · 联邦基金 3.50-3.75% · 10Y ~4.4% · 30Y ~5.0% · 曲线已转正',
-   sim:42,note:'利率绝对水平更低、曲线由倒挂转正，与 2000 差异显著'},
+   cur:md=>'利率正常化 · 联邦基金 4.25-4.50% · 10Y ~4.4% · 30Y ~5.0% · 曲线已转正',
+   sim:42,note:'Fed 从 6.5% 加息 vs 当前 4.375% 降息，利率绝对水平更低、方向相反'},
   {dim:'美元走势',en:'US Dollar',ic:'💵',
    h:'强势美元 · DXY 升向 ~110(2001 见顶 121)',
    cur:md=>`偏强美元 · DXY ${(md&&md.dxyIndex)||'—'}`,
@@ -851,8 +851,8 @@ const COMPARE_DIMS=[
    sim:60,note:'同处油价上行/高位，但当前更多由供给约束与地缘驱动'},
   {dim:'PCE / CPI',en:'Inflation',ic:'🌡️',
    h:'温和抬升 · CPI 2.2%→3.4% · 核心 PCE ~1.7%',
-   cur:md=>'偏黏抬升 · CPI ~3.3% · 核心 PCE ~2.7%',
-   sim:58,note:'通胀同步温和抬升，当前更具黏性'},
+   cur:md=>'偏黏抬升 · CPI 3.8%(Apr 2026) · 核心 PCE 3.3% · 高于 Fed 2% 目标',
+   sim:58,note:'通胀同步温和抬升，当前更具黏性(核心 PCE 3.3% vs 2000 的 1.7%)'},
   {dim:'企业基本面',en:'Corporate Fundamentals',ic:'🏭',
    h:'龙头烧钱 · 多数互联网公司负现金流、无盈利 · 利润率 1997 见顶回落',
    cur:md=>'龙头高质量 · Mag7 真实高盈利、强自由现金流、利润率历史高位',
@@ -874,19 +874,19 @@ function overlapScore(){
 
 /* ===== 2027/2028 盈利回归预测(基于 2026 Q1 财报年化 + 增速回归长期中枢) ===== */
 const EPS_FORECAST={
-  // 标普500 自上而下营运 EPS(美元)
-  sp:[{y:'2024',v:235,t:'实际'},{y:'2025',v:262,t:'实际'},{y:'2026E',v:285,t:'Q1年化'},{y:'2027E',v:305,t:'回归预测'},{y:'2028E',v:324,t:'回归预测'}],
-  // Mag7 合计净利润同比增速
-  m7:[{y:'2024',g:33},{y:'2025',g:22},{y:'2026E',g:18},{y:'2027E',g:13},{y:'2028E',g:10}],
-  note:'方法: 以 2026 Q1 实际财报年化为锚，假设 AI 资本开支边际回报递减、盈利增速由超常向长期中枢(标普 EPS ~7%/年)平滑回归；Mag7 增速随基数抬升与渗透率见顶逐年收敛。'
+  // 标普500 自上而下营运 EPS(美元) — 来源: Goldman Sachs/FactSet 2026.06
+  sp:[{y:'2024',v:235,t:'实际'},{y:'2025',v:271,t:'实际'},{y:'2026E',v:340,t:'共识(GS)'},{y:'2027E',v:385,t:'共识(GS)'},{y:'2028E',v:412,t:'回归预测'}],
+  // Mag7 合计净利润同比增速(%)
+  m7:[{y:'2024',g:33},{y:'2025',g:24},{y:'2026E',g:21},{y:'2027E',g:13},{y:'2028E',g:9}],
+  note:'方法: 以 Goldman Sachs 2026E $340、2027E $385 为锚(FactSet Q1 blended +27.1%佐证)，2028 假设 AI 资本开支边际回报递减、盈利增速向长期中枢(~7%/年)平滑收敛；Mag7 增速随基数抬升逐年压缩。'
 };
 
 /* ===== 真假繁荣判断(分析#3) ===== */
 const TRUTH_CHECK=[
-  {item:'30 年期美债 5% 收益率',v:'真实 · 健康',c:'#4caf72',
-   reason:'相对 2010s 的异常低利率，5% 接近长期历史均值，是"中性利率上移 + 期限溢价回归"的正常化结果，符合经济周期规律。'},
+  {item:'30 年期美债 ~5% 收益率',v:'真实 · 健康',c:'#4caf72',
+   reason:'相对 2010s 的异常低利率，4.99% 接近长期历史均值，是"中性利率上移 + 期限溢价回归"的正常化结果，符合经济周期规律。'},
   {item:'美股持续创新高',v:'半真半虚',c:'#e0a23c',
-   reason:'Mag7 真实盈利与现金流支撑(区别于 2000)，此为"真"；但 CAPE ~39 已透支未来多年增长、市场宽度收窄、集中度极高，估值层面含"虚"。'},
+   reason:'Mag7 真实盈利与现金流支撑(区别于 2000)，此为"真"；但 CAPE ~39.8 已透支未来多年增长、市场宽度收窄、集中度极高，估值层面含"虚"。'},
   {item:'石油价格坚挺升高',v:'偏虚',c:'#e0a23c',
    reason:'更多由供给约束 + 地缘溢价驱动而非需求强劲；全球制造业偏弱，需求端走软风险大，高油价更像供给冲击而非繁荣信号。'},
   {item:'美元汇率升高',v:'矛盾信号',c:'#e05c5c',
@@ -953,15 +953,15 @@ const BUBBLE_2026={
   label:'2025–2026 当前市场',
   sp500_peak:7610,sp500_ye99:6670,sp500_ret_12m:14.1,sp500_ret_24m:38,
   nasdaq_peak:27094,nasdaq_ret_12m:18.5,nasdaq_ret_24m:45,
-  cape:41.6,trailing_pe:27.4,forward_pe:21.6,
-  corp_profit_growth_99:null,corp_profit_growth_00:5.2,
-  mag_pe:30,mag_earnings_growth:22,
+  cape:39.8,trailing_pe:25.9,forward_pe:21.0,
+  corp_profit_growth_99:null,corp_profit_growth_00:27.1,
+  mag_pe:35,mag_earnings_growth:24,
   market_concentration:39,
-  fed_rate_start:5.375,fed_rate_end:3.625,fed_direction:'降息周期 -175bp',
-  t2y:4.05,t5y:4.20,t10y:4.47,t30y:5.0,spread_10y2y:0.42,
-  dxy_start:104,dxy_end:99.3,dxy_chg:-4.5,
-  gold_start:2600,gold_end:4493,gold_chg:73,
-  btc_start:62000,btc_end:67276,btc_chg:8.5,
+  fed_rate_start:5.375,fed_rate_end:4.375,fed_direction:'降息周期 -100bp',
+  t2y:4.00,t5y:4.10,t10y:4.40,t30y:4.99,spread_10y2y:0.40,
+  dxy_start:104,dxy_end:99.2,dxy_chg:-4.6,
+  gold_start:2600,gold_end:4508,gold_chg:73,
+  btc_start:62000,btc_end:66614,btc_chg:7.4,
   oil_start:72,oil_end:95,oil_chg:32,
   cpi:3.8,pce:3.3,
   corp_debt_gdp:78,tech_cashflow:'Mag7合计$3000亿+自由现金流',
@@ -1124,12 +1124,12 @@ const CW_SCORE=cwCalcScore();
 const CW_ANOMALIES=[
   {metric:'30Y国债5%+美股新高',signal:'danger',detail:'历史上30Y>4.5%时股市极少创新高。2000年6%时股市见顶后崩盘。当前5%+新高=资金在"赌盈利兑现"，一旦miss将剧烈回调'},
   {metric:'黄金暴涨73%+股市新高',signal:'danger',detail:'黄金是终极避险资产。当黄金暴涨时同步股市新高，说明"聪明钱"已在对冲。2000年黄金持平=市场无恐惧。当前黄金暴涨=隐性恐惧极高'},
-  {metric:'CPI 3.8%+Fed仍在降息',signal:'warn',detail:'通胀高于目标+降息=实际利率在走低。短期利好资产价格，但中期会加剧通胀黏性。2000年Fed在通胀3.4%时加息，当前反向操作增加政策风险'},
+  {metric:'CPI 3.8%+Fed已降息100bp',signal:'warn',detail:'通胀高于目标+降息=实际利率在走低。短期利好资产价格，但中期加剧通胀黏性。2000年Fed在通胀3.4%时加息至6.5%，当前反向操作增加政策风险'},
   {metric:'市场集中度39% (Mag7)',signal:'warn',detail:'远超2000年的27%。前7只股票贡献S&P500大部分涨幅。集中度越高，系统性风险越大，一只miss可能拖垮整个指数'},
-  {metric:'CAPE 41.6接近历史极值',signal:'warn',detail:'2000年峰值44.19为历史最高。当前41.6虽略低但仍远超均值(~17)。高CAPE预示未来10年回报将显著低于均值'},
+  {metric:'CAPE 39.8接近历史极值',signal:'warn',detail:'2000年峰值44.19为历史最高。当前39.8虽略低但仍远超均值(~17)。高CAPE预示未来10年回报将显著低于均值'},
   {metric:'油价$95+通胀3.8%',signal:'warn',detail:'类似2000年油价翻3倍至$35推动CPI到3.4%。当前油价高位+通胀回升=滞胀风险。AI算力需求推高能源成本是新变量'},
-  {metric:'Mag7盈利增长22%+真实现金流',signal:'safe',detail:'与2000年dot-com企业无盈利形成关键区别。Mag7合计$3000亿+FCF证明AI投资正在产生真实回报。这是当前市场最重要的支撑因素'},
-  {metric:'Fed降息周期(vs 2000加息)',signal:'safe',detail:'与2000年Fed激进加息相反，当前处于降息周期。流动性改善通常支撑股市。但降息原因是经济放缓，需关注是否"落后于曲线"'},
+  {metric:'Mag7盈利增长24%+真实现金流',signal:'safe',detail:'Q1 2026 blended EPS +27.1%(FactSet)。与2000年dot-com企业无盈利形成关键区别。Mag7合计$3000亿+FCF证明AI投资正在产生真实回报。这是当前市场最重要的支撑因素'},
+  {metric:'Fed降息周期(vs 2000加息)',signal:'safe',detail:'与2000年Fed激进加息至6.5%相反，当前处于降息周期(已降100bp至4.375%)。流动性改善通常支撑股市。但降息原因是经济放缓，需关注是否"落后于曲线"'},
 ];
 
 // 大师投资策略建议
@@ -1359,16 +1359,13 @@ const CAMP_STROKE={eastern:'#e05c5c',bridge:'#4caf72',western:'#5b9bd5'};
    取数失败 → 抛错, 由 loadAll 显示加载/错误状态(绝不展示假数据)            */
 
 // 东方财富批量行情: secids 用逗号分隔, 返回 {secid: {price, chg(%), name}}
-// 带 1 次自动重试 + CORS 代理回退, 提升弱网/海外/CORS拦截下的顺畅性
-const CORS_PROXIES=[
-  u=>'https://api.allorigins.win/raw?url='+encodeURIComponent(u),
-];
+// 中国大陆浏览器直连, CORS Access-Control-Allow-Origin: *
 // ===== 缓存层: 减少重复请求 =====
 const _cache=new Map(); // key → {data, ts}
 function cacheGet(key,ttlMs){const e=_cache.get(key);if(e&&Date.now()-e.ts<ttlMs)return e.data;return null;}
 function cacheSet(key,data){_cache.set(key,{data,ts:Date.now()});}
 
-// ===== 快速fetch: 竞速策略(直连 vs 代理同时发, 取最快) =====
+// ===== 快速fetch: 直连东方财富(中国大陆可达, CORS *) =====
 async function _emFetchOnce(url){
   const ctrl=new AbortController(); const t=setTimeout(()=>ctrl.abort(),FETCH_TIMEOUT);
   try{
@@ -1378,19 +1375,8 @@ async function _emFetchOnce(url){
   } finally { clearTimeout(t); }
 }
 async function _emFetchRace(directUrl){
-  // 策略: 直连+1个代理同时竞速, 取最快成功的
-  const proxyUrl=CORS_PROXIES[0](directUrl);
-  const attempts=[
-    _emFetchOnce(directUrl).catch(e=>Promise.reject(e)),
-    // 代理延迟500ms启动(给直连优先窗口, 避免国内直连成功后代理浪费带宽)
-    new Promise(r=>setTimeout(r,500)).then(()=>_emFetchOnce(proxyUrl)),
-  ];
-  try{
-    return await Promise.any(attempts);
-  }catch(agg){
-    // 全部失败, 抛最后错误
-    throw agg.errors?agg.errors[0]:agg;
-  }
+  // 直连东方财富, 无需代理(国内用户直连最快, 代理在中国反而不可达)
+  return await _emFetchOnce(directUrl);
 }
 async function emQuote(secids){
   const ck='eq_'+secids.slice(0,60);
@@ -3611,11 +3597,16 @@ function tick(){
 }
 setInterval(tick,1000);tick();
 loadAll();
-setInterval(loadAll,300000); // 5min auto refresh
-// 跨日自动刷新: 每分钟检查本地日期, 跨过新的一天(自然在凌晨, 早于 5 点)即重载,
+setInterval(loadAll,300000); // 5min auto refresh market data
+// 跨日/凌晨5点刷新日历: 每分钟检查, 若本地时间跨入新日期(≥05:00)则重载全部
 // 使"今日投资日历"与"央行下次决议日期"切换到新的一天
 let __lastDay=new Date().getDate();
-setInterval(()=>{const d=new Date().getDate();if(d!==__lastDay){__lastDay=d;loadAll();}},60000);
+setInterval(()=>{
+  const now=new Date(),d=now.getDate(),h=now.getHours();
+  if(d!==__lastDay && h>=5){__lastDay=d;loadAll();}
+},60000);
+// 今日要点(genSummary)+央行动态 每 10 分钟热更新(不重新请求行情, 仅重渲染已有数据)
+setInterval(()=>{if(cache&&rendered.dashboard)renderDashboard(cache);},600000);
 </script>
 </body>
 </html>
