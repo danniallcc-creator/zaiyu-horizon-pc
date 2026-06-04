@@ -513,6 +513,26 @@ a{color:inherit;text-decoration:none}
 .flow-item{padding:11px 0;font-size:13.5px;color:var(--text-2);border-bottom:1px dashed var(--line)}
 .flow-item:last-child{border:none}
 
+/* ===== G2 World Map ===== */
+.map-card{padding:20px 24px;position:relative}
+.map-legend{display:flex;gap:22px;margin-bottom:14px;font-size:12px;color:var(--text-2)}
+.map-leg-item{display:flex;align-items:center;gap:6px}
+.map-leg-item i{display:inline-block;width:16px;height:12px;border-radius:3px;border:1.5px solid}
+.map-wrap{position:relative;width:100%;overflow:hidden;border-radius:10px;background:rgba(0,0,0,.3);border:1px solid var(--line)}
+.world-map-svg{display:block;width:100%;height:auto}
+.map-country{cursor:default;transition:fill .2s,stroke-width .2s}
+.map-camp{cursor:pointer}
+.map-camp:hover{filter:brightness(1.4);stroke-width:2.5}
+.map-label{font-size:8px;font-weight:600;pointer-events:none;text-anchor:middle;dominant-baseline:central;font-family:'Noto Serif SC',serif}
+.map-popup{position:absolute;z-index:10;width:250px;background:var(--panel);border:1px solid var(--gold-deep);border-radius:12px;box-shadow:0 8px 32px rgba(0,0,0,.55);padding:16px;pointer-events:none;animation:popIn .2s ease}
+@keyframes popIn{from{opacity:0;transform:scale(.92)}to{opacity:1;transform:scale(1)}}
+.popup-h{display:flex;justify-content:space-between;align-items:center;padding-bottom:10px;margin-bottom:12px;border-bottom:2px solid}
+.popup-nm{font-size:16px;font-weight:800;color:var(--text-1)}
+.popup-camp{font-size:11px;font-weight:700}
+.popup-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.popup-item .popup-l{font-size:10px;color:var(--text-3);margin-bottom:2px}
+.popup-item .popup-v{font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:700;color:var(--text-1)}
+
 /* disclaimer */
 .disclaimer{margin-top:50px;padding:20px 24px;border-radius:12px;border:1px solid var(--line);
   background:rgba(0,0,0,.25);font-size:12px;color:var(--text-3);line-height:1.7;text-align:center}
@@ -1182,6 +1202,44 @@ const CAMPS=[
 ];
 const TRADE_FLOWS=['🔄 中国-东盟贸易额超越中美(2024起)','📈 印度GDP年增速6-7%，2030年前超日本','🏭 越南/墨西哥承接中国制造业转移加速','🛢️ 沙特对华石油人民币结算占比升至30%','💾 半导体供应链: 台湾先进制程+日韩存储+美欧设备','🌏 金砖国家扩容: GDP总量(PPP)超G7'];
 const TECH_AREAS=['🔒 先进半导体(<7nm): 西方封锁 vs 中国自研','🔒 AI大模型: 美国领先 vs 中国追赶','🔒 量子计算: 早期脱钩中','🔓 新能源(光伏/电池/EV): 中国领先','🔓 5G/6G: 华为 vs 爱立信/诺基亚','🔓 稀土加工: 中国垄断(>80%)'];
+
+// 23国经济数据: GDP(十亿美元2024), 增速(2024 YoY%), 人均GDP(美元), 人口(百万)
+const COUNTRY_ECON={
+  CN:{name:'中国',gdp:18530,growth:5.0,gdppc:13140,pop:1412},
+  RU:{name:'俄罗斯',gdp:2020,growth:3.6,gdppc:13820,pop:146},
+  IR:{name:'伊朗',gdp:404,growth:5.4,gdppc:4670,pop:87},
+  PK:{name:'巴基斯坦',gdp:375,growth:2.5,gdppc:1580,pop:237},
+  MM:{name:'缅甸',gdp:64,growth:1.0,gdppc:1170,pop:55},
+  KP:{name:'朝鲜',gdp:18,growth:0.5,gdppc:700,pop:26},
+  VE:{name:'委内瑞拉',gdp:95,growth:4.0,gdppc:3310,pop:29},
+  IN:{name:'印度',gdp:3940,growth:6.8,gdppc:2730,pop:1442},
+  BR:{name:'巴西',gdp:2170,growth:2.9,gdppc:10100,pop:215},
+  SA:{name:'沙特阿拉伯',gdp:1065,growth:1.3,gdppc:29600,pop:36},
+  AE:{name:'阿联酋',gdp:509,growth:3.5,gdppc:50600,pop:10},
+  ID:{name:'印度尼西亚',gdp:1400,growth:5.1,gdppc:4920,pop:284},
+  TR:{name:'土耳其',gdp:1110,growth:3.2,gdppc:12980,pop:86},
+  MX:{name:'墨西哥',gdp:1790,growth:3.2,gdppc:13600,pop:131},
+  VN:{name:'越南',gdp:450,growth:6.5,gdppc:4470,pop:101},
+  ZA:{name:'南非',gdp:405,growth:0.7,gdppc:6580,pop:62},
+  TH:{name:'泰国',gdp:520,growth:2.8,gdppc:7230,pop:72},
+  US:{name:'美国',gdp:28780,growth:2.8,gdppc:85370,pop:337},
+  JP:{name:'日本',gdp:4230,growth:0.3,gdppc:33950,pop:125},
+  DE:{name:'德国',gdp:4590,growth:0.0,gdppc:54370,pop:84},
+  GB:{name:'英国',gdp:3500,growth:0.4,gdppc:51080,pop:68},
+  KR:{name:'韩国',gdp:1710,growth:2.2,gdppc:33150,pop:52},
+  AU:{name:'澳大利亚',gdp:1790,growth:1.5,gdppc:67500,pop:27},
+  TW:{name:'台湾',gdp:790,growth:3.9,gdppc:33400,pop:24},
+  CA:{name:'加拿大',gdp:2140,growth:1.3,gdppc:54810,pop:39},
+  NL:{name:'荷兰',gdp:1090,growth:0.6,gdppc:61870,pop:18},
+  IL:{name:'以色列',gdp:530,growth:2.0,gdppc:55360,pop:10},
+};
+// 旗帜→ISO码映射
+const FLAG_ISO={'🇨🇳':'CN','🇷🇺':'RU','🇮🇷':'IR','🇵🇰':'PK','🇲🇲':'MM','🇰🇵':'KP','🇻🇪':'VE','🇮🇳':'IN','🇧🇷':'BR','🇸🇦':'SA','🇦🇪':'AE','🇮🇩':'ID','🇹🇷':'TR','🇲🇽':'MX','🇻🇳':'VN','🇿🇦':'ZA','🇹🇭':'TH','🇺🇸':'US','🇯🇵':'JP','🇩🇪':'DE','🇬🇧':'GB','🇰🇷':'KR','🇦🇺':'AU','🏳️':'TW','🇨🇦':'CA','🇳🇱':'NL','🇮🇱':'IL'};
+// 阵营配色映射
+const CAMP_COLOR={};
+CAMPS.forEach(c=>c.flags.forEach(f=>{const iso=FLAG_ISO[f];if(iso)CAMP_COLOR[iso]=c.type;}));
+const CAMP_FILL={eastern:'rgba(224,92,92,.35)',bridge:'rgba(224,162,60,.35)',western:'rgba(91,155,213,.35)'};
+const CAMP_STROKE={eastern:'#e05c5c',bridge:'#e0a23c',western:'#5b9bd5'};
 
 /* ==================== DATA FETCH (全实时, 无离线回退) ====================
    全部行情 → 东方财富 push2 公开接口(浏览器直连CORS, 国内可访问)
@@ -2769,6 +2827,69 @@ function renderScenario(){
 }
 
 /* ==================== RENDER: CAMPS ==================== */
+// 简化世界地图SVG路径(23国, 用近似多边形展示地理位置和相对大小)
+function worldMapSVG(){
+  // viewBox: 等经纬度投影 x=经度-180~180→0~1000, y=纬度90~-60→0~500
+  const lon2x=lon=>(lon+180)/360*1000;
+  const lat2y=lat=>(90-lat)/150*500;
+  // 每国用简化的多边形表达地理轮廓(关键点经纬度)
+  const GEO={
+    US:[[-125,48],[-125,32],[-115,32],[-104,32],[-95,28],[-82,25],[-80,31],[-75,35],[-67,45],[-80,48],[-95,49],[-125,48]],
+    CA:[[-140,60],[-60,47],[-55,52],[-65,60],[-80,63],[-95,62],[-120,60],[-140,70],[-140,60]],
+    MX:[[-117,32],[-105,20],[-97,16],[-87,18],[-87,22],[-97,26],[-105,28],[-117,32]],
+    BR:[[-73,-5],[-60,5],[-45,-2],[-35,-8],[-38,-15],[-42,-22],[-48,-28],[-54,-32],[-58,-30],[-68,-18],[-73,-5]],
+    VE:[[-73,12],[-60,9],[-60,4],[-67,2],[-73,7],[-73,12]],
+    GB:[[-6,50],[-5,54],[0,55],[2,52],[0,50],[-6,50]],
+    DE:[[6,47],[6,54],[14,54],[15,51],[13,47],[6,47]],
+    NL:[[3,51],[3,53],[7,53],[7,51],[3,51]],
+    FR:[[-4,43],[-2,48],[3,50],[8,48],[7,44],[3,42],[-4,43]],
+    TR:[[26,36],[26,42],[36,42],[44,38],[44,37],[36,36],[26,36]],
+    SA:[[36,16],[36,29],[44,29],[50,25],[55,22],[50,17],[43,14],[36,16]],
+    AE:[[51,22],[51,26],[56,26],[56,22],[51,22]],
+    IR:[[44,25],[44,38],[54,38],[63,35],[63,26],[51,25],[44,25]],
+    PK:[[61,24],[61,37],[71,37],[77,35],[70,24],[61,24]],
+    IN:[[68,8],[68,28],[72,35],[80,35],[88,27],[88,22],[80,12],[77,8],[68,8]],
+    CN:[[74,40],[80,45],[87,48],[100,50],[120,50],[125,45],[122,30],[110,20],[100,22],[80,30],[74,40]],
+    MM:[[92,10],[92,28],[99,28],[101,22],[98,10],[92,10]],
+    KP:[[124,38],[124,43],[130,43],[130,38],[124,38]],
+    RU:[[28,46],[28,62],[40,65],[60,68],[90,72],[130,72],[170,65],[170,55],[140,44],[120,50],[90,55],[60,52],[40,48],[28,46]],
+    JP:[[130,31],[130,35],[132,38],[136,40],[140,43],[142,45],[141,38],[140,35],[136,34],[130,31]],
+    KR:[[126,34],[126,38],[130,38],[130,34],[126,34]],
+    ID:[[95,-8],[105,-8],[115,-7],[128,-5],[140,-6],[140,-9],[128,-10],[120,-10],[108,-8],[95,-8]],
+    VN:[[102,9],[102,16],[106,21],[109,22],[109,16],[108,12],[106,9],[102,9]],
+    TH:[[98,6],[98,15],[100,20],[103,18],[105,14],[102,6],[98,6]],
+    AU:[[113,-35],[113,-20],[130,-12],[145,-13],[153,-25],[153,-35],[145,-39],[130,-38],[113,-35]],
+    ZA:[[17,-35],[17,-27],[25,-23],[33,-27],[33,-35],[28,-34],[17,-35]],
+    IL:[[34,29],[34,33],[36,33],[36,29],[34,29]],
+    TW:[[120,22],[120,25],[122,25],[122,22],[120,22]],
+  };
+  let paths='';
+  for(const iso in GEO){
+    const pts=GEO[iso].map(([ln,lt])=>`${lon2x(ln).toFixed(1)},${lat2y(lt).toFixed(1)}`).join(' ');
+    const camp=CAMP_COLOR[iso]||'none';
+    const fill=CAMP_FILL[camp]||'rgba(60,56,48,.15)';
+    const stroke=CAMP_STROKE[camp]||'#3a352c';
+    const inCamp=!!CAMP_COLOR[iso];
+    paths+=`<polygon data-iso="${iso}" class="map-country${inCamp?' map-camp':''}" points="${pts}" fill="${fill}" stroke="${stroke}" stroke-width="${inCamp?'1.5':'0.5'}"/>`;
+  }
+  // 标注国名(选部分大国)
+  const labels=[
+    ['US',-100,40],['CA',-100,58],['MX',-103,24],['BR',-53,-12],['VE',-66,7],
+    ['GB',-2,56],['DE',10,51],['NL',5,52.5],['TR',35,39],['SA',45,24],['AE',54,24],['IR',53,32],
+    ['PK',68,30],['IN',79,22],['CN',103,36],['MM',96,20],['KP',127,40],['RU',90,62],
+    ['JP',137,37],['KR',128,36],['ID',118,-4],['VN',106,16],['TH',101,14],
+    ['AU',134,-26],['ZA',25,-30],['IL',35,31],['TW',121,24],
+  ];
+  let labelSvg='';
+  labels.forEach(([iso,ln,lt])=>{
+    if(!COUNTRY_ECON[iso])return;
+    const x=lon2x(ln).toFixed(1),y=lat2y(lt).toFixed(1);
+    const camp=CAMP_COLOR[iso];const col=CAMP_STROKE[camp]||'#9a948c';
+    labelSvg+=`<text data-iso="${iso}" class="map-label" x="${x}" y="${y}" fill="${col}">${COUNTRY_ECON[iso].name}</text>`;
+  });
+  return `<svg class="world-map-svg" viewBox="0 0 1000 500" preserveAspectRatio="xMidYMid meet">${paths}${labelSvg}</svg>`;
+}
+
 function renderCamps(){
   const total=CAMPS.reduce((s,c)=>s+c.gdp,0);
   const shareBar=CAMPS.map(c=>`<div class="share-seg" style="width:${(c.gdp/total*100).toFixed(1)}%;background:${c.c}">${(c.gdp/total*100).toFixed(0)}%</div>`).join('');
@@ -2779,6 +2900,18 @@ function renderCamps(){
     <div class="share-bar">${shareBar}</div>
     <div style="display:flex;gap:20px;font-size:12px;color:var(--text-3);margin-top:8px">${CAMPS.map(c=>`<span><b style="color:${c.c}">●</b> ${c.lbl}</span>`).join('')}</div>
   </div>
+
+  <div class="sec-title">🗺️ 三极阵营世界地图<span class="cnt">点击国家查看经济数据</span></div>
+  <div class="card gold-edge map-card">
+    <div class="map-legend">
+      <span class="map-leg-item"><i style="background:${CAMP_FILL.eastern};border-color:${CAMP_STROKE.eastern}"></i>东方阵营</span>
+      <span class="map-leg-item"><i style="background:${CAMP_FILL.bridge};border-color:${CAMP_STROKE.bridge}"></i>桥梁国家</span>
+      <span class="map-leg-item"><i style="background:${CAMP_FILL.western};border-color:${CAMP_STROKE.western}"></i>西方阵营</span>
+    </div>
+    <div class="map-wrap" id="g2MapWrap">${worldMapSVG()}</div>
+    <div class="map-popup" id="mapPopup" style="display:none"></div>
+  </div>
+
   <div class="g2-summary">${cards}</div>
   <div class="grid g-2" style="margin-top:34px;align-items:start">
     <div><div class="sec-title">🔄 贸易流向亮点</div><div class="card gold-edge" style="padding:8px 22px">${TRADE_FLOWS.map(f=>`<div class="flow-item">${f}</div>`).join('')}</div></div>
@@ -2787,6 +2920,44 @@ function renderCamps(){
   <div class="sec-title">🔭 长期展望</div>
   <div class="card gold-edge" style="padding:24px 28px;font-size:14px;color:var(--text-2);line-height:1.8">未来10年，G2格局将从"对抗加剧"逐步演变为"竞争性共存"。完全脱钩(Decoupling)因经济代价过高不太可能发生，但"去风险化"(De-risking)将持续推进。桥梁国家将成为两大阵营都争取的对象，其战略价值将持续提升。对投资者而言，理解三极模型比简单的中美二元对立更能把握全球机会。</div>
   ${disclaimerHTML()}`;
+  // 绑定地图点击事件
+  setTimeout(()=>initMapInteraction(),100);
+}
+
+function initMapInteraction(){
+  const wrap=document.getElementById('g2MapWrap');
+  const popup=document.getElementById('mapPopup');
+  if(!wrap||!popup)return;
+  wrap.addEventListener('click',e=>{
+    const el=e.target.closest('[data-iso]');
+    if(!el){popup.style.display='none';return;}
+    const iso=el.dataset.iso;
+    const d=COUNTRY_ECON[iso];
+    if(!d){popup.style.display='none';return;}
+    const camp=CAMP_COLOR[iso];
+    const campName=camp==='eastern'?'东方阵营':camp==='bridge'?'桥梁国家':'西方阵营';
+    const col=CAMP_STROKE[camp]||'#d4af37';
+    const gdpStr=d.gdp>=1000?(d.gdp/1000).toFixed(2)+' 万亿':''+d.gdp+' 十亿';
+    const growthCol=d.growth>=3?'#4caf72':d.growth>=1?'#e0a23c':'#e05c5c';
+    popup.innerHTML=`
+      <div class="popup-h" style="border-color:${col}"><span class="popup-nm">${d.name}</span><span class="popup-camp" style="color:${col}">${campName}</span></div>
+      <div class="popup-grid">
+        <div class="popup-item"><div class="popup-l">GDP (2024)</div><div class="popup-v">$${gdpStr}</div></div>
+        <div class="popup-item"><div class="popup-l">过去一年增速</div><div class="popup-v" style="color:${growthCol}">${d.growth>=0?'+':''}${d.growth}%</div></div>
+        <div class="popup-item"><div class="popup-l">人均 GDP</div><div class="popup-v">$${d.gdppc.toLocaleString()}</div></div>
+        <div class="popup-item"><div class="popup-l">人口</div><div class="popup-v">${d.pop>=1000?(d.pop/1000).toFixed(2)+' 十亿':d.pop+' 百万'}</div></div>
+      </div>`;
+    // 定位popup在点击处附近
+    const rect=wrap.getBoundingClientRect();
+    const px=e.clientX-rect.left, py=e.clientY-rect.top;
+    popup.style.left=Math.min(px+12,rect.width-260)+'px';
+    popup.style.top=Math.min(py-10,rect.height-140)+'px';
+    popup.style.display='block';
+  });
+  // 点击空白关闭
+  document.addEventListener('click',e=>{
+    if(!wrap.contains(e.target))popup.style.display='none';
+  });
 }
 
 function disclaimerHTML(){return `<div class="disclaimer"><b>风险提示</b> · 本平台所有数据仅供研究参考，不构成任何投资建议。市场有风险，投资需谨慎。数据来源：股指/商品/外汇/人民币/美元指数/美股/港股/A股 东方财富(Eastmoney 实时行情) · 加密货币 OKX/Binance · 政策利率为最新公布值 · 历史数据不代表未来表现。</div>`}
