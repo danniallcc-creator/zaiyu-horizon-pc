@@ -227,6 +227,35 @@ a{color:inherit;text-decoration:none}
 .stk-asof{font-family:'JetBrains Mono',monospace;font-size:11.5px;color:var(--text-3);margin:2px 0 22px;display:flex;align-items:center;gap:7px}
 .stk-asof .dot{width:7px;height:7px;border-radius:50%;background:var(--green);box-shadow:0 0 8px var(--green)}
 .stk-asof.err .dot{background:var(--red);box-shadow:0 0 8px var(--red)}
+/* Stock Detail */
+.stk-detail{position:relative}
+.stk-back{background:none;border:1px solid var(--line);color:var(--gold);font-size:13px;padding:7px 16px;border-radius:8px;cursor:pointer;margin-bottom:18px;transition:.2s}
+.stk-back:hover{border-color:var(--gold);background:rgba(212,175,55,.08)}
+.stk-detail-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:22px;padding-bottom:16px;border-bottom:1px solid var(--line)}
+.stk-d-name{font-size:24px;font-weight:800;color:var(--text-1)}
+.stk-d-code{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--text-3);margin-left:12px}
+.stk-d-price{font-family:'JetBrains Mono',monospace;font-size:30px;font-weight:700}
+.stk-d-price.up{color:var(--green)}.stk-d-price.down{color:var(--red)}
+.stk-d-chg{font-size:14px;margin-left:12px}
+.stk-loading{text-align:center;padding:40px;color:var(--text-3);font-size:13px;display:flex;align-items:center;justify-content:center;gap:12px}
+.stk-chart-card{padding:16px 20px;overflow-x:auto}
+.kline-svg{display:block;width:100%;height:auto;min-width:600px}
+.stk-fund-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.fund-item{padding:12px;border-radius:8px;background:rgba(0,0,0,.2);border:1px solid var(--line)}
+.fund-l{font-size:11px;color:var(--text-3);margin-bottom:5px}
+.fund-v{font-family:'JetBrains Mono',monospace;font-size:18px;font-weight:700}
+.stk-fund-na{text-align:center;padding:24px;color:var(--text-3);font-size:13px}
+.stk-ai{padding:8px 0}
+.ai-overall{display:flex;align-items:center;gap:14px;margin-bottom:18px}
+.ai-score{font-family:'JetBrains Mono',monospace;font-size:42px;font-weight:800}
+.ai-verdict{font-size:16px;font-weight:700}
+.ai-dims{display:flex;flex-direction:column;gap:10px}
+.ai-dim{display:flex;align-items:center;gap:10px}
+.ai-lbl{font-size:12px;color:var(--text-2);width:50px;flex-shrink:0}
+.ai-bar{flex:1;height:8px;border-radius:5px;background:var(--panel-hi);overflow:hidden}
+.ai-fill{height:100%;border-radius:5px;transition:width .6s ease}
+.ai-pct{font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:700;color:var(--text-2);width:28px;text-align:right}
+.ai-meta{margin-top:14px;font-size:11px;color:var(--text-3);padding-top:12px;border-top:1px dashed var(--line)}
 
 /* Calendar */
 .cal-row{display:flex;align-items:center;gap:14px;padding:13px 20px;border-bottom:1px solid var(--line)}
@@ -1379,15 +1408,230 @@ const CN_LIST=[
   ['1.000001','SH','上证指数'],   ['1.000300','HS300','沪深300'],   ['1.510310','510310','沪深300ETF'],
   ['1.561380','561380','电网设备ETF'],['0.159827','159827','农业ETF'],
 ];
+const ALL_STOCKS=[...US_LIST,...HK_LIST,...CN_LIST];
+// secid → 列表项的快查
+const STOCK_MAP={};ALL_STOCKS.forEach(x=>STOCK_MAP[x[0]]=x);
+
 async function fetchUniverse(){
   const all=[...US_LIST,...HK_LIST,...CN_LIST];
   const m=await emQuote(all.map(x=>x[0]).join(','));
   const conv=list=>list.map(([sid,id,name])=>{
     const x=m[sid];
-    return {id, name, price:x?x.price:null, changePct:x?x.chg:null};
+    return {id, name, price:x?x.price:null, changePct:x?x.chg:null, secid:sid};
   });
   return {us:conv(US_LIST), hk:conv(HK_LIST), cn:conv(CN_LIST), asOf:Date.now()};
 }
+
+// ===== K线历史(东方财富 push2his, 120日日K) =====
+async function fetchKline(secid,days){
+  const url=`https://push2his.eastmoney.com/api/qt/stock/kline/get?secid=${secid}&fields1=f1,f2,f3,f4,f5,f6&fields2=f51,f52,f53,f54,f55,f56,f57&klt=101&fqt=1&end=20500101&lmt=${days||120}&_=${Date.now()}`;
+  let lastErr;
+  for(let i=0;i<2;i++){
+    const ctrl=new AbortController();const t=setTimeout(()=>ctrl.abort(),FETCH_TIMEOUT);
+    let r;try{r=await fetch(url,{signal:ctrl.signal});}catch(e){clearTimeout(t);lastErr=e;continue;}finally{clearTimeout(t);}
+    if(!r.ok){lastErr=new Error('kline HTTP '+r.status);continue;}
+    let j;try{j=await r.json();}catch(e){lastErr=e;continue;}
+    const klines=j.data&&j.data.klines;
+    if(!klines||!klines.length){if(i===0)continue;return[];}
+    // kline format: "2024-01-02,open,close,high,low,volume,amount"
+    return klines.map(k=>{const p=k.split(',');return{date:p[0],open:+p[1],close:+p[2],high:+p[3],low:+p[4],vol:+p[5],amt:+p[6]};});
+  }
+  console.warn('K线获取失败',secid,lastErr);return[];
+}
+
+// ===== 基本面(东方财富 push2 个股详情) =====
+async function fetchFundamentals(secid){
+  const url=`https://push2.eastmoney.com/api/qt/stock/get?secid=${secid}&fields=f57,f58,f162,f163,f167,f173,f116,f117,f127,f183,f186&_=${Date.now()}`;
+  let lastErr;
+  for(let i=0;i<2;i++){
+    const ctrl=new AbortController();const t=setTimeout(()=>ctrl.abort(),FETCH_TIMEOUT);
+    let r;try{r=await fetch(url,{signal:ctrl.signal});}catch(e){clearTimeout(t);lastErr=e;continue;}finally{clearTimeout(t);}
+    if(!r.ok){lastErr=new Error('fund HTTP '+r.status);continue;}
+    let j;try{j=await r.json();}catch(e){lastErr=e;continue;}
+    const d=j.data;if(!d||!d.f57){if(i===0)continue;return null;}
+    return{
+      code:d.f57, name:d.f58, industry:d.f127||'—',
+      pe:d.f163!=null&&d.f163!=='-'?+(d.f163/100).toFixed(2):null,
+      pb:d.f167!=null&&d.f167!=='-'?+(d.f167/100).toFixed(2):null,
+      roe:d.f173!=null&&d.f173!=='-'?+(d.f173/100).toFixed(2):null,
+      mktCap:d.f116!=null&&d.f116!=='-'?d.f116:null,
+      revenue:d.f183!=null&&d.f183!=='-'?d.f183:null,
+      eps:d.f186!=null&&d.f186!=='-'?+(d.f186/100).toFixed(2):null,
+    };
+  }
+  console.warn('基本面获取失败',secid,lastErr);return null;
+}
+
+// ===== 技术指标计算 =====
+function calcMA(data,period){
+  return data.map((_,i)=>{if(i<period-1)return null;let s=0;for(let j=i-period+1;j<=i;j++)s+=data[j].close;return+(s/period).toFixed(2);});
+}
+function calcRSI(data,period){
+  const rsi=new Array(data.length).fill(null);
+  if(data.length<=period)return rsi;
+  let gainAvg=0,lossAvg=0;
+  for(let i=1;i<=period;i++){const d=data[i].close-data[i-1].close;if(d>0)gainAvg+=d;else lossAvg-=d;}
+  gainAvg/=period;lossAvg/=period;
+  rsi[period]=lossAvg===0?100:+(100-100/(1+gainAvg/lossAvg)).toFixed(1);
+  for(let i=period+1;i<data.length;i++){
+    const d=data[i].close-data[i-1].close;
+    gainAvg=(gainAvg*(period-1)+Math.max(d,0))/period;
+    lossAvg=(lossAvg*(period-1)+Math.max(-d,0))/period;
+    rsi[i]=lossAvg===0?100:+(100-100/(1+gainAvg/lossAvg)).toFixed(1);
+  }
+  return rsi;
+}
+function calcMACD(data){
+  const ema=(arr,p)=>{const r=[arr[0]];const k=2/(p+1);for(let i=1;i<arr.length;i++)r.push(arr[i]*k+r[i-1]*(1-k));return r;};
+  const closes=data.map(d=>d.close);
+  const e12=ema(closes,12),e26=ema(closes,26);
+  const dif=e12.map((v,i)=>+(v-e26[i]).toFixed(3));
+  const dea=ema(dif,9);
+  const hist=dif.map((v,i)=>+((v-dea[i])*2).toFixed(3));
+  return{dif,dea,hist};
+}
+function calcBoll(data,period,mult){
+  return data.map((_,i)=>{
+    if(i<period-1)return{mid:null,upper:null,lower:null};
+    let s=0,ss=0;for(let j=i-period+1;j<=i;j++){s+=data[j].close;ss+=data[j].close**2;}
+    const avg=s/period,std=Math.sqrt(ss/period-avg*avg);
+    return{mid:+avg.toFixed(2),upper:+(avg+mult*std).toFixed(2),lower:+(avg-mult*std).toFixed(2)};
+  });
+}
+
+// ===== AI 综合评分(5维度) =====
+function aiScore(data,fund){
+  const n=data.length;if(n<20)return null;
+  const last=data[n-1].close,ma5=calcMA(data,5),ma20=calcMA(data,20),rsi=calcRSI(data,14);
+  const macd=calcMACD(data);const boll=calcBoll(data,20,2);
+  const lastRSI=rsi[n-1]||50,lastMACD=macd.hist[n-1]||0;
+  const lastBoll=boll[n-1];
+  const ret5=(last-data[n-6].close)/data[n-6].close*100;
+  const ret20=(last-data[n-21].close)/data[n-21].close*100;
+  // 1.技术面
+  let tech=0;
+  if(lastRSI<30)tech+=2;else if(lastRSI<40)tech+=1;else if(lastRSI>70)tech-=2;else if(lastRSI>60)tech-=1;
+  if(lastMACD>0)tech+=1;else tech-=1;
+  if(ma5[n-1]>ma20[n-1])tech+=1;else tech-=1;
+  if(lastBoll&&lastBoll.lower&&last<lastBoll.lower)tech+=1;
+  if(lastBoll&&lastBoll.upper&&last>lastBoll.upper)tech-=1;
+  const techPct=Math.min(100,Math.max(0,50+tech*10));
+  // 2.估值面
+  let val=50;
+  if(fund){
+    if(fund.pe!=null){if(fund.pe<15&&fund.pe>0)val+=15;else if(fund.pe<25)val+=5;else if(fund.pe>50)val-=15;else if(fund.pe>35)val-=5;}
+    if(fund.roe!=null){if(fund.roe>20)val+=10;else if(fund.roe>10)val+=5;else if(fund.roe<5)val-=5;}
+    if(fund.pb!=null&&fund.pb<1&&fund.pb>0)val+=10;
+  }
+  val=Math.min(100,Math.max(0,val));
+  // 3.动量
+  const mom=Math.min(100,Math.max(0,50+ret5*3));
+  // 4.趋势
+  const trend=ma5[n-1]>ma20[n-1]?65:35;
+  // 5.情绪(波动)
+  const maxDD=Math.min(...data.slice(-20).map(d=>d.low))/Math.max(...data.slice(-20).map(d=>d.high))*100;
+  const sent=Math.min(100,Math.max(0,50+(100-Math.abs(maxDD-100))*0.5));
+  const overall=Math.round(techPct*.25+val*.25+mom*.2+trend*.15+sent*.15);
+  const verdict=overall>=70?{t:'偏多',c:'#4caf72'}:overall>=55?{t:'中性偏多',c:'#5b9bd5'}:overall>=45?{t:'中性',c:'#e0a23c'}:overall>=30?{t:'中性偏空',c:'#e0a23c'}:{t:'偏空',c:'#e05c5c'};
+  return{techPct,val,mom,trend,sent,overall,verdict,lastRSI,lastMACD,ret5:+ret5.toFixed(2),ret20:+ret20.toFixed(2)};
+}
+
+// ===== 个股详情页渲染 =====
+function renderStockDetail(secid,stockInfo){
+  const el=document.getElementById('stocksContent');
+  const name=stockInfo?.name||'—';const code=stockInfo?.id||'';
+  const price=stockInfo?.price;const chg=stockInfo?.changePct;
+  const cls=chg>0?'up':chg<0?'down':'flat';
+  el.innerHTML=`
+  <div class="stk-detail">
+    <button class="stk-back" onclick="loadStocks()">← 返回列表</button>
+    <div class="stk-detail-head">
+      <div><span class="stk-d-name">${name}</span><span class="stk-d-code">${code}</span></div>
+      <div class="stk-d-price ${cls}">${price!=null?stkPrice(price):'—'}<span class="stk-d-chg">${chg!=null?((chg>=0?'+':'')+chg.toFixed(2)+'%'):'—'}</span></div>
+    </div>
+    <div class="stk-loading"><span class="spin"></span> 正在加载 K线 + 基本面 + AI分析…</div>
+  </div>`;
+  // 异步加载数据
+  Promise.all([fetchKline(secid,120),fetchFundamentals(secid)]).then(([kdata,fund])=>{
+    renderDetailContent(el.querySelector('.stk-detail'),secid,stockInfo,kdata,fund);
+  }).catch(e=>{
+    console.warn('详情加载失败',e);
+    el.querySelector('.stk-loading').innerHTML='<div style="color:#e05c5c">数据加载失败，请点击右上角刷新重试</div>';
+  });
+}
+function renderDetailContent(container,secid,info,kdata,fund){
+  const loading=container.querySelector('.stk-loading');
+  if(!kdata.length&&!fund){loading.innerHTML='<div style="color:#e0a23c">暂无历史数据(可能该标的不支持K线查询)，请返回列表。</div>';return;}
+  const score=kdata.length>=20?aiScore(kdata,fund):null;
+  loading.remove();
+  // K线SVG
+  let klineSVG='';
+  if(kdata.length>5){
+    const W=800,H=260,padL=60,padR=20,padT=20,padB=30;
+    const gw=(W-padL-padR)/kdata.length;
+    const prices=kdata.flatMap(d=>[d.high,d.low]);
+    const pMax=Math.max(...prices),pMin=Math.min(...prices),pRange=pMax-pMin||1;
+    const py=v=>padT+(pMax-v)/pRange*(H-padT-padB);
+    let candles='';
+    kdata.forEach((d,i)=>{
+      const x=padL+i*gw+gw*0.15,w=gw*0.7;
+      const bull=d.close>=d.open;const col=bull?'#4caf72':'#e05c5c';
+      const bodyTop=py(Math.max(d.open,d.close)),bodyBot=py(Math.min(d.open,d.close));
+      const bodyH=Math.max(bodyBot-bodyTop,1);
+      candles+=`<line x1="${x+w/2}" y1="${py(d.high)}" x2="${x+w/2}" y2="${py(d.low)}" stroke="${col}" stroke-width="1"/>`;
+      candles+=`<rect x="${x}" y="${bodyTop}" width="${w}" height="${bodyH}" fill="${col}" rx="1"/>`;
+    });
+    // MA lines
+    const ma5=calcMA(kdata,5),ma20=calcMA(kdata,20);
+    const maLine=(arr,color)=>{const pts=arr.map((v,i)=>v!=null?`${padL+i*gw+gw/2},${py(v)}`:null).filter(Boolean);return pts.length>1?`<polyline points="${pts.join(' ')}" fill="none" stroke="${color}" stroke-width="1.5" opacity=".7"/>`:'';};
+    // Y-axis labels
+    let yLabels='';for(let i=0;i<=4;i++){const v=pMin+pRange*i/4;yLabels+=`<text x="${padL-5}" y="${py(v)}" text-anchor="end" font-size="10" fill="#9a948c">${v.toFixed(v>100?0:2)}</text>`;}
+    // X-axis (every 20 days)
+    let xLabels='';kdata.forEach((d,i)=>{if(i%20===0)xLabels+=`<text x="${padL+i*gw+gw/2}" y="${H-5}" text-anchor="middle" font-size="9" fill="#76726c">${d.date.slice(5)}</text>`;});
+    klineSVG=`<svg viewBox="0 0 ${W} ${H}" class="kline-svg">${candles}${maLine(ma5,'#d4af37')}${maLine(ma20,'#5b9bd5')}${yLabels}${xLabels}<text x="${W-10}" y="15" text-anchor="end" font-size="10" fill="#d4af37">MA5</text><text x="${W-10}" y="28" text-anchor="end" font-size="10" fill="#5b9bd5">MA20</text></svg>`;
+  }
+  // 基本面卡
+  let fundHTML='<div class="stk-fund-na">基本面数据暂不可用</div>';
+  if(fund){
+    const fItem=(label,val,unit,good)=>`<div class="fund-item"><div class="fund-l">${label}</div><div class="fund-v" style="color:${good?'#4caf72':val===null?'#76726c':'var(--text-1)'}">${val!=null?val+unit:'—'}</div></div>`;
+    const capStr=fund.mktCap?((fund.mktCap/1e8).toFixed(0)+'亿'):'—';
+    fundHTML=`<div class="stk-fund-grid">
+      ${fItem('市盈率 PE',fund.pe,'x',fund.pe>0&&fund.pe<25)}
+      ${fItem('市净率 PB',fund.pb,'x',fund.pb>0&&fund.pb<3)}
+      ${fItem('净资产收益率 ROE',fund.roe,'%',fund.roe>15)}
+      ${fItem('每股收益 EPS',fund.eps,'',fund.eps>0)}
+      ${fItem('总市值',capStr,'',false)}
+      ${fItem('所属行业',fund.industry,'',false)}
+    </div>`;
+  }
+  // AI评分
+  let scoreHTML='';
+  if(score){
+    const bar=(label,pct,col)=>`<div class="ai-dim"><span class="ai-lbl">${label}</span><div class="ai-bar"><div class="ai-fill" style="width:${pct}%;background:${col||'var(--gold)'}"></div></div><span class="ai-pct">${pct}</span></div>`;
+    scoreHTML=`<div class="stk-ai">
+      <div class="ai-overall"><span class="ai-score" style="color:${score.verdict.c}">${score.overall}</span><span class="ai-verdict" style="color:${score.verdict.c}">${score.verdict.t}</span></div>
+      <div class="ai-dims">
+        ${bar('技术面',score.techPct,'#d4af37')}
+        ${bar('估值面',score.val,'#5b9bd5')}
+        ${bar('动量',score.mom,'#4caf72')}
+        ${bar('趋势',score.trend,'#e0a23c')}
+        ${bar('情绪',score.sent,'#ab47bc')}
+      </div>
+      <div class="ai-meta">RSI(14) <b>${score.lastRSI}</b> · MACD ${score.lastMACD>0?'金叉':'死叉'} · 5日涨跌 <b style="color:${score.ret5>=0?'#4caf72':'#e05c5c'}">${score.ret5>=0?'+':''}${score.ret5}%</b> · 20日涨跌 <b style="color:${score.ret20>=0?'#4caf72':'#e05c5c'}">${score.ret20>=0?'+':''}${score.ret20}%</b></div>
+    </div>`;
+  }
+
+  container.insertAdjacentHTML('beforeend',`
+    <div class="sec-title">📈 日K线(120日)<span class="cnt">MA5 · MA20</span></div>
+    <div class="card gold-edge stk-chart-card">${klineSVG||'<div class="stk-fund-na">K线数据不可用</div>'}</div>
+    <div class="grid g-2" style="margin-top:20px;align-items:start">
+      <div><div class="sec-title">📊 基本面</div><div class="card gold-edge" style="padding:20px">${fundHTML}</div></div>
+      <div><div class="sec-title">🤖 AI 综合评分<span class="cnt">5维度</span></div><div class="card gold-edge" style="padding:20px">${scoreHTML||'<div class="stk-fund-na">数据不足，无法评分</div>'}</div></div>
+    </div>
+  `);
+}
+
+// ===== 股票列表渲染(可点击) =====
 function stkPrice(p){
   if(p==null) return null;
   const dec = p<10 ? 3 : 2;
@@ -1395,12 +1639,12 @@ function stkPrice(p){
 }
 function scard(s,cur){
   if(s.price==null){
-    return `<div class="scard flat"><div class="s-top"><span class="s-nm">${s.name}</span><span class="s-code">${(s.id||'').toUpperCase()}</span></div><div class="s-na">— 暂无数据</div></div>`;
+    return `<div class="scard flat" data-secid="${s.secid||''}"><div class="s-top"><span class="s-nm">${s.name}</span><span class="s-code">${(s.id||'').toUpperCase()}</span></div><div class="s-na">— 暂无数据</div></div>`;
   }
   const c=s.changePct;
   const cls=c>0?'up':c<0?'down':'flat';
   const ar=c>0?'▲':c<0?'▼':'■';
-  return `<div class="scard ${cls}">
+  return `<div class="scard ${cls}" data-secid="${s.secid||''}">
     <div class="s-top"><span class="s-nm">${s.name}</span><span class="s-code">${(s.id||'').toUpperCase()}</span></div>
     <div class="s-price">${cur?`<span class="cur">${cur}</span>`:''}${stkPrice(s.price)}</div>
     <div class="s-chg ${cls}">${ar} ${Math.abs(c||0).toFixed(2)}%</div>
@@ -1421,7 +1665,22 @@ function renderStocks(u){
     stkSection('A股','China A-Shares',u.cn||[],cnCur);
   const ts=new Date(u.asOf||Date.now()).toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
   document.getElementById('stocksContent').innerHTML =
-    `<div class="stk-asof"><span class="dot"></span>实时行情 · 更新于 ${ts} · 数据源 东方财富 Eastmoney</div>` + html;
+    `<div class="stk-asof"><span class="dot"></span>实时行情 · 更新于 ${ts} · 数据源 东方财富 Eastmoney · <b>点击任意个股查看详细分析</b></div>` + html;
+  // 绑定点击事件
+  document.querySelectorAll('#stocksContent .scard').forEach(card=>{
+    card.style.cursor='pointer';
+    card.addEventListener('click',()=>{
+      const secid=card.dataset.secid;if(!secid)return;
+      const entry=STOCK_MAP[secid];
+      const info={id:entry?entry[1]:'',name:entry?entry[2]:'',price:null,changePct:null,secid};
+      // 从当前卡片取价
+      const pEl=card.querySelector('.s-price');
+      if(pEl)info.price=parseFloat(pEl.textContent.replace(/[^0-9.\-]/g,''))||null;
+      const cEl=card.querySelector('.s-chg');
+      if(cEl){const t=cEl.textContent;const m=t.match(/([\d.]+)%/);if(m)info.changePct=t.includes('▼')?-parseFloat(m[1]):parseFloat(m[1]);}
+      renderStockDetail(secid,info);
+    });
+  });
 }
 
 /* ==================== RENDER: DASHBOARD ==================== */
@@ -2958,10 +3217,14 @@ async function loadStocks(silent){
   const el=document.getElementById('stocksContent');
   if(!silent) el.innerHTML='<div class="data-loading"><span class="spin"></span> 正在获取个股实时行情…</div>';
   try{
-    renderStocks(await fetchUniverse());
+    const u=await fetchUniverse();
+    // 如果用户已进入个股详情页, 不覆盖
+    if(document.querySelector('.stk-detail'))return;
+    renderStocks(u);
   }catch(e){
     console.warn('个股获取失败',e);
-    if(!silent) el.innerHTML='<div class="stk-asof err" style="margin-bottom:18px"><span class="dot"></span>个股行情获取失败：尚未连接数据代理。请确认 API 已部署后点击右上角 ↻ 重试</div>';
+    if(!silent||document.querySelector('.stk-detail'))return;
+    el.innerHTML='<div class="stk-asof err" style="margin-bottom:18px"><span class="dot"></span>个股行情获取失败：尚未连接数据代理。请确认 API 已部署后点击右上角 ↻ 重试</div>';
   }
 }
 document.querySelectorAll('.nav-item').forEach(n=>n.addEventListener('click',()=>{
@@ -3001,7 +3264,7 @@ async function loadAll(){
   renderDashboard(md);
   rendered.dashboard=true;
   if(rendered.crisis) renderCrisis();      // 危机看板随实时行情更新
-  if(rendered.stocks) loadStocks(true); // 个股已打开过则静默刷新
+  if(rendered.stocks&&!document.querySelector('.stk-detail')) loadStocks(true); // 个股已打开过则静默刷新(详情页打开时不覆盖)
   const ts=new Date().toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit'});
   if(ok===2)        setStatus('live','实时数据 · 东方财富行情 · '+ts);
   else if(ok===1)   setStatus('offline','部分数据源不可用('+failed.join('、')+')· 下次自动重试');
