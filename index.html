@@ -518,14 +518,18 @@ a{color:inherit;text-decoration:none}
 .map-legend{display:flex;gap:22px;margin-bottom:14px;font-size:12px;color:var(--text-2)}
 .map-leg-item{display:flex;align-items:center;gap:6px}
 .map-leg-item i{display:inline-block;width:16px;height:12px;border-radius:3px;border:1.5px solid}
-.map-wrap{position:relative;width:100%;overflow:hidden;border-radius:10px;background:rgba(0,0,0,.3);border:1px solid var(--line)}
-.world-map-svg{display:block;width:100%;height:auto}
-.map-country{cursor:default;transition:fill .2s,stroke-width .2s}
-.map-camp{cursor:pointer}
-.map-camp:hover{filter:brightness(1.4);stroke-width:2.5}
-.map-label{font-size:8px;font-weight:600;pointer-events:none;text-anchor:middle;dominant-baseline:central;font-family:'Noto Serif SC',serif}
-.map-popup{position:absolute;z-index:10;width:250px;background:var(--panel);border:1px solid var(--gold-deep);border-radius:12px;box-shadow:0 8px 32px rgba(0,0,0,.55);padding:16px;pointer-events:none;animation:popIn .2s ease}
+.map-img-wrap{position:relative;width:100%;border-radius:10px;overflow:hidden;border:1px solid var(--line)}
+.map-bg-img{display:block;width:100%;height:auto;pointer-events:none;user-select:none}
+.map-markers{position:absolute;inset:0;pointer-events:none}
+.map-marker{position:absolute;transform:translate(-50%,-50%);pointer-events:all;cursor:pointer;z-index:2;display:flex;flex-direction:column;align-items:center;gap:2px}
+.marker-dot{width:calc(var(--mr)*2);height:calc(var(--mr)*2);border-radius:50%;background:var(--mf);border:2.5px solid var(--mc);box-shadow:0 0 8px var(--mc),0 0 20px rgba(0,0,0,.4);transition:transform .2s,box-shadow .2s}
+.map-marker:hover .marker-dot{transform:scale(1.35);box-shadow:0 0 16px var(--mc),0 0 32px var(--mc)}
+.map-marker:hover .marker-label{opacity:1;transform:translateY(0)}
+.marker-label{font-size:10px;font-weight:700;color:var(--mc);white-space:nowrap;opacity:0;transform:translateY(4px);transition:opacity .2s,transform .2s;text-shadow:0 1px 4px rgba(0,0,0,.8);pointer-events:none}
+.map-popup{position:absolute;z-index:10;width:250px;background:var(--panel);border:1px solid var(--gold-deep);border-radius:12px;box-shadow:0 8px 32px rgba(0,0,0,.55);padding:16px;animation:popIn .2s ease}
 @keyframes popIn{from{opacity:0;transform:scale(.92)}to{opacity:1;transform:scale(1)}}
+.popup-close{position:absolute;top:8px;right:12px;font-size:18px;color:var(--text-3);cursor:pointer;line-height:1}
+.popup-close:hover{color:var(--gold)}
 .popup-h{display:flex;justify-content:space-between;align-items:center;padding-bottom:10px;margin-bottom:12px;border-bottom:2px solid}
 .popup-nm{font-size:16px;font-weight:800;color:var(--text-1)}
 .popup-camp{font-size:11px;font-weight:700}
@@ -1238,8 +1242,8 @@ const FLAG_ISO={'🇨🇳':'CN','🇷🇺':'RU','🇮🇷':'IR','🇵🇰':'PK',
 // 阵营配色映射
 const CAMP_COLOR={};
 CAMPS.forEach(c=>c.flags.forEach(f=>{const iso=FLAG_ISO[f];if(iso)CAMP_COLOR[iso]=c.type;}));
-const CAMP_FILL={eastern:'rgba(224,92,92,.35)',bridge:'rgba(224,162,60,.35)',western:'rgba(91,155,213,.35)'};
-const CAMP_STROKE={eastern:'#e05c5c',bridge:'#e0a23c',western:'#5b9bd5'};
+const CAMP_FILL={eastern:'rgba(224,92,92,.4)',bridge:'rgba(76,175,114,.4)',western:'rgba(91,155,213,.4)'};
+const CAMP_STROKE={eastern:'#e05c5c',bridge:'#4caf72',western:'#5b9bd5'};
 
 /* ==================== DATA FETCH (全实时, 无离线回退) ====================
    全部行情 → 东方财富 push2 公开接口(浏览器直连CORS, 国内可访问)
@@ -2827,67 +2831,38 @@ function renderScenario(){
 }
 
 /* ==================== RENDER: CAMPS ==================== */
-// 简化世界地图SVG路径(23国, 用近似多边形展示地理位置和相对大小)
-function worldMapSVG(){
-  // viewBox: 等经纬度投影 x=经度-180~180→0~1000, y=纬度90~-60→0~500
-  const lon2x=lon=>(lon+180)/360*1000;
-  const lat2y=lat=>(90-lat)/150*500;
-  // 每国用简化的多边形表达地理轮廓(关键点经纬度)
-  const GEO={
-    US:[[-125,48],[-125,32],[-115,32],[-104,32],[-95,28],[-82,25],[-80,31],[-75,35],[-67,45],[-80,48],[-95,49],[-125,48]],
-    CA:[[-140,60],[-60,47],[-55,52],[-65,60],[-80,63],[-95,62],[-120,60],[-140,70],[-140,60]],
-    MX:[[-117,32],[-105,20],[-97,16],[-87,18],[-87,22],[-97,26],[-105,28],[-117,32]],
-    BR:[[-73,-5],[-60,5],[-45,-2],[-35,-8],[-38,-15],[-42,-22],[-48,-28],[-54,-32],[-58,-30],[-68,-18],[-73,-5]],
-    VE:[[-73,12],[-60,9],[-60,4],[-67,2],[-73,7],[-73,12]],
-    GB:[[-6,50],[-5,54],[0,55],[2,52],[0,50],[-6,50]],
-    DE:[[6,47],[6,54],[14,54],[15,51],[13,47],[6,47]],
-    NL:[[3,51],[3,53],[7,53],[7,51],[3,51]],
-    FR:[[-4,43],[-2,48],[3,50],[8,48],[7,44],[3,42],[-4,43]],
-    TR:[[26,36],[26,42],[36,42],[44,38],[44,37],[36,36],[26,36]],
-    SA:[[36,16],[36,29],[44,29],[50,25],[55,22],[50,17],[43,14],[36,16]],
-    AE:[[51,22],[51,26],[56,26],[56,22],[51,22]],
-    IR:[[44,25],[44,38],[54,38],[63,35],[63,26],[51,25],[44,25]],
-    PK:[[61,24],[61,37],[71,37],[77,35],[70,24],[61,24]],
-    IN:[[68,8],[68,28],[72,35],[80,35],[88,27],[88,22],[80,12],[77,8],[68,8]],
-    CN:[[74,40],[80,45],[87,48],[100,50],[120,50],[125,45],[122,30],[110,20],[100,22],[80,30],[74,40]],
-    MM:[[92,10],[92,28],[99,28],[101,22],[98,10],[92,10]],
-    KP:[[124,38],[124,43],[130,43],[130,38],[124,38]],
-    RU:[[28,46],[28,62],[40,65],[60,68],[90,72],[130,72],[170,65],[170,55],[140,44],[120,50],[90,55],[60,52],[40,48],[28,46]],
-    JP:[[130,31],[130,35],[132,38],[136,40],[140,43],[142,45],[141,38],[140,35],[136,34],[130,31]],
-    KR:[[126,34],[126,38],[130,38],[130,34],[126,34]],
-    ID:[[95,-8],[105,-8],[115,-7],[128,-5],[140,-6],[140,-9],[128,-10],[120,-10],[108,-8],[95,-8]],
-    VN:[[102,9],[102,16],[106,21],[109,22],[109,16],[108,12],[106,9],[102,9]],
-    TH:[[98,6],[98,15],[100,20],[103,18],[105,14],[102,6],[98,6]],
-    AU:[[113,-35],[113,-20],[130,-12],[145,-13],[153,-25],[153,-35],[145,-39],[130,-38],[113,-35]],
-    ZA:[[17,-35],[17,-27],[25,-23],[33,-27],[33,-35],[28,-34],[17,-35]],
-    IL:[[34,29],[34,33],[36,33],[36,29],[34,29]],
-    TW:[[120,22],[120,25],[122,25],[122,22],[120,22]],
-  };
-  let paths='';
-  for(const iso in GEO){
-    const pts=GEO[iso].map(([ln,lt])=>`${lon2x(ln).toFixed(1)},${lat2y(lt).toFixed(1)}`).join(' ');
-    const camp=CAMP_COLOR[iso]||'none';
-    const fill=CAMP_FILL[camp]||'rgba(60,56,48,.15)';
-    const stroke=CAMP_STROKE[camp]||'#3a352c';
-    const inCamp=!!CAMP_COLOR[iso];
-    paths+=`<polygon data-iso="${iso}" class="map-country${inCamp?' map-camp':''}" points="${pts}" fill="${fill}" stroke="${stroke}" stroke-width="${inCamp?'1.5':'0.5'}"/>`;
+// 世界地图: 完整地图底图(PNG) + 圆形标注点叠加层(CSS定位)
+// 等经纬度投影坐标转换: 图片覆盖 -180~180经度, 80N~60S纬度
+const MAP_LAT_MAX=80, MAP_LAT_MIN=-60, MAP_LAT_RANGE=MAP_LAT_MAX-MAP_LAT_MIN; // 140°
+function geoToPercent(lat,lon){return{x:(lon+180)/360*100, y:(MAP_LAT_MAX-lat)/MAP_LAT_RANGE*100};}
+// 23国地理中心坐标(大致首都/重心位置)
+const COUNTRY_GEO={
+  CN:{lat:35,lon:105},RU:{lat:60,lon:90},IR:{lat:32,lon:53},PK:{lat:30,lon:70},
+  MM:{lat:20,lon:96},KP:{lat:40,lon:127},VE:{lat:8,lon:-66},
+  IN:{lat:22,lon:79},BR:{lat:-10,lon:-53},SA:{lat:24,lon:45},AE:{lat:24,lon:54},
+  ID:{lat:-3,lon:118},TR:{lat:39,lon:35},MX:{lat:23,lon:-103},VN:{lat:16,lon:106},
+  ZA:{lat:-29,lon:25},TH:{lat:14,lon:101},
+  US:{lat:38,lon:-97},JP:{lat:36,lon:138},DE:{lat:51,lon:10},GB:{lat:54,lon:-2},
+  KR:{lat:36,lon:128},AU:{lat:-25,lon:134},TW:{lat:24,lon:121},CA:{lat:56,lon:-96},
+  NL:{lat:52,lon:5},IL:{lat:31,lon:35},
+};
+function worldMapHTML(){
+  let markers='';
+  for(const iso in COUNTRY_GEO){
+    const geo=COUNTRY_GEO[iso];
+    const pos=geoToPercent(geo.lat,geo.lon);
+    const camp=CAMP_COLOR[iso];
+    if(!camp) continue;
+    const col=CAMP_STROKE[camp];
+    const fill=CAMP_FILL[camp];
+    const d=COUNTRY_ECON[iso];
+    const name=d?d.name:iso;
+    // 圆点大小按GDP调整(大国大圆)
+    const gdp=d?d.gdp:100;
+    const r=gdp>10000?18:gdp>3000?14:gdp>1000?11:gdp>400?9:7;
+    markers+=`<div class="map-marker" data-iso="${iso}" style="left:${pos.x.toFixed(2)}%;top:${pos.y.toFixed(2)}%;--mc:${col};--mf:${fill};--mr:${r}px" title="${name}"><div class="marker-dot"></div><div class="marker-label">${name}</div></div>`;
   }
-  // 标注国名(选部分大国)
-  const labels=[
-    ['US',-100,40],['CA',-100,58],['MX',-103,24],['BR',-53,-12],['VE',-66,7],
-    ['GB',-2,56],['DE',10,51],['NL',5,52.5],['TR',35,39],['SA',45,24],['AE',54,24],['IR',53,32],
-    ['PK',68,30],['IN',79,22],['CN',103,36],['MM',96,20],['KP',127,40],['RU',90,62],
-    ['JP',137,37],['KR',128,36],['ID',118,-4],['VN',106,16],['TH',101,14],
-    ['AU',134,-26],['ZA',25,-30],['IL',35,31],['TW',121,24],
-  ];
-  let labelSvg='';
-  labels.forEach(([iso,ln,lt])=>{
-    if(!COUNTRY_ECON[iso])return;
-    const x=lon2x(ln).toFixed(1),y=lat2y(lt).toFixed(1);
-    const camp=CAMP_COLOR[iso];const col=CAMP_STROKE[camp]||'#9a948c';
-    labelSvg+=`<text data-iso="${iso}" class="map-label" x="${x}" y="${y}" fill="${col}">${COUNTRY_ECON[iso].name}</text>`;
-  });
-  return `<svg class="world-map-svg" viewBox="0 0 1000 500" preserveAspectRatio="xMidYMid meet">${paths}${labelSvg}</svg>`;
+  return `<div class="map-img-wrap"><img src="world-map.png" class="map-bg-img" alt="World Map"/><div class="map-markers">${markers}</div><div class="map-popup" id="mapPopup" style="display:none"></div></div>`;
 }
 
 function renderCamps(){
@@ -2904,12 +2879,11 @@ function renderCamps(){
   <div class="sec-title">🗺️ 三极阵营世界地图<span class="cnt">点击国家查看经济数据</span></div>
   <div class="card gold-edge map-card">
     <div class="map-legend">
-      <span class="map-leg-item"><i style="background:${CAMP_FILL.eastern};border-color:${CAMP_STROKE.eastern}"></i>东方阵营</span>
-      <span class="map-leg-item"><i style="background:${CAMP_FILL.bridge};border-color:${CAMP_STROKE.bridge}"></i>桥梁国家</span>
-      <span class="map-leg-item"><i style="background:${CAMP_FILL.western};border-color:${CAMP_STROKE.western}"></i>西方阵营</span>
+      <span class="map-leg-item"><i style="background:rgba(224,92,92,.5);border-color:#e05c5c"></i>东方阵营</span>
+      <span class="map-leg-item"><i style="background:rgba(76,175,114,.5);border-color:#4caf72"></i>桥梁国家</span>
+      <span class="map-leg-item"><i style="background:rgba(91,155,213,.5);border-color:#5b9bd5"></i>西方阵营</span>
     </div>
-    <div class="map-wrap" id="g2MapWrap">${worldMapSVG()}</div>
-    <div class="map-popup" id="mapPopup" style="display:none"></div>
+    ${worldMapHTML()}
   </div>
 
   <div class="g2-summary">${cards}</div>
@@ -2925,36 +2899,43 @@ function renderCamps(){
 }
 
 function initMapInteraction(){
-  const wrap=document.getElementById('g2MapWrap');
+  const wrap=document.querySelector('.map-img-wrap');
   const popup=document.getElementById('mapPopup');
   if(!wrap||!popup)return;
   wrap.addEventListener('click',e=>{
-    const el=e.target.closest('[data-iso]');
-    if(!el){popup.style.display='none';return;}
-    const iso=el.dataset.iso;
+    const marker=e.target.closest('.map-marker');
+    if(!marker){popup.style.display='none';return;}
+    const iso=marker.dataset.iso;
     const d=COUNTRY_ECON[iso];
     if(!d){popup.style.display='none';return;}
     const camp=CAMP_COLOR[iso];
     const campName=camp==='eastern'?'东方阵营':camp==='bridge'?'桥梁国家':'西方阵营';
     const col=CAMP_STROKE[camp]||'#d4af37';
-    const gdpStr=d.gdp>=1000?(d.gdp/1000).toFixed(2)+' 万亿':''+d.gdp+' 十亿';
+    const gdpStr=d.gdp>=1000?'$'+(d.gdp/1000).toFixed(2)+' 万亿':'$'+d.gdp+' 十亿';
     const growthCol=d.growth>=3?'#4caf72':d.growth>=1?'#e0a23c':'#e05c5c';
     popup.innerHTML=`
+      <div class="popup-close" onclick="this.parentElement.style.display='none'">&times;</div>
       <div class="popup-h" style="border-color:${col}"><span class="popup-nm">${d.name}</span><span class="popup-camp" style="color:${col}">${campName}</span></div>
       <div class="popup-grid">
-        <div class="popup-item"><div class="popup-l">GDP (2024)</div><div class="popup-v">$${gdpStr}</div></div>
+        <div class="popup-item"><div class="popup-l">GDP (2024)</div><div class="popup-v">${gdpStr}</div></div>
         <div class="popup-item"><div class="popup-l">过去一年增速</div><div class="popup-v" style="color:${growthCol}">${d.growth>=0?'+':''}${d.growth}%</div></div>
         <div class="popup-item"><div class="popup-l">人均 GDP</div><div class="popup-v">$${d.gdppc.toLocaleString()}</div></div>
-        <div class="popup-item"><div class="popup-l">人口</div><div class="popup-v">${d.pop>=1000?(d.pop/1000).toFixed(2)+' 十亿':d.pop+' 百万'}</div></div>
+        <div class="popup-item"><div class="popup-l">人口</div><div class="popup-v">${d.pop>=1000?(d.pop/100).toFixed(1)+'亿':d.pop+'百万'}</div></div>
       </div>`;
-    // 定位popup在点击处附近
-    const rect=wrap.getBoundingClientRect();
-    const px=e.clientX-rect.left, py=e.clientY-rect.top;
-    popup.style.left=Math.min(px+12,rect.width-260)+'px';
-    popup.style.top=Math.min(py-10,rect.height-140)+'px';
+    // 定位popup在标注点附近
+    const mRect=marker.getBoundingClientRect();
+    const wRect=wrap.getBoundingClientRect();
+    let px=mRect.left-wRect.left+mRect.width+8;
+    let py=mRect.top-wRect.top-20;
+    // 防止超出右边界
+    if(px+260>wRect.width) px=mRect.left-wRect.left-268;
+    if(py+160>wRect.height) py=wRect.height-170;
+    if(py<0) py=10;
+    popup.style.left=px+'px';
+    popup.style.top=py+'px';
     popup.style.display='block';
   });
-  // 点击空白关闭
+  // 点击地图外关闭
   document.addEventListener('click',e=>{
     if(!wrap.contains(e.target))popup.style.display='none';
   });
