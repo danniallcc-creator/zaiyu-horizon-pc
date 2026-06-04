@@ -1365,18 +1365,48 @@ const _cache=new Map(); // key → {data, ts}
 function cacheGet(key,ttlMs){const e=_cache.get(key);if(e&&Date.now()-e.ts<ttlMs)return e.data;return null;}
 function cacheSet(key,data){_cache.set(key,{data,ts:Date.now()});}
 
-// ===== 快速fetch: 直连东方财富(中国大陆可达, CORS *) =====
+// ===== JSONP 加载: 通过<script>标签加载东方财富, 完全绕过CORS限制 =====
+// 东方财富 push2 原生支持 cb=回调函数名 JSONP 模式, 国内浏览器最稳定
+function _emJSONP(url){
+  return new Promise((resolve,reject)=>{
+    const cbName='__emcb_'+Date.now()+'_'+Math.random().toString(36).slice(2,8);
+    const sep=url.includes('?')?'&':'?';
+    const fullUrl=url+sep+'cb='+cbName;
+    const script=document.createElement('script');
+    let done=false;
+    const cleanup=()=>{
+      done=true;
+      try{delete window[cbName];}catch(e){window[cbName]=undefined;}
+      if(script.parentNode)script.parentNode.removeChild(script);
+      clearTimeout(t);
+    };
+    const t=setTimeout(()=>{if(!done){cleanup();reject(new Error('JSONP timeout'));}},FETCH_TIMEOUT);
+    window[cbName]=(data)=>{if(!done){cleanup();resolve(data);}};
+    script.onerror=()=>{if(!done){cleanup();reject(new Error('JSONP script load error'));}};
+    script.src=fullUrl;
+    (document.head||document.documentElement).appendChild(script);
+  });
+}
+
+// ===== fetch 后备: 部分场景JSONP被屏蔽时使用 =====
 async function _emFetchOnce(url){
   const ctrl=new AbortController(); const t=setTimeout(()=>ctrl.abort(),FETCH_TIMEOUT);
   try{
-    const r=await fetch(url,{signal:ctrl.signal,cache:'no-store'});
+    const r=await fetch(url,{signal:ctrl.signal,cache:'no-store',mode:'cors'});
     if(!r.ok) throw new Error('HTTP '+r.status);
     return await r.json();
   } finally { clearTimeout(t); }
 }
+
+// 双通道竞速: JSONP 优先(无CORS限制) + fetch 兜底
 async function _emFetchRace(directUrl){
-  // 直连东方财富, 无需代理(国内用户直连最快, 代理在中国反而不可达)
-  return await _emFetchOnce(directUrl);
+  return await Promise.any([
+    _emJSONP(directUrl),
+    new Promise(r=>setTimeout(r,300)).then(()=>_emFetchOnce(directUrl)),
+  ]).catch(agg=>{
+    // 全部失败, 抛第一个错误
+    throw agg.errors?agg.errors[0]:agg;
+  });
 }
 async function emQuote(secids){
   const ck='eq_'+secids.slice(0,60);
@@ -3585,7 +3615,12 @@ async function loadAll(){
   const ts=new Date().toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit'});
   if(ok===2)        setStatus('live','实时数据 · 东方财富行情 · '+ts);
   else if(ok===1)   setStatus('offline','部分数据源不可用('+failed.join('、')+')· 下次自动重试');
-  else              setStatus('offline','实时数据获取失败 · 请点击右上角刷新重试');
+  else {
+    setStatus('offline','实时数据获取失败 · 请按 F12 查看控制台错误 · 点击右上角刷新重试');
+    if(!rendered.dashboard){
+      document.getElementById('dashContent').innerHTML='<div class="data-loading" style="text-align:center;padding:40px;color:#e0a23c"><div style="font-size:18px;margin-bottom:12px">⚠ 实时数据加载失败</div><div style="font-size:13px;line-height:1.7;color:#76726c">可能原因:<br>① 网络异常 — 请刷新页面或检查代理<br>② 浏览器CORS拦截 — 请按 F12 查看控制台<br>③ 东方财富接口暂时不可达 — 系统将自动重试</div></div>';
+    }
+  }
   refreshing=false;
 }
 document.getElementById('refreshBtn').addEventListener('click',loadAll);
