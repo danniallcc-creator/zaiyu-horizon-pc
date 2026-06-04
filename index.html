@@ -716,7 +716,7 @@ a{color:inherit;text-decoration:none}
 //   加密货币 BTC/ETH → OKX(国内可访问) → Binance 公共数据(备用)
 // 无需任何后端代理, 彻底解决跨域与海外服务器被墙问题
 const EM_BASE = "https://push2.eastmoney.com/api/qt/ulist.np/get";
-const FETCH_TIMEOUT = 12000;
+const FETCH_TIMEOUT = 8000; // 中国→东方财富应在3s内响应, 8s超时足够
 
 /* 仅政策利率与波动率指数无免费实时CORS源, 保留最新公布值(非市场tick数据) */
 const CURATED = { vixIndex:'14.2', fedRate:'3.50-3.75%', chinaLPR:'3.00' };
@@ -1283,9 +1283,13 @@ const CAMP_STROKE={eastern:'#e05c5c',bridge:'#4caf72',western:'#5b9bd5'};
 // 带 1 次自动重试 + CORS 代理回退, 提升弱网/海外/CORS拦截下的顺畅性
 const CORS_PROXIES=[
   u=>'https://api.allorigins.win/raw?url='+encodeURIComponent(u),
-  u=>'https://api.codetabs.com/v1/proxy?quest='+encodeURIComponent(u),
-  u=>'https://corsproxy.io/?'+encodeURIComponent(u)
 ];
+// ===== 缓存层: 减少重复请求 =====
+const _cache=new Map(); // key → {data, ts}
+function cacheGet(key,ttlMs){const e=_cache.get(key);if(e&&Date.now()-e.ts<ttlMs)return e.data;return null;}
+function cacheSet(key,data){_cache.set(key,{data,ts:Date.now()});}
+
+// ===== 快速fetch: 竞速策略(直连 vs 代理同时发, 取最快) =====
 async function _emFetchOnce(url){
   const ctrl=new AbortController(); const t=setTimeout(()=>ctrl.abort(),FETCH_TIMEOUT);
   try{
@@ -1294,24 +1298,36 @@ async function _emFetchOnce(url){
     return await r.json();
   } finally { clearTimeout(t); }
 }
-async function emQuote(secids){
-  const baseUrl=`${EM_BASE}?fltt=2&fields=f12,f13,f14,f2,f3&secids=${secids}&_=${Date.now()}`;
-  const urls=[baseUrl, ...CORS_PROXIES.map(p=>p(baseUrl))];
-  let lastErr;
-  for(const url of urls){
-    try{
-      const j=await _emFetchOnce(url);
-      const diff=(j.data&&j.data.diff)||[];
-      if(!diff.length){ lastErr=new Error('空响应'); continue; }
-      const m={};
-      diff.forEach(x=>{ m[x.f13+'.'+x.f12]={
-        price:(x.f2!=null&&x.f2!=='-')?Number(x.f2):null,
-        chg:(x.f3!=null&&x.f3!=='-')?Number(x.f3):null,
-        name:x.f14 }; });
-      return m;
-    } catch(e){ lastErr=e; }
+async function _emFetchRace(directUrl){
+  // 策略: 直连+1个代理同时竞速, 取最快成功的
+  const proxyUrl=CORS_PROXIES[0](directUrl);
+  const attempts=[
+    _emFetchOnce(directUrl).catch(e=>Promise.reject(e)),
+    // 代理延迟500ms启动(给直连优先窗口, 避免国内直连成功后代理浪费带宽)
+    new Promise(r=>setTimeout(r,500)).then(()=>_emFetchOnce(proxyUrl)),
+  ];
+  try{
+    return await Promise.any(attempts);
+  }catch(agg){
+    // 全部失败, 抛最后错误
+    throw agg.errors?agg.errors[0]:agg;
   }
-  throw lastErr||new Error('东方财富 取数失败');
+}
+async function emQuote(secids){
+  const ck='eq_'+secids.slice(0,60);
+  const cached=cacheGet(ck,20000); // 20s缓存
+  if(cached)return cached;
+  const baseUrl=`${EM_BASE}?fltt=2&fields=f12,f13,f14,f2,f3&secids=${secids}&_=${Date.now()}`;
+  const j=await _emFetchRace(baseUrl);
+  const diff=(j.data&&j.data.diff)||[];
+  if(!diff.length) throw new Error('东方财富返回空数据');
+  const m={};
+  diff.forEach(x=>{ m[x.f13+'.'+x.f12]={
+    price:(x.f2!=null&&x.f2!=='-')?Number(x.f2):null,
+    chg:(x.f3!=null&&x.f3!=='-')?Number(x.f3):null,
+    name:x.f14 }; });
+  cacheSet(ck,m);
+  return m;
 }
 
 // 外汇/人民币/美元指数 → 东方财富
@@ -1347,25 +1363,35 @@ function fetchJSONq(url,ms){
   return fetch(url,{signal:ctrl.signal}).then(r=>{clearTimeout(t);if(!r.ok)throw new Error('HTTP '+r.status);return r.json();},e=>{clearTimeout(t);throw e;});
 }
 async function fetchCrypto(){
+  const ck='crypto';
+  const cached=cacheGet(ck,30000); // 30s缓存
+  if(cached)return cached;
   const o={};
-  try{
+  // 竞速: OKX + Binance Vision 同时请求, 取最快
+  const okxP=(async()=>{
     const [b,e]=await Promise.all([
-      fetchJSONq('https://www.okx.com/api/v5/market/ticker?instId=BTC-USDT',5000),
-      fetchJSONq('https://www.okx.com/api/v5/market/ticker?instId=ETH-USDT',5000),
+      fetchJSONq('https://www.okx.com/api/v5/market/ticker?instId=BTC-USDT',4000),
+      fetchJSONq('https://www.okx.com/api/v5/market/ticker?instId=ETH-USDT',4000),
     ]);
     const pb=b.data&&b.data[0], pe=e.data&&e.data[0];
-    if(pb&&pe){
-      o.btcPrice=nf(+pb.last,0); o.btcChange=pct(+pb.last,+pb.open24h);
-      o.eth=nf(+pe.last,0);      o.ethChange=pct(+pe.last,+pe.open24h);
-      return o;
-    }
-  }catch(e){}
-  try{
+    if(!pb||!pe)throw new Error('OKX empty');
+    return {btcPrice:nf(+pb.last,0),btcChange:pct(+pb.last,+pb.open24h),eth:nf(+pe.last,0),ethChange:pct(+pe.last,+pe.open24h)};
+  })();
+  const binP=(async()=>{
+    await new Promise(r=>setTimeout(r,300)); // 给OKX 300ms优先窗口
     const arr=await fetchJSONq('https://data-api.binance.vision/api/v3/ticker/24hr?symbols=%5B%22BTCUSDT%22%2C%22ETHUSDT%22%5D',5000);
+    const r={};
     arr.forEach(x=>{
-      if(x.symbol==='BTCUSDT'){o.btcPrice=nf(+x.lastPrice,0);o.btcChange=Number(x.priceChangePercent);}
-      if(x.symbol==='ETHUSDT'){o.eth=nf(+x.lastPrice,0);o.ethChange=Number(x.priceChangePercent);}
+      if(x.symbol==='BTCUSDT'){r.btcPrice=nf(+x.lastPrice,0);r.btcChange=Number(x.priceChangePercent);}
+      if(x.symbol==='ETHUSDT'){r.eth=nf(+x.lastPrice,0);r.ethChange=Number(x.priceChangePercent);}
     });
+    if(!r.btcPrice)throw new Error('Binance empty');
+    return r;
+  })();
+  try{
+    const result=await Promise.any([okxP,binP]);
+    Object.assign(o,result);
+    cacheSet(ck,o);
   }catch(e){}
   return o;
 }
@@ -1413,53 +1439,63 @@ const ALL_STOCKS=[...US_LIST,...HK_LIST,...CN_LIST];
 const STOCK_MAP={};ALL_STOCKS.forEach(x=>STOCK_MAP[x[0]]=x);
 
 async function fetchUniverse(){
+  const ck='universe';
+  const cached=cacheGet(ck,25000); // 25s缓存(列表频繁刷新不必要)
+  if(cached)return cached;
   const all=[...US_LIST,...HK_LIST,...CN_LIST];
   const m=await emQuote(all.map(x=>x[0]).join(','));
   const conv=list=>list.map(([sid,id,name])=>{
     const x=m[sid];
     return {id, name, price:x?x.price:null, changePct:x?x.chg:null, secid:sid};
   });
-  return {us:conv(US_LIST), hk:conv(HK_LIST), cn:conv(CN_LIST), asOf:Date.now()};
+  const result={us:conv(US_LIST), hk:conv(HK_LIST), cn:conv(CN_LIST), asOf:Date.now()};
+  cacheSet(ck,result);
+  return result;
 }
 
-// ===== K线历史(东方财富 push2his, 120日日K) =====
+// ===== K线历史(东方财富 push2his, 120日日K, 带缓存+竞速) =====
 async function fetchKline(secid,days){
+  const ck='kl_'+secid+'_'+(days||120);
+  const cached=cacheGet(ck,300000); // 5分钟缓存
+  if(cached)return cached;
   const url=`https://push2his.eastmoney.com/api/qt/stock/kline/get?secid=${secid}&fields1=f1,f2,f3,f4,f5,f6&fields2=f51,f52,f53,f54,f55,f56,f57&klt=101&fqt=1&end=20500101&lmt=${days||120}&_=${Date.now()}`;
-  let lastErr;
-  for(let i=0;i<2;i++){
-    const ctrl=new AbortController();const t=setTimeout(()=>ctrl.abort(),FETCH_TIMEOUT);
-    let r;try{r=await fetch(url,{signal:ctrl.signal});}catch(e){clearTimeout(t);lastErr=e;continue;}finally{clearTimeout(t);}
-    if(!r.ok){lastErr=new Error('kline HTTP '+r.status);continue;}
-    let j;try{j=await r.json();}catch(e){lastErr=e;continue;}
+  try{
+    const j=await _emFetchRace(url);
     const klines=j.data&&j.data.klines;
-    if(!klines||!klines.length){if(i===0)continue;return[];}
-    // kline format: "2024-01-02,open,close,high,low,volume,amount"
-    return klines.map(k=>{const p=k.split(',');return{date:p[0],open:+p[1],close:+p[2],high:+p[3],low:+p[4],vol:+p[5],amt:+p[6]};});
+    if(!klines||!klines.length)return[];
+    const result=klines.map(k=>{const p=k.split(',');return{date:p[0],open:+p[1],close:+p[2],high:+p[3],low:+p[4],vol:+p[5],amt:+p[6]};});
+    cacheSet(ck,result);
+    return result;
+  }catch(e){
+    console.warn('K线获取失败',secid,e.message||e);
+    return[];
   }
-  console.warn('K线获取失败',secid,lastErr);return[];
 }
 
-// ===== 基本面(东方财富 push2 个股详情) =====
+// ===== 基本面(东方财富 push2 个股详情, 带缓存+竞速) =====
 async function fetchFundamentals(secid){
+  const ck='fund_'+secid;
+  const cached=cacheGet(ck,300000); // 5分钟缓存
+  if(cached)return cached;
   const url=`https://push2.eastmoney.com/api/qt/stock/get?secid=${secid}&fields=f57,f58,f162,f163,f167,f173,f116,f117,f127,f183,f186&_=${Date.now()}`;
-  let lastErr;
-  for(let i=0;i<2;i++){
-    const ctrl=new AbortController();const t=setTimeout(()=>ctrl.abort(),FETCH_TIMEOUT);
-    let r;try{r=await fetch(url,{signal:ctrl.signal});}catch(e){clearTimeout(t);lastErr=e;continue;}finally{clearTimeout(t);}
-    if(!r.ok){lastErr=new Error('fund HTTP '+r.status);continue;}
-    let j;try{j=await r.json();}catch(e){lastErr=e;continue;}
-    const d=j.data;if(!d||!d.f57){if(i===0)continue;return null;}
-    return{
+  try{
+    const j=await _emFetchRace(url);
+    const d=j.data;if(!d||!d.f57)return null;
+    const result={
       code:d.f57, name:d.f58, industry:d.f127||'—',
-      pe:d.f163!=null&&d.f163!=='-'?+(d.f163/100).toFixed(2):null,
-      pb:d.f167!=null&&d.f167!=='-'?+(d.f167/100).toFixed(2):null,
-      roe:d.f173!=null&&d.f173!=='-'?+(d.f173/100).toFixed(2):null,
+      pe:d.f163!=null&&d.f163!=='-'?+(+d.f163/100).toFixed(2):null,
+      pb:d.f167!=null&&d.f167!=='-'?+(+d.f167/100).toFixed(2):null,
+      roe:d.f173!=null&&d.f173!=='-'?+(+d.f173/100).toFixed(2):null,
       mktCap:d.f116!=null&&d.f116!=='-'?d.f116:null,
       revenue:d.f183!=null&&d.f183!=='-'?d.f183:null,
-      eps:d.f186!=null&&d.f186!=='-'?+(d.f186/100).toFixed(2):null,
+      eps:d.f186!=null&&d.f186!=='-'?+(+d.f186/100).toFixed(2):null,
     };
+    cacheSet(ck,result);
+    return result;
+  }catch(e){
+    console.warn('基本面获取失败',secid,e.message||e);
+    return null;
   }
-  console.warn('基本面获取失败',secid,lastErr);return null;
 }
 
 // ===== 技术指标计算 =====
@@ -1551,12 +1587,13 @@ function renderStockDetail(secid,stockInfo){
     </div>
     <div class="stk-loading"><span class="spin"></span> 正在加载 K线 + 基本面 + AI分析…</div>
   </div>`;
-  // 异步加载数据
-  Promise.all([fetchKline(secid,120),fetchFundamentals(secid)]).then(([kdata,fund])=>{
-    renderDetailContent(el.querySelector('.stk-detail'),secid,stockInfo,kdata,fund);
-  }).catch(e=>{
-    console.warn('详情加载失败',e);
-    el.querySelector('.stk-loading').innerHTML='<div style="color:#e05c5c">数据加载失败，请点击右上角刷新重试</div>';
+  // 使用allSettled: 即使部分失败也展示已获得的数据
+  Promise.allSettled([fetchKline(secid,120),fetchFundamentals(secid)]).then(results=>{
+    const kdata=results[0].status==='fulfilled'?results[0].value:[];
+    const fund=results[1].status==='fulfilled'?results[1].value:null;
+    const detail=el.querySelector('.stk-detail');
+    if(!detail)return; // 用户已离开
+    renderDetailContent(detail,secid,stockInfo,kdata,fund);
   });
 }
 function renderDetailContent(container,secid,info,kdata,fund){
