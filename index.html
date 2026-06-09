@@ -246,6 +246,39 @@ a{color:inherit;text-decoration:none}
 .fund-l{font-size:11px;color:var(--text-3);margin-bottom:5px}
 .fund-v{font-family:'JetBrains Mono',monospace;font-size:18px;font-weight:700}
 .stk-fund-na{text-align:center;padding:24px;color:var(--text-3);font-size:13px}
+/* Master Framework Analysis in Stock Detail */
+.mf-panel{margin-top:28px}
+.mf-signal-box{display:flex;align-items:center;gap:16px;padding:18px 24px;border-radius:12px;margin-bottom:22px;border:1px solid var(--line-gold)}
+.mf-signal-box.buy{background:rgba(76,175,114,.08);border-color:rgba(76,175,114,.4)}
+.mf-signal-box.sell{background:rgba(224,92,92,.08);border-color:rgba(224,92,92,.4)}
+.mf-signal-box.hold{background:rgba(212,175,55,.06);border-color:rgba(212,175,55,.3)}
+.mf-signal-icon{font-size:32px}
+.mf-signal-text{flex:1}
+.mf-signal-label{font-size:18px;font-weight:800;margin-bottom:2px}
+.mf-signal-desc{font-size:12px;color:var(--text-2);line-height:1.5}
+.mf-signal-score{font-family:'JetBrains Mono',monospace;font-size:28px;font-weight:800}
+.mf-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
+.mf-card{padding:16px 18px;border-radius:10px;background:var(--panel);border:1px solid var(--line);transition:border-color .2s,box-shadow .2s}
+.mf-card:hover{border-color:var(--gold);box-shadow:0 0 12px rgba(212,175,55,.1)}
+.mf-card-head{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.mf-card-av{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:18px}
+.mf-card-nm{font-size:13px;font-weight:700;color:var(--text)}
+.mf-card-style{font-size:10px;color:var(--text-3);margin-top:1px}
+.mf-card-signal{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.mf-card-signal .tag{font-size:10px;font-weight:700;padding:2px 8px;border-radius:4px}
+.mf-card-signal .tag.buy{background:rgba(76,175,114,.15);color:#4caf72}
+.mf-card-signal .tag.sell{background:rgba(224,92,92,.15);color:#e05c5c}
+.mf-card-signal .tag.hold{background:rgba(212,175,55,.12);color:#e0a23c}
+.mf-card-signal .score{font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:700}
+.mf-card-reasons{font-size:11px;color:var(--text-2);line-height:1.6}
+.mf-card-reasons .r{margin-bottom:3px;padding-left:10px;position:relative}
+.mf-card-reasons .r::before{content:'▸';position:absolute;left:0;color:var(--gold)}
+.mf-cycle{margin-top:22px;padding:18px 22px;border-radius:10px;background:var(--panel);border:1px solid var(--line)}
+.mf-cycle-title{font-size:14px;font-weight:700;color:var(--gold);margin-bottom:12px}
+.mf-cycle-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.mf-cycle-item{padding:10px 12px;border-radius:8px;background:rgba(0,0,0,.2);border:1px solid var(--line);font-size:11px}
+.mf-cycle-item .lbl{color:var(--text-3);margin-bottom:4px}
+.mf-cycle-item .val{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:700}
 .stk-ai{padding:8px 0}
 .ai-overall{display:flex;align-items:center;gap:14px;margin-bottom:18px}
 .ai-score{font-family:'JetBrains Mono',monospace;font-size:42px;font-weight:800}
@@ -1810,6 +1843,259 @@ function aiScore(data,fund){
   return{techScore,fibScore,macroScore,fundScore,sentScore,overall,verdict,fib,lastRSI,lastMACD,ret5:+ret5.toFixed(2),ret20:+ret20.toFixed(2),volatility:+volatility.toFixed(2),lastVWAP,lastBoll};
 }
 
+// ===== 大师框架分析引擎 =====
+// 每位大师基于其交易逻辑,对当前个股的技术面+宏观环境给出独立判断
+function masterFrameworkAnalysis(kdata,fund,stockInfo){
+  if(!kdata||kdata.length<30) return null;
+  const n=kdata.length;
+  const last=kdata[n-1].close, prev=kdata[n-2]?.close||last;
+  const ma5=calcMA(kdata,5), ma20=calcMA(kdata,20);
+  const rsi=calcRSI(kdata,14), macd=calcMACD(kdata), boll=calcBoll(kdata,20,2);
+  const vwap=calcVWAP(kdata);
+  const lastRSI=rsi[n-1]||50, lastMACD=macd.hist[n-1]||0, prevMACD=macd.hist[n-2]||0;
+  const lastBoll=boll[n-1], lastVWAP=vwap[n-1];
+  const ma5v=ma5[n-1], ma20v=ma20[n-1], prevMa5=ma5[n-2], prevMa20=ma20[n-2];
+  const ret5=n>=6?(last-kdata[n-6].close)/kdata[n-6].close*100:0;
+  const ret20=n>=21?(last-kdata[n-21].close)/kdata[n-21].close*100:0;
+  const ret60=n>=61?(last-kdata[n-61].close)/kdata[n-61].close*100:0;
+  // 波动率
+  const vol20=kdata.slice(-20);
+  const avgC20=vol20.reduce((s,d)=>s+d.close,0)/vol20.length;
+  const std20=Math.sqrt(vol20.reduce((s,d)=>s+(d.close-avgC20)**2,0)/vol20.length);
+  const volatility=std20/avgC20*100;
+  // 成交量
+  const vol5avg=kdata.slice(-5).reduce((s,d)=>s+d.vol,0)/5;
+  const vol20avg=kdata.slice(-20).reduce((s,d)=>s+d.vol,0)/20;
+  const volRatio=vol20avg>0?vol5avg/vol20avg:1;
+  // MA趋势
+  const ma60avg=n>=60?kdata.slice(-60).reduce((s,d)=>s+d.close,0)/60:avgC20;
+  const ma120avg=n>=120?kdata.slice(-120).reduce((s,d)=>s+d.close,0)/120:ma60avg;
+  const trendUp=last>ma60avg&&ma60avg>ma120avg;
+  const trendDown=last<ma60avg&&ma60avg<ma120avg;
+  // 布林位置
+  const bollPos=lastBoll&&lastBoll.upper&&lastBoll.lower?(last-lastBoll.lower)/(lastBoll.upper-lastBoll.lower):0.5;
+  // PE
+  const pe=fund?.pe||null;
+  const roe=fund?.roe||null;
+  // 宏观环境推断(从cache全局变量)
+  const md=cache||{};
+  const fedRate=parseFloat((md.fedRate||'4.5').replace(/[^\d.]/g,''))||4.5;
+  const vix=parseFloat(md.vixIndex)||15;
+  const dxyChg=md.dxyChange||0;
+  const sp500Chg=md.sp500Change||0;
+
+  // ===== 10位大师分析逻辑 =====
+  const results=[];
+
+  // 1. 达里欧 - 全天候/风险平价: 关注宏观环境(利率周期+美元+波动率)
+  (function(){
+    let score=50; const reasons=[];
+    if(fedRate>5){score-=15;reasons.push('联储利率偏高('+fedRate+'%)，紧缩环境压制估值');}
+    else if(fedRate<3){score+=15;reasons.push('低利率环境利好资产定价');}
+    else{score+=5;reasons.push('利率中性区间('+fedRate+'%)，政策温和');}
+    if(volatility<2){score+=10;reasons.push('波动率极低('+volatility.toFixed(1)+'%)，风险平价环境良好');}
+    else if(volatility>4){score-=10;reasons.push('高波动('+volatility.toFixed(1)+'%)环境，分散化需求增加');}
+    if(trendUp){score+=10;reasons.push('中长期趋势向上，增长环境偏友好');}
+    else if(trendDown){score-=10;reasons.push('中长期趋势向下，建议降低风险敞口');}
+    if(vix>25){score-=8;reasons.push('VIX恐慌指数偏高('+vix+')，市场不确定性大');}
+    score=Math.min(100,Math.max(0,score));
+    results.push({id:'dalio',score,reasons});
+  })();
+
+  // 2. 西蒙斯 - 量化动量/统计套利: RSI+MACD+均值回归
+  (function(){
+    let score=50; const reasons=[];
+    // 动量因子
+    if(ret5>2){score+=12;reasons.push('5日动量强劲(+'+ret5.toFixed(1)+'%)，短期正因子触发');}
+    else if(ret5<-2){score-=8;reasons.push('5日动量走弱('+ret5.toFixed(1)+'%)，短期负因子');}
+    // 均值回归信号
+    if(lastRSI<25){score+=15;reasons.push('RSI极度超卖('+lastRSI.toFixed(0)+')，统计回归概率高');}
+    else if(lastRSI>75){score-=12;reasons.push('RSI超买区('+lastRSI.toFixed(0)+')，回归压力大');}
+    // MACD金叉/死叉
+    if(lastMACD>0&&prevMACD<=0){score+=10;reasons.push('MACD金叉(底部翻多)，模型捕捉到动量切换');}
+    else if(lastMACD<0&&prevMACD>=0){score-=10;reasons.push('MACD死叉，动量转空信号');}
+    // 量价配合
+    if(volRatio>1.5&&ret5>0){score+=8;reasons.push('放量上涨(量比'+volRatio.toFixed(1)+')，价量共振');}
+    score=Math.min(100,Math.max(0,score));
+    results.push({id:'simons',score,reasons});
+  })();
+
+  // 3. 马克思 - 周期钟摆/逆向: 寻找市场极端情绪时的反向机会
+  (function(){
+    let score=50; const reasons=[];
+    // 情绪极端=机会
+    if(lastRSI<30&&ret20<-15){score+=20;reasons.push('市场恐慌性抛售(RSI '+lastRSI.toFixed(0)+',20日跌'+ret20.toFixed(1)+'%)，钟摆到极端悲观端');}
+    else if(lastRSI>70&&ret20>15){score-=15;reasons.push('市场过度乐观(RSI '+lastRSI.toFixed(0)+')，钟摆在极端乐观端，风险累积');}
+    // 布林下轨=恐慌
+    if(bollPos<0.1){score+=12;reasons.push('价格跌穿布林下轨，恐慌定价错位可能出现');}
+    else if(bollPos>0.9){score-=8;reasons.push('价格触及布林上轨，贪婪情绪驱动');}
+    // 周期位置
+    if(trendDown&&lastRSI<40){score+=8;reasons.push('下跌周期后期，第二层思维提示：别人恐惧时贪婪');}
+    if(pe&&pe<12){score+=10;reasons.push('PE仅'+pe+'x，低估值提供安全边际');}
+    score=Math.min(100,Math.max(0,score));
+    results.push({id:'marks',score,reasons});
+  })();
+
+  // 4. 德鲁肯米勒 - 集中押注/趋势突破/政策转向
+  (function(){
+    let score=50; const reasons=[];
+    // 趋势突破
+    if(ma5v>ma20v&&prevMa5<=prevMa20){score+=18;reasons.push('均线金叉(MA5上穿MA20)，趋势突破确认');}
+    else if(ma5v<ma20v&&prevMa5>=prevMa20){score-=15;reasons.push('均线死叉，趋势转空');}
+    // 强势趋势中加仓
+    if(trendUp&&ret20>5){score+=12;reasons.push('中期强势趋势(20日+'+ret20.toFixed(1)+'%)，集中加仓信号');}
+    else if(trendDown&&ret20<-10){score-=12;reasons.push('中期趋势恶化，止损离场信号');}
+    // 政策信号
+    if(fedRate<4&&sp500Chg>0){score+=8;reasons.push('联储偏鸽+市场上涨=顺势做多环境');}
+    if(volatility>5){score-=5;reasons.push('高波动环境('+volatility.toFixed(1)+'%)，不适合集中押注');}
+    score=Math.min(100,Math.max(0,score));
+    results.push({id:'druck',score,reasons});
+  })();
+
+  // 5. 林奇 - PEG估值/成长股/生活中发现
+  (function(){
+    let score=50; const reasons=[];
+    if(pe&&pe>0){
+      if(pe<15){score+=15;reasons.push('PE仅'+pe+'x，属于"稳定增长股"合理估值区间');}
+      else if(pe<25){score+=8;reasons.push('PE '+pe+'x适中，需观察增长是否匹配');}
+      else if(pe>50){score-=12;reasons.push('PE '+pe+'x过高，若非快速增长股则有估值陷阱风险');}
+      else if(pe>35){score-=5;reasons.push('PE '+pe+'x偏贵，密切关注增长率能否支撑');}
+    }
+    if(roe&&roe>20){score+=10;reasons.push('ROE '+roe+'%优秀，具备"好公司"特征');}
+    else if(roe&&roe>12){score+=5;reasons.push('ROE '+roe+'%良好');}
+    // 趋势代表增长
+    if(ret60>20){score+=8;reasons.push('60日涨幅+'+ret60.toFixed(0)+'%，可能进入快速增长期');}
+    else if(ret60<-20){score-=5;reasons.push('60日跌幅显著，需判断是周期还是基本面恶化');}
+    // 放量突破
+    if(volRatio>1.3&&ret5>0&&ma5v>ma20v){score+=5;reasons.push('放量突破，机构关注度提升');}
+    score=Math.min(100,Math.max(0,score));
+    results.push({id:'lynch',score,reasons});
+  })();
+
+  // 6. 格罗斯 - 利率周期/收益率曲线/债券思维
+  (function(){
+    let score=50; const reasons=[];
+    // 利率环境对股票的影响
+    if(fedRate>=5){score-=15;reasons.push('利率高企('+fedRate+'%)，类债券资产估值承压');}
+    else if(fedRate<=3){score+=12;reasons.push('低利率环境('+fedRate+'%)，利好估值扩张');}
+    else{score+=3;reasons.push('利率中性('+fedRate+'%)，估值压力有限');}
+    // 趋势=利率周期代理
+    if(trendUp){score+=10;reasons.push('中长期上行趋势暗示流动性宽松环境');}
+    if(dxyChg<-0.3){score+=5;reasons.push('美元走弱有利于全球资产定价');}
+    else if(dxyChg>0.5){score-=5;reasons.push('美元走强对非美资产构成压力');}
+    if(volatility<2){score+=5;reasons.push('极低波动率=稳定收益环境，债券型思维看多');}
+    score=Math.min(100,Math.max(0,score));
+    results.push({id:'gross',score,reasons});
+  })();
+
+  // 7. 琼斯 - 全球宏观/200日均线/不对称风险
+  (function(){
+    let score=50; const reasons=[];
+    // 200日均线(用120日代替,因数据限制)
+    const ma120=n>=120?kdata.slice(-120).reduce((s,d)=>s+d.close,0)/120:ma60avg;
+    if(last>ma120){score+=15;reasons.push('价格在200日均线之上(+'+((last/ma120-1)*100).toFixed(1)+'%)，趋势看多');}
+    else{score-=12;reasons.push('价格跌破200日均线('+((last/ma120-1)*100).toFixed(1)+'%)，趋势转空');}
+    // 不对称风险回报
+    if(lastRSI<35&&bollPos<0.2){score+=12;reasons.push('RSI低位+布林下轨=极佳风险回报比(上行空间>>下行)');}
+    else if(lastRSI>70&&bollPos>0.85){score-=10;reasons.push('RSI高位+布林上轨=风险回报比恶化');}
+    // 极端情绪反转
+    if(vix>30){score+=5;reasons.push('VIX高位('+vix+')=市场恐慌,历史上是反向指标');}
+    if(ret5<-5){score+=5;reasons.push('短期急跌('+ret5.toFixed(1)+'%)后反弹概率大,可寻找入场点');}
+    score=Math.min(100,Math.max(0,score));
+    results.push({id:'jones',score,reasons});
+  })();
+
+  // 8. 拉施克 - 短线波段/动量+均值回归/ADX趋势强度
+  (function(){
+    let score=50; const reasons=[];
+    // 模拟ADX: 用方向运动指标近似
+    const trendStrength=Math.abs(ret5)/volatility*20; // 趋势强度比
+    if(trendStrength>1.5){
+      // 强趋势中回调=入场
+      if(ret5>0&&last<ma5v){score+=15;reasons.push('强势趋势中价格回调至MA5(圣杯策略触发)');}
+      else if(ret5>0){score+=8;reasons.push('趋势动量强(强度指标'+trendStrength.toFixed(1)+')，顺势持有');}
+    }
+    // 布林反弹(均值回归)
+    if(bollPos<0.15){score+=12;reasons.push('价格触及布林下轨反弹区,短线做多信号');}
+    else if(bollPos>0.85){score-=8;reasons.push('布林上轨附近,短线获利了结区');}
+    // MACD背离
+    if(lastMACD>prevMACD&&ret5<0){score+=8;reasons.push('MACD底背离,动能恢复中,短线反弹信号');}
+    // 量价分析
+    if(volRatio>1.5&&ret5>1){score+=5;reasons.push('放量拉升,短线多头占优');}
+    else if(volRatio>1.5&&ret5<-1){score-=5;reasons.push('放量下跌,短线空头主导');}
+    score=Math.min(100,Math.max(0,score));
+    results.push({id:'raschke',score,reasons});
+  })();
+
+  // 9. 李录 - 深度价值/安全边际/能力圈
+  (function(){
+    let score=50; const reasons=[];
+    if(pe&&pe>0&&pe<12){score+=20;reasons.push('PE仅'+pe+'x，显著低估=巨大安全边际');}
+    else if(pe&&pe>0&&pe<20){score+=10;reasons.push('PE '+pe+'x合理偏低，价值投资者关注区间');}
+    else if(pe&&pe>40){score-=10;reasons.push('PE '+pe+'x偏高，安全边际不足');}
+    if(roe&&roe>20){score+=15;reasons.push('ROE '+roe+'%优秀,可能具备"宽阔护城河"特征');}
+    else if(roe&&roe>12){score+=5;reasons.push('ROE '+roe+'%良好，盈利能力可接受');}
+    // 价格远低于长期均线=深度价值
+    if(last<ma60avg*0.85){score+=12;reasons.push('价格大幅低于60日均线(折价'+((1-last/ma60avg)*100).toFixed(0)+'%)，可能存在价值洼地');}
+    // 长期持有逻辑
+    if(trendUp&&pe&&pe<25&&roe&&roe>15){score+=8;reasons.push('估值合理+ROE优秀+趋势向上=优质成长投资标的');}
+    score=Math.min(100,Math.max(0,score));
+    results.push({id:'li',score,reasons});
+  })();
+
+  // 10. 阿克曼 - 激进/集中持仓/估值洼地+催化剂
+  (function(){
+    let score=50; const reasons=[];
+    // 估值洼地
+    if(pe&&pe>0&&pe<15){score+=15;reasons.push('低估值(PE '+pe+'x)，若有催化剂可集中重仓');}
+    else if(pe&&pe>40){score-=10;reasons.push('高估值,激进投资者通常回避');}
+    // 催化剂信号: 放量突破(可能有事件驱动)
+    if(volRatio>2&&ret5>3){score+=15;reasons.push('异常放量+大幅上涨=可能出现催化事件(财报/重组/管理层变动)');}
+    else if(volRatio>1.5&&Math.abs(ret5)>2){score+=5;reasons.push('放量活跃,关注是否有催化剂出现');}
+    // 趋势反转(困境反转)
+    if(ret60<-30&&ret5>3){score+=12;reasons.push('深跌后强力反弹(困境反转信号),阿克曼式机会');}
+    // 基本面支撑
+    if(roe&&roe>15&&pe&&pe<20){score+=8;reasons.push('强ROE+合理PE=具备"好公司被低估"特征');}
+    score=Math.min(100,Math.max(0,score));
+    results.push({id:'ackman',score,reasons});
+  })();
+
+  // ===== 综合信号 =====
+  const avgScore=Math.round(results.reduce((s,r)=>s+r.score,0)/results.length);
+  const buyCount=results.filter(r=>r.score>=60).length;
+  const sellCount=results.filter(r=>r.score<=35).length;
+  let signal,signalLabel,signalDesc,signalColor;
+  if(avgScore>=68&&buyCount>=7){signal='buy';signalLabel='强烈买入';signalColor='#4caf72';signalDesc='多数大师框架看多，技术面+宏观环境共振向上';}
+  else if(avgScore>=60&&buyCount>=5){signal='buy';signalLabel='建议买入';signalColor='#4caf72';signalDesc='大师共识偏多，当前位置风险回报比良好';}
+  else if(avgScore>=52){signal='hold';signalLabel='持有观望';signalColor='#e0a23c';signalDesc='信号分歧,建议观望等待更明确方向';}
+  else if(avgScore>=40){signal='hold';signalLabel='谨慎持有';signalColor='#e0a23c';signalDesc='多数框架中性偏弱,注意风险管理';}
+  else if(sellCount>=5){signal='sell';signalLabel='建议卖出';signalColor='#e05c5c';signalDesc='多数大师框架看空,技术面恶化+宏观逆风';}
+  else{signal='sell';signalLabel='减仓/离场';signalColor='#e05c5c';signalDesc='综合信号偏空,建议降低仓位';}
+
+  // 资产周期传导分析
+  const cycleAnalysis=[];
+  if(fedRate>=4.5)cycleAnalysis.push({lbl:'货币政策',val:'紧缩',desc:'高利率压制估值,利空成长股',c:'#e05c5c'});
+  else if(fedRate>=3)cycleAnalysis.push({lbl:'货币政策',val:'中性',desc:'利率温和,对股价影响有限',c:'#e0a23c'});
+  else cycleAnalysis.push({lbl:'货币政策',val:'宽松',desc:'低利率利好股市估值扩张',c:'#4caf72'});
+  if(dxyChg<-0.3)cycleAnalysis.push({lbl:'美元周期',val:'走弱',desc:'美元贬值利好大宗商品和新兴市场',c:'#4caf72'});
+  else if(dxyChg>0.3)cycleAnalysis.push({lbl:'美元周期',val:'走强',desc:'美元升值压制非美资产',c:'#e05c5c'});
+  else cycleAnalysis.push({lbl:'美元周期',val:'平稳',desc:'汇率波动对资产影响有限',c:'#e0a23c'});
+  if(vix>25)cycleAnalysis.push({lbl:'风险情绪',val:'恐慌',desc:'VIX高位=避险情绪主导,利好黄金债券',c:'#e05c5c'});
+  else if(vix<15)cycleAnalysis.push({lbl:'风险情绪',val:'贪婪',desc:'VIX低位=乐观情绪,利好风险资产',c:'#4caf72'});
+  else cycleAnalysis.push({lbl:'风险情绪',val:'中性',desc:'情绪指标无明显极端',c:'#e0a23c'});
+  if(sp500Chg>0.5)cycleAnalysis.push({lbl:'市场趋势',val:'Risk On',desc:'标普上涨=风险偏好,资金流入股市',c:'#4caf72'});
+  else if(sp500Chg<-0.5)cycleAnalysis.push({lbl:'市场趋势',val:'Risk Off',desc:'标普下跌=避险模式,资金流出',c:'#e05c5c'});
+  else cycleAnalysis.push({lbl:'市场趋势',val:'震荡',desc:'指数窄幅波动,观望为主',c:'#e0a23c'});
+  if(volatility>3.5)cycleAnalysis.push({lbl:'波动率周期',val:'高波动',desc:'市场不确定性大,适合对冲策略',c:'#e05c5c'});
+  else if(volatility<1.5)cycleAnalysis.push({lbl:'波动率周期',val:'低波动',desc:'趋势稳定,适合趋势跟踪',c:'#4caf72'});
+  else cycleAnalysis.push({lbl:'波动率周期',val:'正常',desc:'波动在合理区间',c:'#e0a23c'});
+  if(trendUp)cycleAnalysis.push({lbl:'个股周期',val:'上升趋势',desc:'均线多头排列,顺势做多',c:'#4caf72'});
+  else if(trendDown)cycleAnalysis.push({lbl:'个股周期',val:'下降趋势',desc:'均线空头排列,回避或做空',c:'#e05c5c'});
+  else cycleAnalysis.push({lbl:'个股周期',val:'盘整',desc:'趋势不明朗,等待方向选择',c:'#e0a23c'});
+
+  return{results,avgScore,signal,signalLabel,signalDesc,signalColor,buyCount,sellCount,cycleAnalysis};
+}
+
 // ===== 个股详情页渲染 =====
 function renderStockDetail(secid,stockInfo){
   const el=document.getElementById('stocksContent');
@@ -1957,6 +2243,40 @@ function renderDetailContent(container,secid,info,kdata,fund){
       <div><div class="sec-title">🤖 综合评分<span class="cnt">5维度</span></div><div class="card gold-edge" style="padding:20px">${scoreHTML||'<div class="stk-fund-na">数据不足，无法评分</div>'}</div></div>
     </div>
   `);
+  // ===== 大师框架分析板块渲染 =====
+  const mfResult=masterFrameworkAnalysis(kdata,fund,info);
+  if(mfResult){
+    const sigIcon=mfResult.signal==='buy'?'🟢':mfResult.signal==='sell'?'🔴':'🟡';
+    const masterCards=mfResult.results.map(r=>{
+      const m=MASTERS.find(x=>x.id===r.id);if(!m)return '';
+      const sig=r.score>=60?'buy':r.score<=35?'sell':'hold';
+      const sigText=sig==='buy'?'看多':sig==='sell'?'看空':'中性';
+      const sigC=sig==='buy'?'#4caf72':sig==='sell'?'#e05c5c':'#e0a23c';
+      return `<div class="mf-card"><div class="mf-card-head"><div class="mf-card-av" style="background:${m.c}22;color:${m.c}">${m.av}</div><div><div class="mf-card-nm">${m.nm}</div><div class="mf-card-style">${m.style}</div></div></div><div class="mf-card-signal"><span class="tag ${sig}">${sigText}</span><span class="score" style="color:${sigC}">${r.score}</span></div><div class="mf-card-reasons">${r.reasons.slice(0,3).map(x=>'<div class="r">'+x+'</div>').join('')}</div></div>`;
+    }).join('');
+    const cycleItems=mfResult.cycleAnalysis.map(c=>`<div class="mf-cycle-item"><div class="lbl">${c.lbl}</div><div class="val" style="color:${c.c}">${c.val}</div><div style="font-size:10px;color:var(--text-3);margin-top:3px">${c.desc}</div></div>`).join('');
+    container.insertAdjacentHTML('beforeend',`
+      <div class="mf-panel">
+        <div class="sec-title">♔ 十位大师框架分析<span class="cnt">技术面 · 宏观周期 · 资产传导 · 买卖信号</span></div>
+        <div class="mf-signal-box ${mfResult.signal}">
+          <div class="mf-signal-icon">${sigIcon}</div>
+          <div class="mf-signal-text">
+            <div class="mf-signal-label" style="color:${mfResult.signalColor}">${mfResult.signalLabel}</div>
+            <div class="mf-signal-desc">${mfResult.signalDesc} · ${mfResult.buyCount}位看多 / ${mfResult.sellCount}位看空</div>
+          </div>
+          <div class="mf-signal-score" style="color:${mfResult.signalColor}">${mfResult.avgScore}</div>
+        </div>
+        <div class="mf-grid">${masterCards}</div>
+        <div class="mf-cycle">
+          <div class="mf-cycle-title">🔄 资产周期传导关系 · 当前宏观环境定位</div>
+          <div class="mf-cycle-grid">${cycleItems}</div>
+        </div>
+        <div style="margin-top:14px;padding:12px 16px;border-radius:8px;background:rgba(212,175,55,.05);border:1px dashed var(--line-gold);font-size:11px;color:var(--text-3);line-height:1.6">
+          ⚠️ <b style="color:var(--gold)">风险提示</b>：以上分析基于10位大师的交易逻辑框架对当前技术面和宏观环境的量化映射，仅供参考。实际交易需结合个人风险承受能力、资金管理规则和更多信息源。历史模式不代表未来表现。
+        </div>
+      </div>
+    `);
+  }
 }
 
 // ===== 股票列表渲染(可点击) =====
