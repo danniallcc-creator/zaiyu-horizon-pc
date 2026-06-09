@@ -275,7 +275,7 @@ body{font-family:'Noto Sans SC',system-ui,-apple-system,sans-serif;background:va
 //   加密货币 BTC/ETH → OKX(国内可访问) → Binance 公共数据(备用)
 // 无需任何后端代理, 彻底解决跨域与海外服务器被墙问题
 const EM_BASE = "https://push2.eastmoney.com/api/qt/ulist.np/get";
-const FETCH_TIMEOUT = 8000; // 中国→东方财富应在3s内响应, 8s超时足够
+const FETCH_TIMEOUT = 12000; // 移动端网络波动大, 12s超时更稳定
 
 /* 仅政策利率与波动率指数无免费实时CORS源, 保留最新公布值(非市场tick数据) */
 const CURATED = { vixIndex:'14.2', fedRate:'4.25-4.50%', chinaLPR:'3.00' };
@@ -916,7 +916,7 @@ function _emJSONP(url){
 async function _emFetchOnce(url){
   const ctrl=new AbortController(); const t=setTimeout(()=>ctrl.abort(),FETCH_TIMEOUT);
   try{
-    const r=await fetch(url,{signal:ctrl.signal,cache:'no-store',mode:'cors'});
+    const r=await fetch(url,{signal:ctrl.signal,cache:'no-store'});
     if(!r.ok) throw new Error('HTTP '+r.status);
     return await r.json();
   } finally { clearTimeout(t); }
@@ -939,13 +939,13 @@ async function emQuote(secids){
   const baseUrl=`${EM_BASE}?fltt=2&fields=f12,f13,f14,f2,f3&secids=${secids}&_=${Date.now()}`;
   const j=await _emFetchRace(baseUrl);
   const diff=(j.data&&j.data.diff)||[];
-  if(!diff.length) throw new Error('东方财富返回空数据');
+  // 不再throw，返回空map让调用方容错处理
   const m={};
   diff.forEach(x=>{ m[x.f13+'.'+x.f12]={
     price:(x.f2!=null&&x.f2!=='-')?Number(x.f2):null,
     chg:(x.f3!=null&&x.f3!=='-')?Number(x.f3):null,
     name:x.f14 }; });
-  cacheSet(ck,m);
+  if(diff.length)cacheSet(ck,m);
   return m;
 }
 
@@ -1077,60 +1077,84 @@ async function fetchUniverse(){
   const ck='universe';
   const cached=cacheGet(ck,25000); // 25s缓存(列表频繁刷新不必要)
   if(cached)return cached;
-  const all=[...US_LIST,...HK_LIST,...CN_LIST,...COMMOD_LIST,...BOND_US_LIST,...BOND_CN_LIST,...BOND_JP_LIST];
-  const m=await emQuote(all.map(x=>x[0]).join(','));
+  // 分批请求: 避免单次请求secid过多导致移动端超时/限流
+  const stockGroup=[...US_LIST,...HK_LIST,...CN_LIST]; // 34只, 主力
+  const otherGroup=[...COMMOD_LIST,...BOND_US_LIST,...BOND_CN_LIST,...BOND_JP_LIST]; // 14只
+  const fetchBatch=async(list)=>{
+    if(!list.length)return {};
+    try{return await emQuote(list.map(x=>x[0]).join(','));}catch(e){return {};}
+  };
+  // 并行两批, 任一批成功即可渲染
+  const [m1,m2]=await Promise.all([fetchBatch(stockGroup),fetchBatch(otherGroup)]);
+  const m=Object.assign({},m1,m2);
   const conv=list=>list.map(([sid,id,name])=>{
     const x=m[sid];
     return {id, name, price:x?x.price:null, changePct:x?x.chg:null, secid:sid};
   });
   const result={us:conv(US_LIST), hk:conv(HK_LIST), cn:conv(CN_LIST), commod:conv(COMMOD_LIST), bondUS:conv(BOND_US_LIST), bondCN:conv(BOND_CN_LIST), bondJP:conv(BOND_JP_LIST), asOf:Date.now()};
-  cacheSet(ck,result);
+  // 只要有任何价格数据就缓存
+  const hasAny=Object.values(m).some(x=>x&&x.price!=null);
+  if(hasAny)cacheSet(ck,result);
   return result;
 }
 
-// ===== K线历史(东方财富 push2his, 120日日K, 带缓存+竞速) =====
+// ===== K线历史(东方财富 push2his, 120日日K, 带缓存+竞速+重试) =====
 async function fetchKline(secid,days){
   const ck='kl_'+secid+'_'+(days||120);
   const cached=cacheGet(ck,300000); // 5分钟缓存
   if(cached)return cached;
   const url=`https://push2his.eastmoney.com/api/qt/stock/kline/get?secid=${secid}&fields1=f1,f2,f3,f4,f5,f6&fields2=f51,f52,f53,f54,f55,f56,f57&klt=101&fqt=1&end=20500101&lmt=${days||120}&_=${Date.now()}`;
-  try{
-    const j=await _emFetchRace(url);
-    const klines=j.data&&j.data.klines;
-    if(!klines||!klines.length)return[];
-    const result=klines.map(k=>{const p=k.split(',');return{date:p[0],open:+p[1],close:+p[2],high:+p[3],low:+p[4],vol:+p[5],amt:+p[6]};});
-    cacheSet(ck,result);
-    return result;
-  }catch(e){
-    console.warn('K线获取失败',secid,e.message||e);
-    return[];
+  for(let attempt=0;attempt<2;attempt++){
+    try{
+      const j=await _emFetchRace(url);
+      const klines=j.data&&j.data.klines;
+      if(!klines||!klines.length){
+        if(attempt===0){await new Promise(r=>setTimeout(r,1000));continue;}
+        return[];
+      }
+      const result=klines.map(k=>{const p=k.split(',');return{date:p[0],open:+p[1],close:+p[2],high:+p[3],low:+p[4],vol:+p[5],amt:+p[6]};});
+      cacheSet(ck,result);
+      return result;
+    }catch(e){
+      if(attempt===0){await new Promise(r=>setTimeout(r,1500));continue;}
+      console.warn('K线获取失败',secid,e.message||e);
+      return[];
+    }
   }
+  return[];
 }
 
-// ===== 基本面(东方财富 push2 个股详情, 带缓存+竞速) =====
+// ===== 基本面(东方财富 push2 个股详情, 带缓存+竞速+重试) =====
 async function fetchFundamentals(secid){
   const ck='fund_'+secid;
   const cached=cacheGet(ck,300000); // 5分钟缓存
   if(cached)return cached;
   const url=`https://push2.eastmoney.com/api/qt/stock/get?secid=${secid}&fields=f57,f58,f162,f163,f167,f173,f116,f117,f127,f183,f186&_=${Date.now()}`;
-  try{
-    const j=await _emFetchRace(url);
-    const d=j.data;if(!d||!d.f57)return null;
-    const result={
-      code:d.f57, name:d.f58, industry:d.f127||'—',
-      pe:d.f163!=null&&d.f163!=='-'?+(+d.f163/100).toFixed(2):null,
-      pb:d.f167!=null&&d.f167!=='-'?+(+d.f167/100).toFixed(2):null,
-      roe:d.f173!=null&&d.f173!=='-'?+(+d.f173/100).toFixed(2):null,
-      mktCap:d.f116!=null&&d.f116!=='-'?d.f116:null,
-      revenue:d.f183!=null&&d.f183!=='-'?d.f183:null,
-      eps:d.f186!=null&&d.f186!=='-'?+(+d.f186/100).toFixed(2):null,
-    };
-    cacheSet(ck,result);
-    return result;
-  }catch(e){
-    console.warn('基本面获取失败',secid,e.message||e);
-    return null;
+  for(let attempt=0;attempt<2;attempt++){
+    try{
+      const j=await _emFetchRace(url);
+      const d=j.data;if(!d||!d.f57){
+        if(attempt===0){await new Promise(r=>setTimeout(r,1000));continue;}
+        return null;
+      }
+      const result={
+        code:d.f57, name:d.f58, industry:d.f127||'—',
+        pe:d.f163!=null&&d.f163!=='-'?+(+d.f163/100).toFixed(2):null,
+        pb:d.f167!=null&&d.f167!=='-'?+(+d.f167/100).toFixed(2):null,
+        roe:d.f173!=null&&d.f173!=='-'?+(+d.f173/100).toFixed(2):null,
+        mktCap:d.f116!=null&&d.f116!=='-'?d.f116:null,
+        revenue:d.f183!=null&&d.f183!=='-'?d.f183:null,
+        eps:d.f186!=null&&d.f186!=='-'?+(+d.f186/100).toFixed(2):null,
+      };
+      cacheSet(ck,result);
+      return result;
+    }catch(e){
+      if(attempt===0){await new Promise(r=>setTimeout(r,1500));continue;}
+      console.warn('基本面获取失败',secid,e.message||e);
+      return null;
+    }
   }
+  return null;
 }
 
 // ===== 技术指标计算 =====
@@ -1761,17 +1785,25 @@ function renderStockList(data){
   };
   document.getElementById('v-stocks').innerHTML=
     section('🇺🇸 美股',data.us||[])+section('🇭🇰 港股',data.hk||[])+section('🇨🇳 A股',data.cn||[])+
-    (data.commod?`${section('🏭 大宗商品',data.commod)}`:'')+
-    (data.bondUS?`${section('🇺🇸 美债',data.bondUS)}`:'')+
+    (data.commod&&data.commod.some(s=>s.price!=null)?`${section('🏭 大宗商品',data.commod)}`:'')+
+    (data.bondUS&&data.bondUS.some(s=>s.price!=null)?`${section('🇺🇸 美债',data.bondUS)}`:'')+
+    (data.bondCN&&data.bondCN.some(s=>s.price!=null)?`${section('🇨🇳 中债',data.bondCN)}`:'')+
+    (data.bondJP&&data.bondJP.some(s=>s.price!=null)?`${section('🇯🇵 日债',data.bondJP)}`:'')+
     `<div class="disclaimer"><b>数据来源</b> · 东方财富实时行情 · 点击查看详细分析</div>`;
 }
 
 async function showStockDetail(secid,code,name){
   const el=document.getElementById('v-stocks');
-  el.innerHTML=`<div class="sd-back" onclick="reloadStocks()">← 返回列表</div><div class="sd-hdr"><div class="nm">${name} (${code})</div></div><div class="loading-box"><span class="spin"></span> 加载中…</div>`;
-  const [kdata,fund]=await Promise.allSettled([fetchKline(secid,120),fetchFundamentals(secid)]);
-  const kline=kdata.status==='fulfilled'?kdata.value:[];
-  const fundData=fund.status==='fulfilled'?fund.value:null;
+  el.innerHTML=`<div class="sd-back" onclick="reloadStocks()">← 返回列表</div><div class="sd-hdr"><div class="nm">${name} (${code})</div></div><div class="loading-box"><span class="spin"></span> 加载K线与基本面…</div>`;
+  let kline=[],fundData=null;
+  try{
+    const [kRes,fRes]=await Promise.allSettled([fetchKline(secid,120),fetchFundamentals(secid)]);
+    kline=kRes.status==='fulfilled'?kRes.value:[];
+    fundData=fRes.status==='fulfilled'?fRes.value:null;
+  }catch(e){
+    el.innerHTML=`<div class="sd-back" onclick="reloadStocks()">← 返回列表</div><div class="sd-hdr"><div class="nm">${name} (${code})</div></div><div class="loading-box" style="color:var(--orange)">数据加载失败<br><span style="font-size:10px;color:var(--text-3)">${e.message||'网络超时'}</span><br><span style="margin-top:10px;display:inline-block;color:var(--gold);cursor:pointer" onclick="showStockDetail('${secid}','${code}','${name}')">点击重试</span></div>`;
+    return;
+  }
   const stockInfo={name,id:code,price:null,changePct:null,secid};
   if(kline.length>0){stockInfo.price=kline[kline.length-1].close;}
 
@@ -1847,7 +1879,24 @@ async function showStockDetail(secid,code,name){
 async function reloadStocks(){
   const el=document.getElementById('v-stocks');
   el.innerHTML='<div class="loading-box"><span class="spin"></span> 加载行情…</div>';
-  try{const d=await fetchUniverse();renderStockList(d);}catch(e){el.innerHTML='<div class="loading-box" style="color:var(--orange)">行情加载失败，请下拉刷新</div>';}
+  // 自动重试1次(移动网络波动大)
+  for(let attempt=0;attempt<2;attempt++){
+    try{
+      const d=await fetchUniverse();
+      // 检查是否有任何有效价格
+      const hasData=[...(d.us||[]),...(d.hk||[]),...(d.cn||[])].some(s=>s.price!=null);
+      if(!hasData&&attempt===0){await new Promise(r=>setTimeout(r,1500));continue;}
+      renderStockList(d);
+      return;
+    }catch(e){
+      if(attempt===0){
+        el.innerHTML='<div class="loading-box"><span class="spin"></span> 重试中…</div>';
+        await new Promise(r=>setTimeout(r,2000));
+      }else{
+        el.innerHTML='<div class="loading-box" style="color:var(--orange)">行情加载失败<br><span style="font-size:10px;color:var(--text-3)">'+((e&&e.message)||'网络超时')+'</span><br><span style="margin-top:10px;display:inline-block;color:var(--gold);cursor:pointer" onclick="reloadStocks()">点击重试</span></div>';
+      }
+    }
+  }
 }
 
 /* ========== APP CONTROL ========== */
