@@ -7,136 +7,239 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#08080a">
 <title>载堉视界 · Mobile</title>
-<link rel="icon" href="../favicon.ico">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;600;700;900&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
 <style>
-:root{--bg:#08080a;--card:#121217;--card2:#1a1a22;--gold:#d4af37;--gold-bright:#f5d574;--gold-pale:#c9a94e;--line:#26262f;--line-gold:rgba(212,175,55,.18);--text-1:#eae6df;--text-2:#b9b4ab;--text-3:#76726c;--green:#4caf72;--red:#e05c5c;--safe-top:env(safe-area-inset-top,0px);--safe-bot:env(safe-area-inset-bottom,0px)}
+:root{--bg:#08080a;--card:#121217;--card2:#1a1a22;--panel:#16171e;--gold:#d4af37;--gold-bright:#f5d574;--gold-deep:#b8860b;--gold-pale:#c9a94e;--line:#26262f;--line-gold:rgba(212,175,55,.18);--text:#f3eede;--text-1:#eae6df;--text-2:#b9b4ab;--text-3:#76726c;--green:#4caf72;--red:#e05c5c;--blue:#5b9bd5;--orange:#e0a23c;--safe-top:env(safe-area-inset-top,0px);--safe-bot:env(safe-area-inset-bottom,0px)}
 *{margin:0;padding:0;box-sizing:border-box}
-body{font-family:'Noto Sans SC',system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--text-1);font-size:14px;line-height:1.6;-webkit-font-smoothing:antialiased;overflow-x:hidden;padding-top:var(--safe-top);padding-bottom:calc(60px + var(--safe-bot))}
+body{font-family:'Noto Sans SC',system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--text-1);font-size:14px;line-height:1.6;-webkit-font-smoothing:antialiased;overflow-x:hidden;padding-top:var(--safe-top);padding-bottom:calc(56px + var(--safe-bot))}
 /* Header */
-.header{position:sticky;top:0;z-index:100;background:rgba(8,8,10,.92);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);padding:12px 16px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between}
-.header .logo{font-size:18px;font-weight:700;background:linear-gradient(135deg,var(--gold-bright),var(--gold));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
-.header .status{font-size:11px;color:var(--text-3);display:flex;align-items:center;gap:5px}
-.header .dot{width:7px;height:7px;border-radius:50%;background:var(--text-3)}
+.header{position:sticky;top:0;z-index:100;background:rgba(8,8,10,.92);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);padding:10px 16px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between}
+.header .logo{font-size:18px;font-weight:900;background:linear-gradient(135deg,var(--gold-bright),var(--gold));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.header .status{font-size:10px;color:var(--text-3);display:flex;align-items:center;gap:5px}
+.header .dot{width:6px;height:6px;border-radius:50%;background:var(--text-3)}
 .header .dot.live{background:var(--green);box-shadow:0 0 6px var(--green)}
 .header .dot.loading{background:var(--gold);animation:pulse 1s infinite}
 @keyframes pulse{50%{opacity:.4}}
 /* Bottom Tabs */
-.tabs{position:fixed;bottom:0;left:0;right:0;z-index:100;background:rgba(8,8,10,.95);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-top:1px solid var(--line);display:flex;padding-bottom:var(--safe-bot)}
-.tab{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:10px 0 6px;color:var(--text-3);font-size:10px;cursor:pointer;transition:.2s;-webkit-tap-highlight-color:transparent}
+.tabs{position:fixed;bottom:0;left:0;right:0;z-index:100;background:rgba(8,8,10,.95);backdrop-filter:blur(12px);border-top:1px solid var(--line);display:flex;padding-bottom:var(--safe-bot)}
+.tab{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;padding:8px 0 5px;color:var(--text-3);font-size:9px;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:.2s}
 .tab.active{color:var(--gold-bright)}
-.tab .ic{font-size:20px}
+.tab .ic{font-size:18px}
 /* Views */
-.view{display:none;padding:16px;min-height:calc(100vh - 120px)}
+.view{display:none;padding:14px;min-height:calc(100vh - 110px)}
 .view.active{display:block}
 /* Cards */
-.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 16px;margin-bottom:12px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin-bottom:10px}
 .card.gold-edge{border-color:var(--line-gold)}
-/* Market grid */
-.mkt-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:16px}
-.mkt-card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 14px}
-.mkt-card .lbl{font-size:11px;color:var(--text-3);margin-bottom:4px}
-.mkt-card .val{font-family:'JetBrains Mono',monospace;font-size:16px;font-weight:700}
-.mkt-card .chg{font-family:'JetBrains Mono',monospace;font-size:12px;margin-top:2px}
-.up{color:var(--green)}.dn{color:var(--red)}
 /* Section title */
-.sec-t{font-size:16px;font-weight:700;color:var(--text-1);margin:20px 0 12px;display:flex;align-items:center;gap:8px}
-.sec-t::before{content:'';width:3px;height:16px;border-radius:2px;background:var(--gold)}
-/* CB list */
-.cb-item{display:flex;align-items:center;gap:10px;padding:12px 0;border-bottom:1px solid var(--line)}
+.sec-t{font-size:15px;font-weight:700;color:var(--text-1);margin:18px 0 10px;display:flex;align-items:center;gap:8px}
+.sec-t::before{content:'';width:3px;height:14px;border-radius:2px;background:var(--gold)}
+.sec-t .cnt{font-size:10px;color:var(--text-3);font-weight:400;margin-left:auto}
+/* Market grid */
+.mkt-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:14px}
+.mkt-card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 12px}
+.mkt-card .lbl{font-size:10px;color:var(--text-3);margin-bottom:3px}
+.mkt-card .val{font-family:'JetBrains Mono',monospace;font-size:15px;font-weight:700}
+.mkt-card .chg{font-family:'JetBrains Mono',monospace;font-size:11px;margin-top:2px}
+.up{color:var(--green)}.dn{color:var(--red)}
+/* Sentiment */
+.sent-box{display:flex;align-items:center;gap:12px;padding:14px 16px;border-radius:12px;margin-bottom:14px;border:1px solid var(--line-gold)}
+.sent-emoji{font-size:28px}
+.sent-label{font-size:16px;font-weight:700}
+.sent-desc{font-size:11px;color:var(--text-3)}
+/* Calendar */
+.cal-row{display:flex;align-items:center;gap:8px;padding:10px 0;border-bottom:1px solid var(--line);font-size:12px}
+.cal-row:last-child{border:none}
+.cal-time{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--gold);min-width:40px}
+.cal-flag{font-size:16px}
+.cal-ev{flex:1;font-size:12px}
+.cal-imp{font-size:10px}
+/* Central Banks */
+.cb-item{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--line)}
 .cb-item:last-child{border:none}
-.cb-flag{font-size:22px}
+.cb-flag{font-size:20px}
 .cb-info{flex:1}
-.cb-name{font-size:13px;font-weight:600}
+.cb-name{font-size:12px;font-weight:600}
 .cb-rate{font-size:11px;color:var(--gold-pale)}
-.cb-next{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-2);text-align:right}
+.cb-next{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text-2);text-align:right}
 /* Cycle */
-.cyc-card{padding:16px}
-.cyc-nm{font-size:15px;font-weight:700;margin-bottom:4px}
-.cyc-en{font-size:11px;color:var(--text-3);margin-bottom:8px}
-.cyc-bar{height:6px;background:var(--line);border-radius:3px;margin:8px 0;overflow:hidden}
-.cyc-bar .fill{height:100%;border-radius:3px;transition:width .6s}
-.cyc-pos{font-size:12px;color:var(--text-2)}
-.cyc-phase{font-size:11px;font-weight:600;margin-top:4px}
+.cyc-card{padding:14px}
+.cyc-nm{font-size:14px;font-weight:700;margin-bottom:3px}
+.cyc-en{font-size:10px;color:var(--text-3);margin-bottom:6px}
+.cyc-bar{height:5px;background:var(--line);border-radius:3px;overflow:hidden;margin:6px 0}
+.cyc-bar .fill{height:100%;border-radius:3px}
+.cyc-pos{font-size:11px;color:var(--text-2)}
+.cyc-phase{font-size:11px;font-weight:600;margin-top:3px}
 /* Masters */
-.m-card{display:flex;align-items:center;gap:12px;padding:14px 16px;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.m-card{display:flex;align-items:center;gap:10px;padding:12px 14px;cursor:pointer;-webkit-tap-highlight-color:transparent}
 .m-card:active{background:rgba(212,175,55,.05)}
-.m-av{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;border:1px solid var(--line-gold)}
-.m-nm{font-size:15px;font-weight:700}
-.m-en{font-size:10px;color:var(--text-3)}
-.m-style{font-size:11px;color:var(--gold-pale);margin-top:2px}
-.m-arrow{color:var(--text-3);font-size:16px;margin-left:auto}
+.m-av{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;border:1px solid var(--line-gold)}
+.m-nm{font-size:14px;font-weight:700}
+.m-en{font-size:9px;color:var(--text-3)}
+.m-style{font-size:10px;color:var(--gold-pale);margin-top:1px}
+.m-arrow{color:var(--text-3);font-size:14px;margin-left:auto}
 /* Master Detail */
-.md-back{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--gold-bright);margin-bottom:16px;cursor:pointer}
-.md-hdr{display:flex;align-items:center;gap:14px;margin-bottom:18px}
-.md-hdr .av{width:56px;height:56px;border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:30px;border:1px solid var(--line-gold)}
-.md-hdr .nm{font-size:20px;font-weight:700}
-.md-hdr .en{font-size:11px;color:var(--text-3)}
-.md-hdr .ti{font-size:12px;color:var(--gold-pale)}
-.md-philo{font-size:13px;color:var(--text-2);line-height:1.8;padding:14px 16px;border-left:3px solid var(--gold);background:rgba(212,175,55,.04);border-radius:0 12px 12px 0;margin-bottom:20px}
-.md-case{border-left:3px solid var(--gold);padding:14px 16px;margin-bottom:14px}
-.md-case .yr{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--gold-bright);font-weight:700}
-.md-case .nm{font-size:15px;font-weight:700;margin:4px 0 8px}
-.md-case .row{font-size:12px;color:var(--text-2);margin-bottom:6px;line-height:1.6}
+.md-back{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--gold-bright);margin-bottom:14px;cursor:pointer}
+.md-hdr{display:flex;align-items:center;gap:12px;margin-bottom:16px}
+.md-hdr .av{width:48px;height:48px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:26px;border:1px solid var(--line-gold)}
+.md-hdr .nm{font-size:18px;font-weight:700}
+.md-hdr .en{font-size:10px;color:var(--text-3)}
+.md-hdr .ti{font-size:11px;color:var(--gold-pale)}
+.md-philo{font-size:12px;color:var(--text-2);line-height:1.7;padding:12px 14px;border-left:3px solid var(--gold);background:rgba(212,175,55,.04);border-radius:0 10px 10px 0;margin-bottom:16px}
+.md-case{border-left:3px solid var(--gold);padding:12px 14px;margin-bottom:12px}
+.md-case .yr{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--gold-bright);font-weight:700}
+.md-case .nm{font-size:14px;font-weight:700;margin:3px 0 6px}
+.md-case .row{font-size:11px;color:var(--text-2);margin-bottom:4px;line-height:1.5}
 .md-case .row b{color:var(--gold);font-weight:600}
-.md-case .lesson{font-size:11px;color:var(--text-3);font-style:italic;background:rgba(212,175,55,.05);padding:8px 12px;border-radius:8px;margin-top:8px;line-height:1.6}
+.md-case .lesson{font-size:10px;color:var(--text-3);font-style:italic;background:rgba(212,175,55,.05);padding:6px 10px;border-radius:6px;margin-top:6px;line-height:1.5}
+/* Sub-tabs */
+.stabs{display:flex;gap:6px;margin-bottom:14px;overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:3px}
+.stab{font-size:11px;font-weight:600;color:var(--text-3);background:var(--card);border:1px solid var(--line);border-radius:18px;padding:7px 14px;white-space:nowrap;cursor:pointer;flex-shrink:0}
+.stab.active{color:#08080a;background:linear-gradient(120deg,var(--gold-bright),var(--gold));border-color:transparent}
+/* Score badge */
+.score-badge{text-align:center;padding:18px;margin-bottom:14px;background:var(--card);border:1px solid var(--line-gold);border-radius:14px}
+.score-badge .num{font-family:'JetBrains Mono',monospace;font-size:44px;font-weight:700;background:linear-gradient(135deg,var(--gold-bright),var(--gold));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.score-badge .lbl{font-size:11px;color:var(--text-3);margin-top:4px}
+/* Crisis compare */
+.cmp-card{padding:12px 14px;margin-bottom:8px}
+.cmp-dim{font-size:13px;font-weight:700;margin-bottom:4px;display:flex;align-items:center;gap:5px}
+.cmp-h{font-size:10px;color:var(--text-3);margin-bottom:3px}
+.cmp-cur{font-size:11px;color:var(--text-2);margin-bottom:5px}
+.cmp-bar{height:4px;background:var(--line);border-radius:2px;overflow:hidden}
+.cmp-bar .fill{height:100%;border-radius:2px;background:linear-gradient(90deg,var(--green),var(--gold),var(--red))}
+.cmp-sim{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--gold-bright);margin-top:3px}
+/* Anomaly */
+.ano-card{padding:12px 14px;margin-bottom:8px;border-left:3px solid var(--gold)}
+.ano-card.danger{border-left-color:var(--red)}
+.ano-card.warn{border-left-color:var(--orange)}
+.ano-card.safe{border-left-color:var(--green)}
+.ano-metric{font-size:12px;font-weight:700;margin-bottom:4px}
+.ano-detail{font-size:11px;color:var(--text-2);line-height:1.5}
+/* Truth check */
+.tc-card{padding:10px 14px;margin-bottom:8px;border-left:3px solid var(--gold)}
+.tc-item{font-size:12px;font-weight:600;margin-bottom:3px}
+.tc-verdict{font-size:11px;font-weight:700;margin-bottom:3px}
+.tc-reason{font-size:10px;color:var(--text-3);line-height:1.5}
+/* Advice */
+.adv-card{padding:12px 14px;margin-bottom:10px;border-top:2px solid var(--gold)}
+.adv-nm{font-size:13px;font-weight:700;margin-bottom:2px}
+.adv-stance{font-size:11px;font-weight:600;margin-bottom:6px}
+.adv-port{font-size:10px;color:var(--gold-pale);background:rgba(212,175,55,.05);padding:6px 10px;border-radius:6px;line-height:1.4}
+/* Scenario */
+.scen-card{padding:14px;margin-bottom:10px;border-top:2px solid var(--gold)}
+.scen-prob{font-family:'JetBrains Mono',monospace;font-size:28px;font-weight:800}
+.scen-lbl{font-size:14px;font-weight:700;margin:2px 0 6px}
+.scen-sum{font-size:12px;color:var(--text-2);margin-bottom:8px;line-height:1.5}
+.scen-driv{font-size:11px;color:var(--text-3);margin-bottom:3px;padding-left:12px;position:relative}
+.scen-driv::before{content:'▸';position:absolute;left:0;color:var(--gold)}
+/* Camps */
+.camp-card{padding:14px;margin-bottom:12px;border-top:2px solid var(--blue)}
+.camp-nm{font-size:16px;font-weight:700;margin-bottom:2px}
+.camp-en{font-size:10px;color:var(--text-3);margin-bottom:8px}
+.camp-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:10px}
+.camp-stat{text-align:center}
+.camp-stat .v{font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:700}
+.camp-stat .l{font-size:9px;color:var(--text-3)}
+.camp-chars{font-size:11px;color:var(--text-2);line-height:1.6;margin-bottom:8px}
+.camp-chars .c{margin-bottom:2px}
+.camp-flags{font-size:18px;letter-spacing:4px;margin-bottom:6px}
+.camp-dyn{font-size:10px;color:var(--text-3);line-height:1.5}
+.flow-item,.tech-item{font-size:11px;color:var(--text-2);padding:6px 0;border-bottom:1px solid var(--line);line-height:1.4}
+.flow-item:last-child,.tech-item:last-child{border:none}
 /* Stocks */
-.stk-item{display:flex;align-items:center;padding:12px 0;border-bottom:1px solid var(--line);cursor:pointer;-webkit-tap-highlight-color:transparent}
+.stk-item{display:flex;align-items:center;padding:10px 0;border-bottom:1px solid var(--line);cursor:pointer;-webkit-tap-highlight-color:transparent}
 .stk-item:active{background:rgba(212,175,55,.03)}
 .stk-name{flex:1}
-.stk-name .code{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:600}
-.stk-name .cn{font-size:11px;color:var(--text-3)}
-.stk-price{font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:600;text-align:right;min-width:70px}
-.stk-chg{font-family:'JetBrains Mono',monospace;font-size:12px;text-align:right;min-width:60px;padding:3px 8px;border-radius:6px}
+.stk-name .code{font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:600}
+.stk-name .cn{font-size:10px;color:var(--text-3)}
+.stk-price{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:600;text-align:right;min-width:60px}
+.stk-chg{font-family:'JetBrains Mono',monospace;font-size:11px;text-align:right;min-width:55px;padding:2px 6px;border-radius:5px}
 .stk-chg.up{background:rgba(76,175,114,.15)}.stk-chg.dn{background:rgba(224,92,92,.15)}
 /* Stock Detail */
-.sd-back{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--gold-bright);margin-bottom:12px;cursor:pointer}
-.sd-hdr{margin-bottom:16px}
-.sd-hdr .nm{font-size:20px;font-weight:700}
-.sd-hdr .price{font-family:'JetBrains Mono',monospace;font-size:28px;font-weight:700;margin:4px 0}
-.sd-hdr .chg{font-family:'JetBrains Mono',monospace;font-size:14px}
-.sd-chart{background:var(--card);border-radius:12px;padding:12px;margin-bottom:16px;overflow-x:auto}
-.sd-fund{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
-.sd-fund .item{text-align:center;padding:10px 8px;background:var(--card);border-radius:10px;border:1px solid var(--line)}
-.sd-fund .item .v{font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:700;color:var(--gold-bright)}
-.sd-fund .item .l{font-size:10px;color:var(--text-3);margin-top:3px}
-/* Crisis */
-.cmp-card{padding:14px 16px;margin-bottom:10px}
-.cmp-dim{font-size:14px;font-weight:700;margin-bottom:6px;display:flex;align-items:center;gap:6px}
-.cmp-h{font-size:11px;color:var(--text-3);margin-bottom:4px}
-.cmp-cur{font-size:12px;color:var(--text-2);margin-bottom:6px}
-.cmp-bar{height:5px;background:var(--line);border-radius:3px;overflow:hidden}
-.cmp-bar .fill{height:100%;border-radius:3px;background:linear-gradient(90deg,var(--green),var(--gold),var(--red))}
-.cmp-sim{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--gold-bright);margin-top:4px}
-/* Score badge */
-.score-badge{text-align:center;padding:20px;margin-bottom:16px;background:var(--card);border:1px solid var(--line-gold);border-radius:16px}
-.score-badge .num{font-family:'JetBrains Mono',monospace;font-size:48px;font-weight:700;background:linear-gradient(135deg,var(--gold-bright),var(--gold));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
-.score-badge .lbl{font-size:12px;color:var(--text-3);margin-top:4px}
-/* Subtabs */
-.stabs{display:flex;gap:8px;margin-bottom:16px;overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:4px}
-.stab{font-size:12px;font-weight:600;color:var(--text-3);background:var(--card);border:1px solid var(--line);border-radius:20px;padding:8px 16px;white-space:nowrap;cursor:pointer;flex-shrink:0}
-.stab.active{color:#08080a;background:linear-gradient(120deg,var(--gold-bright),var(--gold));border-color:transparent}
-/* Loading */
-.loading-box{text-align:center;padding:40px;color:var(--text-3)}
-.spin{display:inline-block;width:20px;height:20px;border:2px solid var(--line);border-top-color:var(--gold);border-radius:50%;animation:sp .6s linear infinite}
+.sd-back{display:flex;align-items:center;gap:5px;font-size:12px;color:var(--gold-bright);margin-bottom:10px;cursor:pointer}
+.sd-hdr{margin-bottom:14px}
+.sd-hdr .nm{font-size:18px;font-weight:700}
+.sd-hdr .price{font-family:'JetBrains Mono',monospace;font-size:24px;font-weight:700;margin:3px 0}
+.sd-hdr .chg{font-family:'JetBrains Mono',monospace;font-size:13px}
+.sd-chart{background:var(--card);border-radius:10px;padding:10px;margin-bottom:14px;overflow-x:auto}
+.sd-fund{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:14px}
+.sd-fund .item{text-align:center;padding:8px 6px;background:var(--card);border-radius:8px;border:1px solid var(--line)}
+.sd-fund .item .v{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:700;color:var(--gold-bright)}
+.sd-fund .item .l{font-size:9px;color:var(--text-3);margin-top:2px}
+/* AI Score */
+.ai-box{padding:14px;margin-bottom:14px}
+.ai-overall{display:flex;align-items:center;gap:12px;margin-bottom:14px}
+.ai-score{font-family:'JetBrains Mono',monospace;font-size:36px;font-weight:800}
+.ai-verdict{font-size:14px;font-weight:700}
+.ai-dim{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.ai-lbl{font-size:10px;color:var(--text-2);width:60px;flex-shrink:0}
+.ai-bar{flex:1;height:6px;border-radius:3px;background:var(--line);overflow:hidden}
+.ai-fill{height:100%;border-radius:3px}
+.ai-pct{font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:700;color:var(--text-2);width:24px;text-align:right}
+.ai-meta{margin-top:10px;font-size:10px;color:var(--text-3);border-top:1px dashed var(--line);padding-top:8px}
+/* Master Framework in stock detail */
+.mf-signal{display:flex;align-items:center;gap:12px;padding:14px;border-radius:10px;margin-bottom:14px;border:1px solid var(--line-gold)}
+.mf-signal.buy{background:rgba(76,175,114,.08);border-color:rgba(76,175,114,.4)}
+.mf-signal.sell{background:rgba(224,92,92,.08);border-color:rgba(224,92,92,.4)}
+.mf-signal.hold{background:rgba(212,175,55,.06);border-color:rgba(212,175,55,.3)}
+.mf-signal-icon{font-size:26px}
+.mf-signal-text{flex:1}
+.mf-signal-label{font-size:15px;font-weight:800}
+.mf-signal-desc{font-size:10px;color:var(--text-2)}
+.mf-signal-score{font-family:'JetBrains Mono',monospace;font-size:24px;font-weight:800}
+.mf-grid{display:grid;grid-template-columns:1fr;gap:8px;margin-bottom:14px}
+.mf-card{padding:12px;border-radius:8px;background:var(--panel);border:1px solid var(--line)}
+.mf-card-head{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.mf-card-av{width:28px;height:28px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:15px}
+.mf-card-nm{font-size:12px;font-weight:700}
+.mf-card-style{font-size:9px;color:var(--text-3)}
+.mf-card-signal{display:flex;align-items:center;gap:6px;margin-bottom:6px}
+.mf-card-signal .tag{font-size:9px;font-weight:700;padding:2px 6px;border-radius:3px}
+.mf-card-signal .tag.buy{background:rgba(76,175,114,.15);color:#4caf72}
+.mf-card-signal .tag.sell{background:rgba(224,92,92,.15);color:#e05c5c}
+.mf-card-signal .tag.hold{background:rgba(212,175,55,.12);color:#e0a23c}
+.mf-card-signal .score{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:700}
+.mf-card-reasons{font-size:10px;color:var(--text-2);line-height:1.5}
+.mf-card-reasons .r{margin-bottom:2px;padding-left:8px;position:relative}
+.mf-card-reasons .r::before{content:'▸';position:absolute;left:0;color:var(--gold);font-size:9px}
+.mf-cycle{padding:14px;border-radius:8px;background:var(--panel);border:1px solid var(--line);margin-bottom:14px}
+.mf-cycle-title{font-size:12px;font-weight:700;color:var(--gold);margin-bottom:10px}
+.mf-cycle-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+.mf-cycle-item{padding:8px;border-radius:6px;background:rgba(0,0,0,.2);border:1px solid var(--line);font-size:10px}
+.mf-cycle-item .lbl{color:var(--text-3);margin-bottom:2px}
+.mf-cycle-item .val{font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:700}
+/* Fibonacci */
+.fib-row{display:flex;align-items:center;gap:8px;margin-bottom:5px;font-size:11px}
+.fib-pct{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text-2);width:40px}
+.fib-price{font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:700;flex:1}
+.fib-dist{font-family:'JetBrains Mono',monospace;font-size:10px;width:45px;text-align:right}
+.fib-tags{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap}
+.fib-tag{font-size:9px;padding:2px 8px;border-radius:3px;font-weight:600}
+.fib-tag.support{background:rgba(76,175,114,.12);color:#4caf72}
+.fib-tag.resist{background:rgba(224,92,92,.12);color:#e05c5c}
+/* KB */
+.kb-stat{text-align:center;padding:10px;border-radius:8px;background:var(--card);border:1px solid var(--line)}
+.kb-stat .v{font-family:'JetBrains Mono',monospace;font-size:16px;font-weight:700;color:var(--gold-bright)}
+.kb-stat .l{font-size:9px;color:var(--text-3);margin-top:2px}
+.kb-stats{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:14px}
+.kb-card{padding:12px;margin-bottom:8px}
+.kb-card .ct{font-size:13px;font-weight:700;color:var(--gold);margin-bottom:4px}
+.kb-card .cd{font-size:11px;color:var(--text-2);line-height:1.5;margin-bottom:6px}
+.kb-card .cq{font-size:10px;color:var(--text-3);font-style:italic}
+.tl-item{padding:10px 12px;margin-bottom:8px;border-left:2px solid var(--gold)}
+.tl-item .tl-yr{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--gold-bright)}
+.tl-item .tl-k{font-size:11px;color:var(--text-2);margin-top:4px;line-height:1.4}
+/* Loading & misc */
+.loading-box{text-align:center;padding:30px;color:var(--text-3)}
+.spin{display:inline-block;width:18px;height:18px;border:2px solid var(--line);border-top-color:var(--gold);border-radius:50%;animation:sp .6s linear infinite}
 @keyframes sp{to{transform:rotate(360deg)}}
-/* Disclaimer */
-.disclaimer{font-size:10px;color:var(--text-3);padding:16px 0;margin-top:20px;border-top:1px solid var(--line);line-height:1.6}
-/* PC link */
-.pc-link{display:block;text-align:center;font-size:11px;color:var(--text-3);padding:12px;text-decoration:none}
-.pc-link:hover{color:var(--gold)}
-/* Truth check */
-.tc-card{padding:12px 16px;margin-bottom:10px;border-left:3px solid var(--gold)}
-.tc-item{font-size:13px;font-weight:600;margin-bottom:4px}
-.tc-verdict{font-size:12px;font-weight:700;margin-bottom:4px}
-.tc-reason{font-size:11px;color:var(--text-3);line-height:1.6}
-/* Advice cards */
-.adv-card{padding:14px 16px;margin-bottom:12px;border-top:2px solid var(--gold)}
-.adv-nm{font-size:14px;font-weight:700;margin-bottom:2px}
-.adv-stance{font-size:12px;font-weight:600;margin-bottom:8px}
-.adv-logic{font-size:12px;color:var(--text-2);margin-bottom:8px;line-height:1.6}
-.adv-port{font-size:11px;color:var(--gold-pale);background:rgba(212,175,55,.05);padding:8px 12px;border-radius:8px;line-height:1.5}
+.disclaimer{font-size:9px;color:var(--text-3);padding:14px 0;margin-top:16px;border-top:1px solid var(--line);line-height:1.5}
+.pc-link{display:block;text-align:center;font-size:10px;color:var(--text-3);padding:10px;text-decoration:none}
+.kline-svg{display:block;width:100%;height:auto;min-width:300px}
+.sum-item{font-size:11px;padding:6px 0;display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--line)}
+.sum-item:last-child{border:none}
+.sum-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
 </style>
 </head>
 <body>
@@ -149,343 +252,1617 @@ body{font-family:'Noto Sans SC',system-ui,-apple-system,sans-serif;background:va
 <div class="view" id="v-crisis"></div>
 <div class="view" id="v-cycle"></div>
 <div class="view" id="v-masters"></div>
+<div class="view" id="v-scenario"></div>
+<div class="view" id="v-camps"></div>
 <div class="view" id="v-stocks"></div>
 
 <nav class="tabs">
   <div class="tab active" data-v="dash"><div class="ic">📊</div>首页</div>
   <div class="tab" data-v="crisis"><div class="ic">⚠️</div>危机</div>
   <div class="tab" data-v="cycle"><div class="ic">🔄</div>周期</div>
-  <div class="tab" data-v="masters"><div class="ic">🎓</div>大师</div>
+  <div class="tab" data-v="masters"><div class="ic">♔</div>大师</div>
+  <div class="tab" data-v="scenario"><div class="ic">🔮</div>情景</div>
+  <div class="tab" data-v="camps"><div class="ic">🌐</div>G2</div>
   <div class="tab" data-v="stocks"><div class="ic">📈</div>个股</div>
 </nav>
 
 <script>
-/* ===== CONFIG ===== */
-const EM_BASE="https://push2.eastmoney.com/api/qt/ulist.np/get";
-const CURATED={vixIndex:'14.2',fedRate:'3.50-3.75%',chinaLPR:'3.00'};
-function nf(n,d){return Number(n).toLocaleString('en-US',{minimumFractionDigits:d,maximumFractionDigits:d})}
-function chgStr(c){return c==null?'—':(c>=0?'+':'')+Number(c).toFixed(2)+'%'}
+/* ========== DATA + COMPUTATION (extracted from PC version) ========== */
 
-/* ===== CACHE ===== */
-const _cache={};
-function cacheGet(k,ttl){const e=_cache[k];return e&&Date.now()-e.t<ttl?e.v:null}
-function cacheSet(k,v){_cache[k]={v,t:Date.now()}}
+/* ==================== CONFIG ==================== */
+// 全部行情走 东方财富 push2 公开接口(浏览器直连, 支持 CORS, 国内可访问, UTF-8 JSON)
+//   股指/商品/外汇/人民币/美元指数/美股/港股/A股 → push2.eastmoney.com
+//   加密货币 BTC/ETH → OKX(国内可访问) → Binance 公共数据(备用)
+// 无需任何后端代理, 彻底解决跨域与海外服务器被墙问题
+const EM_BASE = "https://push2.eastmoney.com/api/qt/ulist.np/get";
+const FETCH_TIMEOUT = 8000; // 中国→东方财富应在3s内响应, 8s超时足够
 
-/* ===== EM FETCH ===== */
-async function emQuote(secids){
-  const url=EM_BASE+`?fltt=2&fields=f2,f3,f12,f13,f14&secids=${secids}`;
-  const c=new AbortController();const t=setTimeout(()=>c.abort(),8000);
-  try{const r=await fetch(url,{signal:c.signal});const j=await r.json();clearTimeout(t);
-  const m={};if(j.data&&j.data.diff)j.data.diff.forEach(d=>{if(d.f2==='-'||d.f2==null)return;m[d.f13+'.'+d.f12]={price:d.f2,chg:d.f3,name:d.f14}});return m;}
-  catch(e){clearTimeout(t);throw e;}}
+/* 仅政策利率与波动率指数无免费实时CORS源, 保留最新公布值(非市场tick数据) */
+const CURATED = { vixIndex:'14.2', fedRate:'4.25-4.50%', chinaLPR:'3.00' };
 
-/* ===== CENTRAL BANKS ===== */
-const CENTRAL_BANKS=[
-  {flag:'🇺🇸',name:'美联储 FED',rate:'3.50-3.75%',meetings:['2026-01-28','2026-03-18','2026-04-29','2026-06-17','2026-07-29','2026-09-16','2026-10-28','2026-12-16']},
-  {flag:'🇪🇺',name:'欧洲央行 ECB',rate:'2.00%',meetings:['2026-01-29','2026-03-12','2026-04-16','2026-06-04','2026-07-23','2026-09-10','2026-10-29','2026-12-17']},
-  {flag:'🇨🇳',name:'中国人民银行',rate:'3.00%',monthlyDay:20},
-  {flag:'🇯🇵',name:'日本央行 BOJ',rate:'0.75%',meetings:['2026-01-23','2026-03-19','2026-04-28','2026-06-17','2026-07-30','2026-09-18','2026-10-30','2026-12-18']},
-  {flag:'🇬🇧',name:'英格兰银行 BOE',rate:'3.75%',meetings:['2026-02-05','2026-03-19','2026-05-07','2026-06-18','2026-08-06','2026-09-17','2026-11-05','2026-12-17']},
-  {flag:'🇨🇦',name:'加拿大央行 BOC',rate:'2.50%',meetings:['2026-01-28','2026-03-11','2026-04-15','2026-06-03','2026-07-29','2026-09-16','2026-10-28','2026-12-09']},
-  {flag:'🇦🇺',name:'澳洲联储 RBA',rate:'3.60%',meetings:['2026-02-03','2026-03-31','2026-05-05','2026-06-16','2026-08-11','2026-09-29','2026-11-03','2026-12-08']},
-  {flag:'🇨🇭',name:'瑞士央行 SNB',rate:'0.25%',meetings:['2026-03-19','2026-06-18','2026-09-24','2026-12-17']},
-];
-function nextMeeting(b){
-  const today=new Date();today.setHours(0,0,0,0);let next=null;
-  if(b.monthlyDay){next=new Date(today.getFullYear(),today.getMonth(),b.monthlyDay);if(next<today)next=new Date(today.getFullYear(),today.getMonth()+1,b.monthlyDay);}
-  else if(b.meetings){for(const s of b.meetings){const dt=new Date(s+'T00:00:00');if(dt>=today){next=dt;break;}}}
-  if(!next)return'待公布';const days=Math.round((next-today)/86400000);
-  return `${next.getMonth()+1}/${next.getDate()} · ${days===0?'今日':days+'天后'}`;
+/* Chart.js defaults for cycle charts */
+if(typeof Chart!=='undefined'){
+  Chart.defaults.color = '#b9b4ab';
+  Chart.defaults.borderColor = 'rgba(38,38,47,0.6)';
+  Chart.defaults.font.family = "'Noto Sans SC',system-ui";
+  Chart.defaults.font.size = 11;
 }
 
-/* ===== CYCLES ===== */
-const CYCLES=[
-  {nm:'库兹涅茨周期',en:'Kuznets',dur:'15-25年',pos:'去全球化→再全球化',phase:'中段',pc:'#5b9bd5',prog:55},
-  {nm:'朱格拉周期',en:'Juglar',dur:'7-11年',pos:'AI驱动CAPEX上升(2024-2028)',phase:'上升期',pc:'#4caf72',prog:35},
-  {nm:'基钦周期',en:'Kitchin',dur:'3-5年',pos:'主动补库存中后段(2026Q2)',phase:'扩张期',pc:'#4caf72',prog:65},
-  {nm:'美林时钟',en:'Merrill Clock',dur:'~3-5年轮转',pos:'复苏+低通胀→配股票',phase:'复苏期',pc:'#4caf72',prog:25},
-];
+/* ==================== FORMAT HELPERS ==================== */
+function nf(n,dec){return Number(n).toLocaleString('en-US',{minimumFractionDigits:dec,maximumFractionDigits:dec});}
+function pct(cur,prev){return prev?((cur-prev)/prev*100):0;}
+// 显示空值占位(加载中/获取失败时不显示假数据)
+function dv(v){return (v===null||v===undefined||v==='')?'<span style="color:var(--text-3)">—</span>':v;}
+function chgStr(c){return c===null||c===undefined?'—':(c>=0?'+':'')+Number(c).toFixed(2)+'%';}
 
-/* ===== MASTERS ===== */
-const MASTERS=[
-  {id:'dalio',nm:'瑞·达里欧',en:'Ray Dalio',title:'桥水基金创始人',style:'全天候/风险平价',av:'🧠',c:'#4FC3F7'},
-  {id:'simons',nm:'吉姆·西蒙斯',en:'Jim Simons',title:'文艺复兴科技创始人',style:'量化/统计套利',av:'🔢',c:'#AB47BC'},
-  {id:'marks',nm:'霍华德·马克思',en:'Howard Marks',title:'橡树资本联合创始人',style:'第二层思维/非对称',av:'📝',c:'#66BB6A'},
-  {id:'druck',nm:'德鲁肯米勒',en:'S. Druckenmiller',title:'杜肯资本创始人',style:'集中押注/宏观',av:'🎯',c:'#FFA726'},
-  {id:'lynch',nm:'彼得·林奇',en:'Peter Lynch',title:'麦哲伦基金经理',style:'成长股/PEG估值',av:'📊',c:'#EF5350'},
-  {id:'gross',nm:'比尔·格罗斯',en:'Bill Gross',title:'债券之王/PIMCO',style:'利率预测/债券',av:'📉',c:'#5C6BC0'},
-  {id:'jones',nm:'保罗·琼斯',en:'P. Tudor Jones',title:'都铎投资创始人',style:'宏观/趋势跟踪',av:'🌐',c:'#26A69A'},
-  {id:'raschke',nm:'琳达·拉施克',en:'Linda Raschke',title:'短线波段大师',style:'短线/技术分析',av:'⚡',c:'#FFCA28'},
-  {id:'li',nm:'李录',en:'Li Lu',title:'喜马拉雅资本',style:'价值/中国视角',av:'🏮',c:'#F44336'},
-  {id:'ackman',nm:'比尔·阿克曼',en:'Bill Ackman',title:'潘兴广场创始人',style:'激进维权/集中',av:'🦅',c:'#78909C'},
+// 各央行 2026 年预定议息日历 (ISO date). nextMeeting() 每日动态推算下一次决议日期
+const CENTRAL_BANKS = [
+  {flag:'🇺🇸',name:'美联储 FED',rate:'4.25-4.50%',action:'2026 暂停降息观望',meetings:['2026-01-28','2026-03-18','2026-04-29','2026-06-17','2026-07-29','2026-09-16','2026-10-28','2026-12-16']},
+  {flag:'🇪🇺',name:'欧洲央行 ECB',rate:'2.00%',action:'2026 维持/微调',meetings:['2026-01-29','2026-03-12','2026-04-16','2026-06-04','2026-07-23','2026-09-10','2026-10-29','2026-12-17']},
+  {flag:'🇨🇳',name:'中国人民银行',rate:'3.00%',action:'LPR 稳中偏松',monthlyDay:20},
+  {flag:'🇯🇵',name:'日本央行 BOJ',rate:'0.75%',action:'2026 渐进加息',meetings:['2026-01-23','2026-03-19','2026-04-28','2026-06-17','2026-07-30','2026-09-18','2026-10-30','2026-12-18']},
+  {flag:'🇬🇧',name:'英格兰银行 BOE',rate:'3.75%',action:'2026 渐进降息',meetings:['2026-02-05','2026-03-19','2026-05-07','2026-06-18','2026-08-06','2026-09-17','2026-11-05','2026-12-17']},
+  {flag:'🇨🇦',name:'加拿大央行 BOC',rate:'2.50%',action:'2026 维持',meetings:['2026-01-28','2026-03-11','2026-04-15','2026-06-03','2026-07-29','2026-09-16','2026-10-28','2026-12-09']},
+  {flag:'🇦🇺',name:'澳洲联储 RBA',rate:'3.60%',action:'2026 渐进降息',meetings:['2026-02-03','2026-03-31','2026-05-05','2026-06-16','2026-08-11','2026-09-29','2026-11-03','2026-12-08']},
+  {flag:'🇨🇭',name:'瑞士央行 SNB',rate:'0.25%',action:'2026 维持',meetings:['2026-03-19','2026-06-18','2026-09-24','2026-12-17']},
 ];
-const MASTER_CASES={
-dalio:{philosophy:'通过"风险平价"原则构建全天候组合，将资产配置到不同经济环境中。核心是分散风险而非分散资产，利用杠杆平衡不同资产类别的风险贡献。',cases:[
-{year:2008,name:'Pure Alpha逆势盈利',entry:'判断信贷泡沫即将破裂，减持信贷资产，增持国债和黄金',result:'2008年上涨9.5%，同期标普-37%',lesson:'系统性宏观框架能在危机中保护资本'},
-{year:1996,name:'全天候组合设计',entry:'四象限框架按风险贡献配置：30%股票、55%国债、15%商品黄金',result:'年化约7.5%，2008年仅跌3.9%',lesson:'风险平价实现真正分散化'},
-{year:2011,name:'欧债危机做空欧洲',entry:'分析欧元区结构性缺陷，做空欧洲国债和欧元',result:'全年约23%回报',lesson:'政治结构缺陷导致经济危机'}]},
-simons:{philosophy:'完全依赖数学模型和统计套利，利用海量数据挖掘微小价格异常。高频交易、极短持仓、大量分散头寸，排除人类情绪干预。',cases:[
-{year:1988,name:'Medallion基金创立',entry:'隐马尔可夫模型识别短期价格模式',result:'1988-2018年均毛回报约66%',lesson:'科学方法取代直觉判断'},
-{year:2008,name:'金融危机逆势暴赚',entry:'模型捕捉极端波动中的回归和动量信号',result:'2008年回报约80%',lesson:'量化系统在极端行情表现更好'},
-{year:2000,name:'互联网泡沫中获利',entry:'只捕捉统计异常，快速切换多空',result:'2000年回报98.5%',lesson:'不依赖市场方向从短期波动提取alpha'}]},
-marks:{philosophy:'在市场极度恐慌时买入被过度抛售的不良债务资产。核心是理解钟摆效应——市场总在极度乐观和悲观之间摆动。',cases:[
-{year:2008,name:'金融危机不良债务抄底',entry:'提前备弹药，雷曼倒闭后部署$110亿买入被抛售公司债',result:'随后年化超20%回报',lesson:'恐慌高峰出手需勇气和事先准备'},
-{year:2001,name:'"堕落天使"投资',entry:'互联网泡沫后大量投资级被降为垃圾级，恐慌性抛售',result:'2001-2003年年化约30%',lesson:'评级下调造成非理性抛售'},
-{year:2020,name:'新冠疫情信贷抄底',entry:'3月发备忘录"现在是买入时机"，大规模买入公司债',result:'2020年30%+回报',lesson:'逆向投资需基于对内在价值的理解'}]},
-druck:{philosophy:'自上而下全球宏观交易，判断明确时极度集中下注。强调灵活性和快速认错，核心是识别宏观失衡并在拐点下重注。',cases:[
-{year:1992,name:'做空英镑"击溃英格兰银行"',entry:'判断英国无法维持ERM高利率，建议将仓位加到$100亿做空英镑',result:'单笔获利约$10亿',lesson:'政策与基本面矛盾时政策必须屈服'},
-{year:1989,name:'做多德国马克',entry:'柏林墙倒塌当晚凌晨4点大规模做多马克',result:'获利数亿美元',lesson:'地缘政治事件快速判断果断行动'},
-{year:1999,name:'互联网泡沫追涨(教训)',entry:'做空被逼后反手$60亿做多科技股',result:'泡沫破裂后亏$30亿',lesson:'FOMO是致命的，违背判断追涨必败'}]},
-lynch:{philosophy:'"买你了解的东西"——从日常生活发现投资机会，用PEG筛选被低估成长股。将股票分六类采用不同策略。',cases:[
-{year:1982,name:'克莱斯勒困境反转',entry:'濒临破产时买入($2)，看好政府贷款担保+新管理层改革',result:'涨至$50+，20倍+',lesson:'困境反转风险高但回报惊人'},
-{year:1985,name:'房利美长期持有',entry:'不被关注时买入，看好住房市场+垄断地位',result:'上涨超10倍',lesson:'十倍股需要长期持有的耐心'},
-{year:1977,name:'Dunkin\' Donuts',entry:'门店排长队+简单模式+稳健扩张+合理估值',result:'持有期间数倍涨幅',lesson:'消费者拥有华尔街没有的信息优势'}]},
-gross:{philosophy:'开创债券"总回报"策略——不仅赚票息，更通过主动管理久期获取资本利得。核心是对利率拐点的前瞻性判断。',cases:[
-{year:2007,name:'次贷危机前清仓MBS',entry:'判断房地产泡沫将破，减持次级MBS，增持国债',result:'2007年9.1%，2008年4.8%，跑赢同行',lesson:'回避有毒资产比选好资产更重要'},
-{year:2011,name:'清仓美债(最大失误)',entry:'判断QE2后美债暴跌，清仓全部国债',result:'美债不跌反涨，仅4.2%跑输70%同行',lesson:'极端押注即使高信念也可能出错'},
-{year:1980,name:'开创"总回报"策略',entry:'利率从20%拐点大胆拉长久期，买入长期国债',result:'1980-2000年年化超8%，规模$20亿→$2700亿',lesson:'利率大周期拐点是千载难逢的机会'}]},
-jones:{philosophy:'全球宏观+技术分析，极度重视风险管理。用200日均线判断趋势，追求不对称风险回报比。',cases:[
-{year:1987,name:'"黑色星期一"做空暴赚',entry:'研究1929年形态发现高度相似，建立大规模空头',result:'当月获利62%，全年125.9%',lesson:'市场结构性脆弱是崩盘前提'},
-{year:1990,name:'做空日本泡沫',entry:'判断日本资产泡沫不可持续，日央行加息后做空日经',result:'日经从38957跌至23848',lesson:'央行宽松→紧缩时泡沫最脆弱'},
-{year:2008,name:'金融危机宏观对冲',entry:'做空金融股+信贷，做多国债+黄金',result:'未重大亏损(同期标普-37%)',lesson:'风险管理比抓行情更重要'}]},
-raschke:{philosophy:'专注短线波段(1-5天)，利用动量和均值回归的节奏切换获利。核心信念"市场有惯性"，强调纪律和执行力。',cases:[
-{year:1992,name:'"圣杯"策略系统化',entry:'ADX>30确认趋势后，等价格回调至20EMA逢低买入',result:'S&P期货连续盈利超20年',lesson:'最好的策略往往最简单'},
-{year:1987,name:'转型期货交易',entry:'因伤从场内做市商转向S&P期货屏幕交易',result:'连续多年正回报，入选《新市场奇才》',lesson:'核心技能是模式识别和纪律'},
-{year:2002,name:'LBR Group熊市正收益',entry:'多种短线策略组合在纳斯达克期货波段操作',result:'熊市中年化15-20%',lesson:'短线不依赖方向，牛熊均可盈利'}]},
-li:{philosophy:'深度价值投资+中国经济转型理解，寻找巨大竞争优势的亚洲企业。真正的机会极少，一生只需抓住几个大机会。',cases:[
-{year:2003,name:'投资比亚迪(BYD)',entry:'认为王传福杰出+电池技术被严重低估，约1港元/股买入',result:'上涨超50倍(5600%+)，后推荐给芒格',lesson:'对企业和企业家的深入了解是最好的投资'},
-{year:2003,name:'Timberland价值洼地',entry:'账上现金≈市值，品牌未被定价，管理层回购',result:'随后几年上涨数倍',lesson:'市值接近净现金=免费获得品牌和业务'},
-{year:2018,name:'重仓美光科技',entry:'存储芯片整合为寡头垄断，市场仍按周期股低估',result:'占组合超20%获可观回报',lesson:'行业结构性变化导致长期错误定价'}]},
-ackman:{philosophy:'集中持有少数优质公司(6-10只)，通过积极股东行动推动管理层改革释放价值。偏好高壁垒简单模式。',cases:[
-{year:2020,name:'新冠CDS对冲(史诗级)',entry:'$2700万买入信用违约互换押注信贷崩溃',result:'30天内飙升至$26亿，100倍回报',lesson:'不对称风险回报是交易圣杯'},
-{year:2012,name:'CP Rail激进改革',entry:'14%持股发起代理权争夺更换CEO',result:'$60→$200+，获利$26亿',lesson:'好公司差管理时行动主义最有效'},
-{year:2012,name:'做空Herbalife(败仗)',entry:'$10亿做空指控为"金字塔骗局"',result:'2018年认赔约$5亿',lesson:'做空风险无限，时间成本可致命'}]}
-};
+// 动态推算下一次议息: 返回 "M月D日 (N天后)"; 央行月度型(中国LPR)按每月固定日推算
+function nextMeeting(b){
+  const today=new Date(); today.setHours(0,0,0,0);
+  let next=null;
+  if(b.monthlyDay){
+    next=new Date(today.getFullYear(),today.getMonth(),b.monthlyDay);
+    if(next<today) next=new Date(today.getFullYear(),today.getMonth()+1,b.monthlyDay);
+  }else if(b.meetings){
+    for(const s of b.meetings){const dt=new Date(s+'T00:00:00'); if(dt>=today){next=dt;break;}}
+  }
+  if(!next) return '待公布';
+  const days=Math.round((next-today)/86400000);
+  return `${next.getMonth()+1}月${next.getDate()}日 · ${days===0?'今日':days+'天后'}`;
+}
 
-/* ===== COMPARE (Crisis 1999 vs 2026) ===== */
+/* ==================== CRISIS DATA ==================== */
+const CRISIS_INDICATORS=[
+  {id:'T10Y2Y',name:'10Y-2Y利差',en:'Yield Spread',weight:.15,dir:'lower',min:-1,max:3},
+  {id:'VIXCLS',name:'VIX恐慌指数',en:'VIX',weight:.12,dir:'higher',min:10,max:80},
+  {id:'UNRATE',name:'失业率',en:'Unemployment',weight:.12,dir:'higher',min:3,max:15},
+  {id:'UMCSENT',name:'消费者信心',en:'Consumer Sentiment',weight:.10,dir:'lower',min:40,max:110},
+  {id:'DCCLACBS',name:'信用卡拖欠率',en:'CC Delinquency',weight:.13,dir:'higher',min:1.5,max:7},
+  {id:'CSUSHPINSA',name:'房价指数(同比)',en:'Case-Shiller',weight:.10,dir:'higher',min:-5,max:20},
+  {id:'BAMLH0A0HYM2',name:'高收益债利差',en:'HY Spread',weight:.15,dir:'higher',min:2,max:12},
+  {id:'SP500',name:'标普500(年涨跌%)',en:'S&P 500 YoY',weight:.13,dir:'lower',min:-40,max:40},
+];
+const CURRENT_INDICATORS={T10Y2Y:.20,VIXCLS:14,UNRATE:4.1,UMCSENT:72,DCCLACBS:3.2,CSUSHPINSA:3.5,BAMLH0A0HYM2:3.5,SP500:8};
+const CRISIS_PERIODS=[
+  {yr:'2008',nm:'全球金融危机',range:'2008.07–2009.03',desc:'雷曼倒闭引发全球金融海啸，股市暴跌，信用市场冻结',vals:{T10Y2Y:-.2,VIXCLS:55,UNRATE:7.3,UMCSENT:56,DCCLACBS:5.6,CSUSHPINSA:-15,BAMLH0A0HYM2:10.5,SP500:-38}},
+  {yr:'2000',nm:'互联网泡沫',range:'2000.01–2002.10',desc:'科技股泡沫破裂，纳斯达克暴跌78%，大量互联网公司倒闭',vals:{T10Y2Y:-.6,VIXCLS:35,UNRATE:4.2,UMCSENT:88,DCCLACBS:4.1,CSUSHPINSA:8.5,BAMLH0A0HYM2:5.5,SP500:-18}},
+  {yr:'2020',nm:'新冠疫情冲击',range:'2020.02–2020.04',desc:'全球疫情爆发经济骤停，标普3月4次熔断，失业率飙至14.7%',vals:{T10Y2Y:.3,VIXCLS:65,UNRATE:14.7,UMCSENT:64,DCCLACBS:3.2,CSUSHPINSA:4.5,BAMLH0A0HYM2:8.5,SP500:-20}},
+  {yr:'2022',nm:'激进加息周期',range:'2022.03–2023.03',desc:'美联储40年最激进加息，收益率深度倒挂，硅谷银行暴雷',vals:{T10Y2Y:-.85,VIXCLS:25,UNRATE:3.6,UMCSENT:50,DCCLACBS:2.5,CSUSHPINSA:10,BAMLH0A0HYM2:5.5,SP500:-18}},
+];
+function normalize(v,min,max,dir){let n=(v-min)/(max-min);n=Math.max(0,Math.min(1,n));return dir==='lower'?1-n:n}
+
+/* ===== 1999/2000 互联网泡沫顶部 vs 2026(截至5月) 多维对比 =====
+   每个维度: h=历史(1999/2000)关键数据, cur(md)=当前(部分接入实时行情),
+   sim=该维度与历史规律的重合度(0-100, 基于回归与定性研究), note=解读 */
 const COMPARE_DIMS=[
-  {dim:'美股走势',ic:'📈',sim:80,h:'1999标普+19.5%/纳指+85.6%',cur:'AI牛市续创新高'},
-  {dim:'盈利与估值',ic:'💰',sim:82,h:'CAPE 44(史上峰值)',cur:'CAPE~39·前瞻PE~22'},
-  {dim:'长中短期利率',ic:'🏦',sim:42,h:'联邦基金6.5%·深度倒挂',cur:'联邦基金3.50-3.75%·曲线已转正'},
-  {dim:'美元走势',ic:'💵',sim:66,h:'DXY升向110',cur:'DXY偏强~99'},
-  {dim:'黄金走势',ic:'🥇',sim:8,h:'低迷~$280/oz',cur:'创历史新高$4500+'},
-  {dim:'石油价格',ic:'🛢️',sim:60,h:'$12→$35(+192%)',cur:'WTI高位坚挺'},
-  {dim:'PCE/CPI',ic:'🌡️',sim:58,h:'CPI 3.4%·PCE 1.7%',cur:'CPI~3.3%·PCE~2.7%'},
-  {dim:'企业基本面',ic:'🏭',sim:24,h:'多数互联网公司负现金流',cur:'Mag7高盈利强现金流'},
+  {dim:'美股走势',en:'Equity Trend',ic:'📈',
+   h:'长牛后加速冲顶 · 1999 标普 +19.5% / 纳指 +85.6%，2000.3 见顶回落',
+   cur:md=>`AI 牛市续创新高 · 标普 ${(md&&md.sp500)||'—'} / 纳指 ${(md&&md.nasdaq)||'—'}`,
+   sim:80,note:'同处长牛末段、由少数科技龙头领涨并加速冲顶'},
+  {dim:'盈利与估值',en:'Earnings & Valuation',ic:'💰',
+   h:'估值史上极端 · Shiller CAPE 44(2000.1 历史峰值) · 标普前瞻 PE ~25 · 纳指 PE >100',
+   cur:md=>'估值高位 · CAPE ~39.8 · 标普 TTM PE 25.9 · 前瞻 PE ~21 · Nasdaq-100 PE 37',
+   sim:78,note:'估值同处历史顶部区间，但 2000 更极端(纳指 PE >100 且多无盈利支撑)'},
+  {dim:'长中短期利率',en:'Rates & Curve',ic:'🏦',
+   h:'高利率+深度倒挂 · 联邦基金 6.5% · 10Y ~6.5% · 2Y>10Y',
+   cur:md=>'利率正常化 · 联邦基金 4.25-4.50% · 10Y ~4.4% · 30Y ~5.0% · 曲线已转正',
+   sim:42,note:'Fed 从 6.5% 加息 vs 当前 4.375% 降息，利率绝对水平更低、方向相反'},
+  {dim:'美元走势',en:'US Dollar',ic:'💵',
+   h:'强势美元 · DXY 升向 ~110(2001 见顶 121)',
+   cur:md=>`偏强美元 · DXY ${(md&&md.dxyIndex)||'—'}`,
+   sim:66,note:'同为强美元周期，但当前强度与持续性弱于 2000-2001'},
+  {dim:'黄金走势',en:'Gold',ic:'🥇',
+   h:'历史低迷 · ~$280/oz(1999 英国央行抛售低点 $252)',
+   cur:md=>`历史新高 · $${(md&&md.goldPrice)||'—'}/oz`,
+   sim:8,note:'⚠ 方向完全相反: 2000 金价低迷 vs 当前创历史新高 → 去美元化/主权避险，列为异常维度'},
+  {dim:'比特币',en:'Bitcoin',ic:'₿',
+   h:'尚不存在(BTC 2009 才诞生)',
+   cur:md=>`$${(md&&md.btcPrice)||'—'} · 风险资产新锚`,
+   sim:null,note:'1999 无对应资产，不纳入相似度计算 (N/A)'},
+  {dim:'石油价格',en:'Crude Oil',ic:'🛢️',
+   h:'三倍上行 · 从 1998 $12 涨至 1999-2000 $30-37',
+   cur:md=>`WTI $${(md&&md.oil)||'—'} · 高位坚挺`,
+   sim:60,note:'同处油价上行/高位，但当前更多由供给约束与地缘驱动'},
+  {dim:'PCE / CPI',en:'Inflation',ic:'🌡️',
+   h:'温和抬升 · CPI 2.2%→3.4% · 核心 PCE ~1.7%',
+   cur:md=>'偏黏抬升 · CPI 3.8%(Apr 2026) · 核心 PCE 3.3% · 高于 Fed 2% 目标',
+   sim:58,note:'通胀同步温和抬升，当前更具黏性(核心 PCE 3.3% vs 2000 的 1.7%)'},
+  {dim:'企业基本面',en:'Corporate Fundamentals',ic:'🏭',
+   h:'龙头烧钱 · 多数互联网公司负现金流、无盈利 · 利润率 1997 见顶回落',
+   cur:md=>'龙头高质量 · Mag7 真实高盈利、强自由现金流、利润率历史高位',
+   sim:24,note:'⚠ 本质差异: 当前龙头盈利质量远胜 2000 概念股，列为异常维度'},
 ];
+// 总体重合度: 去掉偏离中位数 >1×IQR 的异常维度后再取均值
 function overlapScore(){
-  const sims=COMPARE_DIMS.map(d=>d.sim);
+  const dims=COMPARE_DIMS.filter(d=>d.sim!=null);
+  const sims=dims.map(d=>d.sim);
   const sorted=[...sims].sort((a,b)=>a-b);
   const q=p=>{const i=(sorted.length-1)*p,lo=Math.floor(i),hi=Math.ceil(i);return sorted[lo]+(sorted[hi]-sorted[lo])*(i-lo)};
   const med=q(.5),iqr=q(.75)-q(.25),thr=Math.max(iqr,12);
-  const kept=COMPARE_DIMS.filter(d=>Math.abs(d.sim-med)<=thr);
+  const kept=dims.filter(d=>Math.abs(d.sim-med)<=thr);
+  const removed=dims.filter(d=>Math.abs(d.sim-med)>thr);
   const raw=Math.round(sims.reduce((a,b)=>a+b,0)/sims.length);
   const trimmed=Math.round(kept.reduce((a,b)=>a+b.sim,0)/kept.length);
-  return{raw,trimmed,kept:kept.length,total:sims.length};
+  return {raw,trimmed,removed,kept:kept.length,total:dims.length,med:Math.round(med),iqr:Math.round(iqr)};
 }
 
-/* ===== TRUTH CHECK ===== */
+/* ===== 2027/2028 盈利回归预测(基于 2026 Q1 财报年化 + 增速回归长期中枢) ===== */
+const EPS_FORECAST={
+  // 标普500 自上而下营运 EPS(美元) — 来源: Goldman Sachs/FactSet 2026.06
+  sp:[{y:'2024',v:235,t:'实际'},{y:'2025',v:271,t:'实际'},{y:'2026E',v:340,t:'共识(GS)'},{y:'2027E',v:385,t:'共识(GS)'},{y:'2028E',v:412,t:'回归预测'}],
+  // Mag7 合计净利润同比增速(%)
+  m7:[{y:'2024',g:33},{y:'2025',g:24},{y:'2026E',g:21},{y:'2027E',g:13},{y:'2028E',g:9}],
+  note:'方法: 以 Goldman Sachs 2026E $340、2027E $385 为锚(FactSet Q1 blended +27.1%佐证)，2028 假设 AI 资本开支边际回报递减、盈利增速向长期中枢(~7%/年)平滑收敛；Mag7 增速随基数抬升逐年压缩。'
+};
+
+/* ===== 真假繁荣判断(分析#3) ===== */
 const TRUTH_CHECK=[
-  {item:'30Y美债5%收益率',v:'真实·健康',c:'#4caf72',reason:'接近长期历史均值，是中性利率上移的正常化'},
-  {item:'美股持续创新高',v:'半真半虚',c:'#e0a23c',reason:'Mag7真实盈利支撑为"真"，CAPE~39透支未来为"虚"'},
-  {item:'石油价格坚挺',v:'偏虚',c:'#e0a23c',reason:'供给约束+地缘驱动而非需求强劲'},
-  {item:'美元汇率升高',v:'矛盾信号',c:'#e05c5c',reason:'利差支撑部分真实，但金价同创新高暗示去美元化'},
+  {item:'30 年期美债 ~5% 收益率',v:'真实 · 健康',c:'#4caf72',
+   reason:'相对 2010s 的异常低利率，4.99% 接近长期历史均值，是"中性利率上移 + 期限溢价回归"的正常化结果，符合经济周期规律。'},
+  {item:'美股持续创新高',v:'半真半虚',c:'#e0a23c',
+   reason:'Mag7 真实盈利与现金流支撑(区别于 2000)，此为"真"；但 CAPE ~39.8 已透支未来多年增长、市场宽度收窄、集中度极高，估值层面含"虚"。'},
+  {item:'石油价格坚挺升高',v:'偏虚',c:'#e0a23c',
+   reason:'更多由供给约束 + 地缘溢价驱动而非需求强劲；全球制造业偏弱，需求端走软风险大，高油价更像供给冲击而非繁荣信号。'},
+  {item:'美元汇率升高',v:'矛盾信号',c:'#e05c5c',
+   reason:'利差支撑部分真实；但强美元通常压制金价，当前金价却创历史新高，此罕见背离暗示去美元化/主权避险，美元强势含"虚高"成分。'},
 ];
 
-/* ===== MASTER ADVICE ===== */
+/* ===== 4 位大师当前布局建议(基准 2026-05-29, 分析#4) ===== */
 const MASTER_ADVICE=[
-  {nm:'德鲁肯米勒',av:'🎯',c:'#e0a23c',stance:'减仓·灵活',port:'现金35%·AI龙头30%·黄金15%·能源10%·做空10%'},
-  {nm:'巴菲特',av:'🏰',c:'#e0a23c',stance:'持币·观望',port:'现金30%·消费金融35%·能源15%·核心科技20%'},
-  {nm:'霍华德·马克思',av:'⚖️',c:'#e05c5c',stance:'防御为主',port:'高评级债40%·现金15%·防御股25%·另类预备20%'},
-  {nm:'彼得·林奇',av:'🔍',c:'#4caf72',stance:'精选·买入',port:'GARP成长50%·价值周期25%·现金15%·红利10%'},
+  {nm:'斯坦利·德鲁肯米勒',en:'Stanley Druckenmiller',av:'🎯',c:'#e0a23c',stance:'减仓·灵活',
+   logic:'宏观集中下注 + 严格止损，以流动性与利率拐点定方向',
+   act:'高估值 + 高实际利率环境下降低科技多头敞口，保留现金等待错杀；在 AI 真实受益的少数龙头保持核心仓，对纯概念泡沫择机做空。',
+   port:'现金/短债 35% · AI 核心龙头 30% · 黄金 15% · 能源 10% · 做空高估值篮子 10%',ret:'目标年化 8–12%'},
+  {nm:'沃伦·巴菲特',en:'Warren Buffett',av:'🏰',c:'#e0a23c',stance:'持币·观望',
+   logic:'护城河 + 合理价格 + 长期持有，现金为王等待时机',
+   act:'伯克希尔现金创新高即是态度: 不追高，等待回调中以合理价买入优质现金牛；维持核心持仓(苹果/能源/保险)，不新增高估值科技。',
+   port:'现金/短债 30% · 优质消费&金融 35% · 能源 15% · 苹果等核心科技 20%',ret:'目标年化 9–11%'},
+  {nm:'霍华德·马克思',en:'Howard Marks',av:'⚖️',c:'#e05c5c',stance:'防御为主',
+   logic:'周期钟摆定位 + 第二层思维，风险控制优先',
+   act:'"钟摆"已摆向乐观/昂贵一端，应转向防御: 提高高评级信用债与现金比重，降低股票 beta，待信用利差走阔时再加风险。',
+   port:'高评级债 40% · 现金 15% · 防御股 25% · 不良/另类预备金 20%',ret:'目标年化 7–9%'},
+  {nm:'彼得·林奇',en:'Peter Lynch',av:'🔍',c:'#4caf72',stance:'精选·买入',
+   logic:'自下而上 GARP，PEG<1，买你了解的成长股',
+   act:'指数贵不代表无机会: 回避 PE 远超盈利增速的泡沫股，在中小盘与被忽视板块寻找 PEG<1 的真成长(工业/医疗/能源服务)，分散持有。',
+   port:'GARP 成长股 50% · 价值/周期 25% · 现金 15% · 红利股 10%',ret:'目标年化 10–14%'},
 ];
 
-/* ===== STOCKS ===== */
-const US_LIST=[['105.AAPL','AAPL','苹果'],['105.MSFT','MSFT','微软'],['105.GOOGL','GOOGL','谷歌'],['105.AMZN','AMZN','亚马逊'],['105.NVDA','NVDA','英伟达'],['105.META','META','Meta'],['105.TSLA','TSLA','特斯拉'],['105.TQQQ','TQQQ','3倍多纳指'],['105.SQQQ','SQQQ','3倍空纳指'],['106.CRCL','CRCL','Circle'],['106.BABA','BABA','阿里巴巴'],['105.JD','JD','京东'],['105.PDD','PDD','拼多多'],['106.TME','TME','腾讯音乐'],['105.NTES','NTES','网易'],['105.MU','MU','美光'],['107.DBA','DBA','农产品ETF'],['105.TCOM','TCOM','携程']];
-const HK_LIST=[['116.00700','0700','腾讯'],['116.09988','9988','阿里-W'],['116.03690','3690','美团-W'],['116.09992','9992','泡泡玛特'],['116.01810','1810','小米-W'],['116.01211','1211','比亚迪'],['116.02800','2800','盈富基金'],['116.09999','9999','网易-S'],['116.02611','2611','国泰海通'],['116.00883','0883','中海油'],['116.09899','9899','网易云音乐']];
-const CN_LIST=[['1.000001','SH','上证指数'],['1.000300','HS300','沪深300'],['1.510310','510310','沪深300ETF'],['1.561380','561380','电网设备ETF'],['0.159827','159827','农业ETF']];
-const ALL_STK=[...US_LIST,...HK_LIST,...CN_LIST];
+/* ==================== CYCLES ==================== */
+const CYCLES=[
+  {nm:'库兹涅茨周期',en:'Kuznets Cycle',dur:'15-25年',pos:'去全球化 → 再全球化加速',phase:'中段',pc:'blue',prog:55,desc:'G2格局下的产业链重构，东方阵营/桥梁国家/西方阵营三极化',wave:'kuznets'},
+  {nm:'朱格拉周期',en:'Juglar Cycle',dur:'7-11年',pos:'AI驱动资本开支上升期(2024-2028)',phase:'上升期',pc:'green',prog:35,desc:'以AI基础设施投资为核心，数据中心/算力芯片/能源基建CAPEX加速',wave:'juglar'},
+  {nm:'基钦周期',en:'Kitchin Cycle',dur:'3-5年',pos:'主动补库存中后段(2026 Q2)',phase:'扩张期',pc:'green',prog:65,desc:'制造业库存周期进入主动补库阶段，PMI/PPI数据改善',wave:'kitchin'},
+  {nm:'美林时钟',en:'Merrill Lynch Clock',dur:'约3-5年轮转',pos:'当前: 经济复苏+低通胀 → 配股票',phase:'复苏期',pc:'green',prog:25,desc:'复苏期→股票 | 过热期→商品 | 滞胀期→现金 | 衰退期→债券。当前GDP回升+CPI回落，处于复苏期',wave:'merrill'},
+];
+const PHASE_COLOR={green:'#4caf72',orange:'#e0a23c',blue:'#5b9bd5',red:'#e05c5c'};
 
-/* ===== FX SECIDS ===== */
-const EM_FX={'100.UDI':['dxyIndex',2],'120.USDCNYC':['usdcny',4],'120.EURCNYC':['eurcny',4],'120.JPYCNYC':['jpycny',4],'120.GBPCNYC':['gbpcny',4],'119.EURUSD':['eurusd',4],'119.GBPUSD':['gbpusd',4],'119.USDJPY':['usdjpy',2]};
-const EM_MKT={'100.SPX':['sp500',2],'100.NDX':['nasdaq',2],'100.DJIA':['dow',2],'101.GC00Y':['goldPrice',2],'101.SI00Y':['silver',2],'102.CL00Y':['oil',2],'102.NG00Y':['natgas',3]};
+/* ==================== CRISIS WARNING: 2000 vs 2026 ==================== */
+const BUBBLE_2000={
+  label:'1999–2000 互联网泡沫',
+  // 美股走势
+  sp500_peak:1527.46,sp500_ye99:1464.47,sp500_ret_12m:19.3,sp500_ret_24m:43.2,
+  nasdaq_peak:5048.62,nasdaq_ret_12m:85.6,nasdaq_ret_24m:160,
+  // 盈利与估值
+  cape:44.19,trailing_pe:32,forward_pe:null, // 当时不常用forward PE
+  corp_profit_growth_99:27.7,corp_profit_growth_00:3.8,
+  mag_pe:null,mag_earnings_growth:null, // Mag7当时多无盈利
+  market_concentration:27, // 前10大股占S&P500权重
+  // 利率
+  fed_rate_start:4.63,fed_rate_end:6.32,fed_direction:'加息周期 +169bp',
+  t2y:5.8,t5y:5.9,t10y:6.3,t30y:6.0,spread_10y2y:0.5,
+  // 美元
+  dxy_start:96,dxy_end:120,dxy_chg:25,
+  // 黄金
+  gold_start:286,gold_end:272,gold_chg:-4.9,
+  // BTC
+  btc_start:null,btc_end:null,btc_chg:null,
+  // 石油
+  oil_start:12,oil_end:35,oil_chg:192,
+  // 通胀
+  cpi:3.4,pce:2.0,
+  // 企业端
+  corp_debt_gdp:57,tech_cashflow:'大量企业无正现金流',
+};
+const BUBBLE_2026={
+  label:'2025–2026 当前市场',
+  sp500_peak:7610,sp500_ye99:6670,sp500_ret_12m:14.1,sp500_ret_24m:38,
+  nasdaq_peak:27094,nasdaq_ret_12m:18.5,nasdaq_ret_24m:45,
+  cape:39.8,trailing_pe:25.9,forward_pe:21.0,
+  corp_profit_growth_99:null,corp_profit_growth_00:27.1,
+  mag_pe:35,mag_earnings_growth:24,
+  market_concentration:39,
+  fed_rate_start:5.375,fed_rate_end:4.375,fed_direction:'降息周期 -100bp',
+  t2y:4.00,t5y:4.10,t10y:4.40,t30y:4.99,spread_10y2y:0.40,
+  dxy_start:104,dxy_end:99.2,dxy_chg:-4.6,
+  gold_start:2600,gold_end:4508,gold_chg:73,
+  btc_start:62000,btc_end:66614,btc_chg:7.4,
+  oil_start:72,oil_end:95,oil_chg:32,
+  cpi:3.8,pce:3.3,
+  corp_debt_gdp:78,tech_cashflow:'Mag7合计$3000亿+自由现金流',
+};
+// 维度相似度计算: 参数化 calcFn(benchmark) 可对比任意历史危机
+// 2026 端数据固定取自 BUBBLE_2026; 基准端通过 _bDim(bench) 提取对应字段
+const _calcFns={
+  equity:(bk,bc)=>{
+    const s1=1-Math.min(Math.abs(bk.sp500_ret-bc.sp500_ret)/bc.sp500_ret,.99);
+    const s2=1-Math.min(Math.abs(bk.nasdaq_ret-bc.nasdaq_ret)/bc.nasdaq_ret,.99);
+    return Math.round((s1*.5+s2*.5)*100);
+  },
+  earn:(bk,bc)=>{
+    const s1=bk.cape!=null?1-Math.abs(bk.cape-bc.cape)/bc.cape:0.5;
+    const s2=bk.pe!=null?1-Math.abs(bk.pe-bc.pe)/bc.pe:0.5;
+    const s3=1-Math.abs(bk.conc-bc.conc)/bc.conc;
+    return Math.round((s1*.4+s2*.3+s3*.3)*100);
+  },
+  rates:(bk,bc)=>{
+    const s1=bk.t30y!=null?1-Math.abs(bk.t30y-bc.t30y)/bc.t30y:0.5;
+    const s2=1-Math.abs(bk.t10y-bc.t10y)/bc.t10y;
+    const s3=bk.t5y!=null?1-Math.abs(bk.t5y-bc.t5y)/bc.t5y:0.5;
+    return Math.round((s1*.50+s2*.30+s3*.20)*100);
+  },
+  dxy:(bk,bc)=>Math.max(0,Math.round((1-Math.abs(bk.chg-bc.chg)/50)*100)),
+  gold:(bk,bc)=>{
+    if((bk.chg>0)!==(bc.chg>0))return 15;
+    return Math.max(0,Math.round((1-Math.abs(bk.chg-bc.chg)/100)*100));
+  },
+  btc:()=>null, // 2000/2008 时期无 BTC
+  oil:(bk,bc)=>{
+    if(bk.chg>100&&bc.chg>20)return 55;
+    return Math.max(0,Math.round((1-Math.abs(bk.chg-bc.chg)/200)*100));
+  },
+  infl:(bk,bc)=>{
+    const s1=1-Math.abs(bk.cpi-bc.cpi)/bc.cpi;
+    const s2=bk.pce!=null?1-Math.abs(bk.pce-bc.pce)/bc.pce:0.5;
+    return Math.round((s1*.5+s2*.5)*100);
+  },
+  corp:(bk,bc)=>{
+    const s1=(bk.profit_g!=null&&bc.profit_g!=null)?1-Math.abs(bk.profit_g-bc.profit_g)/Math.max(Math.abs(bk.profit_g),Math.abs(bc.profit_g)):0.5;
+    const s2=1-Math.abs(bk.conc-bc.conc)/bc.conc;
+    return Math.round((s1*.6+s2*.4)*100);
+  },
+};
+// 从任意基准 bubble 提取各维度所需字段
+function _bDim(b){return {
+  equity:{sp500_ret:b.sp500_ret_12m,nasdaq_ret:b.nasdaq_ret_12m},
+  earn:{cape:b.cape,pe:b.trailing_pe,conc:b.market_concentration},
+  rates:{t30y:b.t30y,t10y:b.t10y,t5y:b.t5y},
+  dxy:{chg:b.dxy_chg},gold:{chg:b.gold_chg},
+  btc:{chg:b.btc_chg},oil:{chg:b.oil_chg},
+  infl:{cpi:b.cpi,pce:b.pce},
+  corp:{profit_g:b.corp_profit_growth_00,conc:b.market_concentration,debt:b.corp_debt_gdp||b.corp_debt_gdt||65},
+};}
+const BUBBLE_2026_dims=_bDim(BUBBLE_2026);
 
-async function fetchFX(){
-  const m=await emQuote(Object.keys(EM_FX).join(','));
-  const o={};for(const sid in EM_FX){const[k,dec]=EM_FX[sid];const x=m[sid];if(x){o[k]=nf(x.price,dec);o[k+'Change']=x.chg;}}
-  // JPY/CNY is per 100 yen
-  if(o.jpycny){o.jpycny=nf(parseFloat(o.jpycny.replace(/,/g,''))/100,4);}
-  return o;
+// 2008 全球金融危机基准(雷曼倒闭前后: 2007.10 顶部 → 2008.10 底部)
+const BUBBLE_2008={
+  label:'2008 全球金融危机',
+  sp500_ret_12m:-18.0,nasdaq_ret_12m:-22.0,
+  cape:27.5,trailing_pe:22,market_concentration:20,
+  t30y:5.1,t10y:5.0,t5y:5.2,
+  dxy_chg:10,gold_chg:28,btc_chg:null,oil_chg:-56,
+  cpi:3.8,pce:2.3,
+  corp_profit_growth_00:-22,corp_debt_gdp:76,
+};
+// 2020 新冠疫情冲击基准(2020.2 顶部 → 2020.3 底部)
+const BUBBLE_2020={
+  label:'2020 新冠疫情冲击',
+  sp500_ret_12m:5.7,nasdaq_ret_12m:18.0,
+  cape:31.8,trailing_pe:22,market_concentration:27,
+  t30y:2.0,t10y:1.7,t5y:1.4,
+  dxy_chg:1.5,gold_chg:15,btc_chg:-30,oil_chg:-40,
+  cpi:2.3,pce:1.8,
+  corp_profit_growth_00:-24,corp_debt_gdp:78,
+};
+// 2022 激进加息周期基准(2022.1 顶部 → 2022.10 底部)
+const BUBBLE_2022={
+  label:'2022 激进加息周期',
+  sp500_ret_12m:-18.1,nasdaq_ret_12m:-29.0,
+  cape:28.8,trailing_pe:20,market_concentration:28,
+  t30y:4.2,t10y:3.9,t5y:4.1,
+  dxy_chg:10,gold_chg:-1,btc_chg:-63,oil_chg:10,
+  cpi:6.5,pce:5.0,
+  corp_profit_growth_00:5,corp_debt_gdp:72,
+};
+
+// 基准组合权重(用户指定: 2000占80%, 其他合计20%均分)
+const CRISIS_BENCHMARKS=[
+  {id:'2000',label:'2000 互联网泡沫',bubble:BUBBLE_2000,weight:0.8000},
+  {id:'2008',label:'2008 金融危机',bubble:BUBBLE_2008,weight:0.0667},
+  {id:'2020',label:'2020 疫情冲击',bubble:BUBBLE_2020,weight:0.0667},
+  {id:'2022',label:'2022 加息冲击',bubble:BUBBLE_2022,weight:0.0666},
+];
+
+// CW_DIMENSIONS: 每个维度的 calc 现在接收单一基准对象 bk
+const CW_DIMENSIONS=[
+  {dim:'美股走势',icon:'📈',weight:.15,calc:function(bk){return _calcFns.equity(_bDim(bk).equity,BUBBLE_2026_dims.equity);}},
+  {dim:'盈利与估值',icon:'📊',weight:.20,calc:function(bk){return _calcFns.earn(_bDim(bk).earn,BUBBLE_2026_dims.earn);}},
+  {dim:'利率环境',icon:'🏛️',weight:.15,calc:function(bk){return _calcFns.rates(_bDim(bk).rates,BUBBLE_2026_dims.rates);}},
+  {dim:'美元走势',icon:'💵',weight:.08,calc:function(bk){return _calcFns.dxy(_bDim(bk).dxy,BUBBLE_2026_dims.dxy);}},
+  {dim:'黄金走势',icon:'🥇',weight:.10,calc:function(bk){return _calcFns.gold(_bDim(bk).gold,BUBBLE_2026_dims.gold);}},
+  {dim:'BTC走势',icon:'₿',weight:.05,calc:function(bk){return _calcFns.btc();}},
+  {dim:'石油价格',icon:'🛢️',weight:.08,calc:function(bk){return _calcFns.oil(_bDim(bk).oil,BUBBLE_2026_dims.oil);}},
+  {dim:'PCE / CPI',icon:'📉',weight:.08,calc:function(bk){return _calcFns.infl(_bDim(bk).infl,BUBBLE_2026_dims.infl);}},
+  {dim:'企业健康度',icon:'🏢',weight:.11,calc:function(bk){return _calcFns.corp(_bDim(bk).corp,BUBBLE_2026_dims.corp);}},
+];
+// 计算综合相似度
+// 综合相似度: IQR 法剔除偏离过大的异常维度后再加权平均
+// 步骤: 计算各维 sim → 排序取 Q1/Q3 → IQR=Q3-Q1 → 下界=max(Q1-1.5*IQR, 20)
+// 排除 sim<下界 的异常项; 若无离群则强制剔除 sim 最低 1 项; 用剩余维度的权重重新归一化
+// 综合相似度: 多危机基准加权平均(2000 占 80% + 2008/2020/2022 共占 20%)
+// 步骤: 对每个基准计算其 9 维相似度(IQR 剔除异常后加权) → 再按基准权重聚合
+function _calcScoreForBenchmark(bubble){
+  const items=[];
+  CW_DIMENSIONS.forEach(d=>{
+    const sim=d.calc(bubble);
+    if(sim!=null) items.push({sim,w:d.weight,nm:d.dim});
+  });
+  if(!items.length) return {trimmed:0,raw:0,removed:[],kept:0,total:0};
+  const sorted=[...items.map(x=>x.sim)].sort((a,b)=>a-b);
+  const pct=p=>{const i=(sorted.length-1)*p,lo=Math.floor(i),hi=Math.ceil(i);return sorted[lo]+(sorted[hi]-sorted[lo])*(i-lo)};
+  const Q1=pct(0.25),Q3=pct(0.75),IQR=Q3-Q1;
+  const lowerBound=Math.max(Q1-1.5*IQR,20);
+  let kept=items.filter(x=>x.sim>=lowerBound);
+  let removed=items.filter(x=>x.sim<lowerBound);
+  if(!removed.length && items.length>=4){
+    const minSim=Math.min(...items.map(x=>x.sim));
+    kept=items.filter(x=>x.sim!==minSim);
+    removed=items.filter(x=>x.sim===minSim);
+  }
+  const totalW=kept.reduce((a,b)=>a+b.w,0)||1;
+  const trimmed=Math.round(kept.reduce((a,b)=>a+b.sim*b.w,0)/totalW);
+  const raw=Math.round(items.reduce((a,b)=>a+b.sim*b.w,0)/items.reduce((a,b)=>a+b.w,0));
+  return {trimmed,raw,removed:removed.map(x=>x.nm),kept:kept.length,total:items.length};
 }
-async function fetchMarket(){
-  const m=await emQuote(Object.keys(EM_MKT).join(','));
-  const o={};for(const sid in EM_MKT){const[k,dec]=EM_MKT[sid];const x=m[sid];if(x){o[k]=nf(x.price,dec);o[k+'Change']=x.chg;}}
-  // crypto
+function cwCalcScore(){
+  // 主维度: 用 2000 基准, IQR 剔除后写入 d.score 供 renderCrisisWarning 渲染
+  CW_DIMENSIONS.forEach(d=>{d.score=d.calc(BUBBLE_2000);});
+  // 4 个基准各自的 trimmed 相似度
+  const perBench=CRISIS_BENCHMARKS.map(b=>{
+    const r=_calcScoreForBenchmark(b.bubble);
+    return {id:b.id,label:b.label,weight:b.weight,trimmed:r.trimmed,raw:r.raw,removed:r.removed,kept:r.kept,total:r.total};
+  });
+  // 总综合评分: 2000 占 80%, 其他各占 ~6.67%
+  const totalScore=perBench.reduce((a,b)=>a+b.trimmed*b.weight,0);
+  // 暴露给渲染层
+  cwCalcScore._perBench=perBench;
+  const main=perBench.find(p=>p.id==='2000')||perBench[0];
+  cwCalcScore._removed=main.removed;
+  cwCalcScore._kept=main.kept;
+  cwCalcScore._total=main.total;
+  cwCalcScore._raw=main.raw;
+  return Math.round(totalScore);
+}
+const CW_SCORE=cwCalcScore();
+
+// 异常检测: 当前市场哪些表现不符合经济规律
+const CW_ANOMALIES=[
+  {metric:'30Y国债5%+美股新高',signal:'danger',detail:'历史上30Y>4.5%时股市极少创新高。2000年6%时股市见顶后崩盘。当前5%+新高=资金在"赌盈利兑现"，一旦miss将剧烈回调'},
+  {metric:'黄金暴涨73%+股市新高',signal:'danger',detail:'黄金是终极避险资产。当黄金暴涨时同步股市新高，说明"聪明钱"已在对冲。2000年黄金持平=市场无恐惧。当前黄金暴涨=隐性恐惧极高'},
+  {metric:'CPI 3.8%+Fed已降息100bp',signal:'warn',detail:'通胀高于目标+降息=实际利率在走低。短期利好资产价格，但中期加剧通胀黏性。2000年Fed在通胀3.4%时加息至6.5%，当前反向操作增加政策风险'},
+  {metric:'市场集中度39% (Mag7)',signal:'warn',detail:'远超2000年的27%。前7只股票贡献S&P500大部分涨幅。集中度越高，系统性风险越大，一只miss可能拖垮整个指数'},
+  {metric:'CAPE 39.8接近历史极值',signal:'warn',detail:'2000年峰值44.19为历史最高。当前39.8虽略低但仍远超均值(~17)。高CAPE预示未来10年回报将显著低于均值'},
+  {metric:'油价$95+通胀3.8%',signal:'warn',detail:'类似2000年油价翻3倍至$35推动CPI到3.4%。当前油价高位+通胀回升=滞胀风险。AI算力需求推高能源成本是新变量'},
+  {metric:'Mag7盈利增长24%+真实现金流',signal:'safe',detail:'Q1 2026 blended EPS +27.1%(FactSet)。与2000年dot-com企业无盈利形成关键区别。Mag7合计$3000亿+FCF证明AI投资正在产生真实回报。这是当前市场最重要的支撑因素'},
+  {metric:'Fed降息周期(vs 2000加息)',signal:'safe',detail:'与2000年Fed激进加息至6.5%相反，当前处于降息周期(已降100bp至4.375%)。流动性改善通常支撑股市。但降息原因是经济放缓，需关注是否"落后于曲线"'},
+];
+
+// 大师投资策略建议
+const CW_STRATEGIES=[
+  {nm:'德鲁肯米勒',en:'Stanley Druckenmiller',av:'🎯',c:'#FFA726',
+   verdict:'⚠️ 减仓至50%，增持黄金和对冲',verdictC:'#e0a23c',
+   logic:'宏观信号发出"黄色警报"：黄金暴涨73%说明聪明钱在买保险，而股市新高说明散户仍在追涨。30Y 5%的利率环境历史上对股票估值构成压力。但AI盈利是真实的新变量——不像2000年的dot-com幻觉。结论：市场可能还有最后一波上涨，但风险回报已经不对称。保持灵活，准备随时调仓。',
+   alloc:[['黄金/金矿股',30,'#e0a23c'],['短期国债/货币',25,'#5b9bd5'],['AI基础设施精选',20,'#4caf72'],['现金(等待暴跌)',20,'#b9b4ab'],['小型空头对冲',5,'#e05c5c']],
+   ret:'8-12% (含对冲)',risk:'中等'},
+  {nm:'巴菲特',en:'Warren Buffett',av:'🦉',c:'#4FC3F7',
+   verdict:'🛑 持有大量现金(30%+)，不追高',verdictC:'#e05c5c',
+   logic:'CAPE 41.6接近2000年峰值44.19——这是我在60年投资生涯中见过的第二高估值。当前找不到具有"安全边际"的大型收购标的。但Mag7不同于dot-com——它们有真实盈利。我会继续持有优质企业(AAPL)，但绝不在此估值水平加仓。留足现金，等待"别人恐惧"的时刻。',
+   alloc:[['现金+短期国债',35,'#5b9bd5'],['核心持仓(AAPL/保险)',30,'#4caf72'],['分红增长股',20,'#d4af37'],['日本商社(通胀对冲)',15,'#e0a23c']],
+   ret:'5-8% (资本保值优先)',risk:'低'},
+  {nm:'霍华德·马克思',en:'Howard Marks',av:'📝',c:'#66BB6A',
+   verdict:'⚠️ 防御为主，增持优质债券',verdictC:'#e0a23c',
+   logic:'第二层思维：所有人都在说"AI改变一切"，这恰恰是需要谨慎的信号。市场温度计显示"贪婪"而非"恐惧"。30Y国债5%是17年来最高——这意味着无风险收益非常有吸引力，股票的"风险溢价"在收窄。周期不会死亡：当所有人都乐观时，保持保守。',
+   alloc:[['投资级债券(锁定5%收益)',40,'#5b9bd5'],['现金/货币市场',25,'#b9b4ab'],['低估值价值股',20,'#4caf72'],['不良债务机会储备',15,'#e0a23c']],
+   ret:'7-10% (3年期)',risk:'低'},
+  {nm:'彼得·林奇',en:'Peter Lynch',av:'📊',c:'#EF5350',
+   verdict:'✅ 寻找Mag7之外的"十倍股"',verdictC:'#4caf72',
+   logic:'Mag7 P/E 30x但PEG可能>2。关键是在被忽视的领域找PEG<1的好公司。中小型医疗、能源(油价$95利好)、消费必需品中有很多被市场忽略的优质标的。市场集中度39%意味着493只S&P成分股被低估——这是猎场。',
+   alloc:[['中小盘价值(PEG<1)',35,'#4caf72'],['能源板块(受益油价)',20,'#e0a23c'],['消费必需品',20,'#5b9bd5'],['分红增长股',15,'#d4af37'],['现金',10,'#b9b4ab']],
+   ret:'12-18% (选股驱动)',risk:'中高'},
+];
+
+/* ==================== MASTERS ==================== */
+const MASTERS=[
+  {id:'dalio',nm:'瑞·达里欧',en:'Ray Dalio',title:'桥水基金创始人',style:'全天候策略 / 风险平价',tech:'分散化配置信号',cycle:'债务周期定位',av:'🧠',c:'#4FC3F7'},
+  {id:'simons',nm:'吉姆·西蒙斯',en:'Jim Simons',title:'文艺复兴科技创始人',style:'量化模型 / 统计套利',tech:'动量因子信号',cycle:'均值回归时机',av:'🔢',c:'#AB47BC'},
+  {id:'marks',nm:'霍华德·马克思',en:'Howard Marks',title:'橡树资本联合创始人',style:'第二层思维 / 非对称回报',tech:'情绪极端位信号',cycle:'周期当前位置判断',av:'📝',c:'#66BB6A'},
+  {id:'druck',nm:'德鲁肯米勒',en:'Stanley Druckenmiller',title:'杜肯资本创始人',style:'集中押注 / 宏观对冲',tech:'趋势突破追踪',cycle:'政策转向信号',av:'🎯',c:'#FFA726'},
+  {id:'lynch',nm:'彼得·林奇',en:'Peter Lynch',title:'麦哲伦基金传奇经理',style:'成长股筛选 / PEG估值',tech:'基本面突变信号',cycle:'行业轮动周期',av:'📊',c:'#EF5350'},
+  {id:'gross',nm:'比尔·格罗斯',en:'Bill Gross',title:'债券之王 / PIMCO创始人',style:'利率预测 / 债券策略',tech:'收益率曲线信号',cycle:'利率周期拐点',av:'📉',c:'#5C6BC0'},
+  {id:'jones',nm:'保罗·都泽琼斯',en:'Paul Tudor Jones',title:'都铎投资创始人',style:'全球宏观对冲 / 趋势跟踪',tech:'动量+技术形态',cycle:'全球宏观事件驱动',av:'🌐',c:'#26A69A'},
+  {id:'raschke',nm:'琳达·拉施克',en:'Linda Raschke',title:'短线波段大师',style:'短线波段 / 技术分析',tech:'入场/出场信号',cycle:'短周期振荡节奏',av:'⚡',c:'#FFCA28'},
+  {id:'li',nm:'李录',en:'Li Lu',title:'喜马拉雅资本创始人',style:'价值投资 / 中国视角',tech:'安全边际信号',cycle:'中国经济周期定位',av:'🏮',c:'#F44336'},
+  {id:'ackman',nm:'比尔·阿克曼',en:'Bill Ackman',title:'潘兴广场创始人',style:'激进维权 / 集中持仓',tech:'估值洼地信号',cycle:'企业变革周期',av:'🦅',c:'#78909C'},
+];
+
+/* ==================== 大师经典案例 ==================== */
+const MASTER_CASES={
+dalio:{philosophy:'通过"风险平价"原则构建全天候投资组合，将资产配置到不同经济环境中，追求在任何宏观环境下都能获得稳定回报。核心是分散风险而非分散资产，利用杠杆平衡不同资产类别的风险贡献。',cases:[
+{year:2008,name:'Pure Alpha基金逆势盈利',entry:'2007年起通过债务周期模型判断信贷泡沫即将破裂，大幅减持信贷资产，增持国债和黄金',result:'2008年Pure Alpha上涨9.5%，同期标普500下跌37%',lesson:'系统性宏观框架和对债务周期的深刻理解能在危机中保护资本并获利'},
+{year:1996,name:'全天候(All Weather)组合设计',entry:'基于四象限经济环境框架，按风险贡献配置：30%股票、55%长期国债、15%大宗商品和黄金',result:'自1996年年化约7.5%，最大回撤远低于纯股票组合，2008年仅跌约3.9%',lesson:'通过风险平价实现真正分散化，无需预测未来，为所有经济环境做好准备'},
+{year:2011,name:'欧债危机中做空欧洲',entry:'分析欧元区结构性缺陷和债务不可持续性，做空欧洲国债和欧元',result:'2011年Pure Alpha全年约23%回报，远超行业平均',lesson:'政治体制的结构性缺陷如何导致经济危机，宏观基本面分析提供巨大alpha'}]},
+simons:{philosophy:'完全依赖数学模型和统计套利，利用海量历史数据挖掘微小但持续的价格异常模式。高频交易、极短持仓周期、大量分散化头寸，通过概率优势和交易次数的复利实现惊人回报。排除一切人类情绪干预。',cases:[
+{year:1988,name:'Medallion基金创立与早期爆发',entry:'运用隐马尔可夫模型和信号处理技术识别商品期货和外汇市场中的短期价格模式',result:'1988-2018年间Medallion年均毛回报约66%（扣费后约39%），累计回报超$1000亿',lesson:'用科学方法取代直觉判断，将交易视为统计学问题是量化革命的开端'},
+{year:2008,name:'金融危机中逆势暴赚',entry:'模型捕捉市场极端波动中的价格回归和动量信号，在恐慌抛售时执行系统化交易',result:'2008年Medallion回报约80%（扣费前），同期大多数对冲基金亏损超20%',lesson:'纯量化系统在极端行情中表现更好，人类恐慌制造了更多可被模型捕捉的定价错误'},
+{year:2000,name:'互联网泡沫破裂中获利',entry:'模型只捕捉统计异常和价格动量反转，在科技股崩盘中快速切换多空方向',result:'2000年回报98.5%（扣费前），科技泡沫对模型几乎无影响',lesson:'不依赖市场方向判断，从短期价格波动中提取alpha，几乎不受系统性风险影响'}]},
+marks:{philosophy:'在市场极度恐慌时买入被过度抛售的不良债务资产，通过深入信用分析评估真实回收价值。核心是理解市场周期中的钟摆效应——市场总在极度乐观和极度悲观之间摆动，而非停留中间。',cases:[
+{year:2008,name:'金融危机不良债务抄底',entry:'2007年发出著名备忘录警告泡沫，提前准备资金。2008年9月雷曼倒闭后大规模买入被恐慌抛售的公司债，部署$110亿专项基金',result:'部署资金在随后几年获超20%年化回报，Oaktree资管规模从$530亿增至$730亿',lesson:'在恐慌高峰时出手需极大勇气和事先准备，最好的投资机会来自被迫卖出者的损失'},
+{year:2001,name:'安然/世通后的"堕落天使"投资',entry:'互联网泡沫破裂和企业丑闻导致大量投资级债券被降级为垃圾债，市场恐慌性抛售',result:'Oaktree不良债务基金在2001-2003年间实现约30%年化回报',lesson:'信用评级下调往往造成非理性抛售，机构被迫卖出创造巨大价格错位'},
+{year:2020,name:'新冠疫情初期信贷市场抄底',entry:'2020年3月发备忘录呼吁"现在是买入时机"，大规模买入被抛售的公司债和杠杆贷款',result:'2020年Oaktree基金录得30%以上强劲回报',lesson:'真正的逆向投资不是简单的"别人卖我就买"，而是基于对内在价值的深刻理解'}]},
+druck:{philosophy:'自上而下的全球宏观交易，当判断明确时敢于极度集中下注。强调灵活性和快速认错，亏损时立即砍仓，盈利时加大仓位。核心是识别大的宏观经济失衡并在拐点下重注。',cases:[
+{year:1992,name:'做空英镑——"击溃英格兰银行"',entry:'判断英国经济疲软无法维持ERM汇率机制下的高利率，英镑被严重高估。建议将仓位从$15亿加到$100亿',result:'1992年"黑色星期三"英镑被迫退出ERM，单笔交易获利约$10亿',lesson:'宏观基本面与政策承诺严重矛盾时政策必须向现实屈服，关键是识别不对称赌注'},
+{year:1989,name:'做多德国马克——柏林墙倒塌',entry:'柏林墙倒塌当晚判断德国统一将导致大规模财政刺激和货币紧缩，凌晨4点大规模做多马克',result:'德国马克大幅升值，Duquesne和量子基金获利数亿美元',lesson:'对地缘政治事件的经济含义做出快速判断并果断行动，重大历史事件带来最大交易机会'},
+{year:1999,name:'互联网泡沫——由空翻多的惨痛教训',entry:'1999年初做空$2亿科技股后被逼空，反手做多$60亿科技股追涨',result:'2000年泡沫破裂后量子基金亏损约$30亿，被迫离开索罗斯基金',lesson:'即使最优秀的交易者也会因FOMO犯错，违背自己的判断追涨是致命的'}]},
+lynch:{philosophy:'"买你了解的东西"——从日常生活中发现投资机会，用PEG比率筛选被低估的成长股。将股票分为六类（缓慢增长/稳定增长/快速增长/周期股/困境反转/资产隐蔽型），针对每类采用不同策略。',cases:[
+{year:1982,name:'克莱斯勒(Chrysler)困境反转',entry:'濒临破产时（股价约$2），分析获得政府贷款担保、新管理层艾柯卡的改革计划',result:'股价从$2涨至1987年$50+，为Magellan基金贡献巨额利润，涨幅超20倍',lesson:'困境反转股风险高但回报惊人，关键是判断公司是否有足够现金撑过危机'},
+{year:1985,name:'房利美(Fannie Mae)长期持有',entry:'在不被华尔街关注时买入，看好美国住房市场长期增长和抵押贷款证券化中的垄断地位',result:'持有期间股价上涨超10倍，单只股票贡献数亿美元利润',lesson:'最大赢家往往是长期持有的"十倍股"，不要因涨一倍就急于卖出'},
+{year:1977,name:'Dunkin\' Donuts——"买你了解的"典范',entry:'观察到门店永远排长队，产品简单可复制，管理层稳健扩张，估值合理',result:'持续快速扩张，持有期间上涨数倍',lesson:'普通消费者拥有华尔街分析师没有的信息优势——亲身体验产品和服务'}]},
+gross:{philosophy:'开创债券"总回报"策略——不仅赚票息，更通过主动管理久期、信用和收益率曲线形态获取资本利得。核心是对宏观经济周期和央行政策的前瞻性判断，在利率拐点前调整组合久期。',cases:[
+{year:2007,name:'次贷危机前清仓MBS',entry:'2006-2007年判断美国房地产泡沫将破裂，大幅减持次级MBS，增持高质量国债和现金',result:'PIMCO Total Return Fund 2007年回报9.1%，2008年回报4.8%，大幅跑赢同行',lesson:'回避有毒资产比选择好资产更重要，"不亏钱"是复利的第一法则'},
+{year:2011,name:'清仓美国国债——职业生涯最大失误',entry:'判断QE2结束后美债将暴跌，Total Return Fund清仓全部美国国债',result:'2011年美债不跌反涨（欧债危机避险），全年仅4.2%回报，跑输70%同行',lesson:'即使"债券之王"也可能错判宏观，极端押注即使在高信念时也可能出错'},
+{year:1980,name:'开创"总回报"债券投资策略',entry:'利率从20%高位开始下降的历史性拐点，大胆拉长久期，大量买入长期国债',result:'1980-2000年PIMCO Total Return年化超8%，管理规模从$20亿增至$2700亿',lesson:'利率大周期拐点是债券千载难逢的机会，主动管理久期可产生类似股票的超额回报'}]},
+jones:{philosophy:'全球宏观交易结合技术分析，极度重视风险管理。使用200日均线作为趋势判断核心，善于在市场情绪极端时反向操作。追求不对称风险回报比，宁愿错过也不承受大额亏损。',cases:[
+{year:1987,name:'"黑色星期一"做空美股暴赚',entry:'通过研究1929年崩盘前形态，发现1987年市场走势高度相似。在崩盘前建立大规模S&P 500期货空头',result:'1987年10月19日道琼斯暴跌22.6%，Tudor BVI当月获利62%，全年回报125.9%',lesson:'历史虽不简单重复但会押韵，市场结构性脆弱是崩盘前提条件'},
+{year:1990,name:'做空日本股市泡沫',entry:'判断日本资产泡沫不可持续（日经38000点），在日央行加息后做空日经期货',result:'日经从38957跌至23848，跌幅近40%',lesson:'当央行从宽松转向紧缩时泡沫资产最脆弱，等待催化剂再入场'},
+{year:2008,name:'金融危机中的宏观对冲',entry:'早期识别信贷恶化信号，做空金融股和信贷产品，做多国债和黄金',result:'2008年未出现重大亏损（同期标普-37%），成功保护资本',lesson:'严格的风险管理和止损纪律比抓住大行情更重要，"活下来"是最重要的原则'}]},
+raschke:{philosophy:'专注短线波段交易（1-5天），利用动量和均值回归的节奏性切换获利。核心信念是"市场有惯性"——强趋势中的回调是买入机会。强调交易纪律和执行力，好的交易更多关乎过程而非结果。',cases:[
+{year:1992,name:'"圣杯"(Holy Grail)策略系统化',entry:'当ADX>30确认强趋势后，等待价格回调至20日EMA均线附近逢低买入/逢高卖出',result:'在S&P期货和商品市场中持续盈利超20年，成为其最核心交易方法',lesson:'最好的交易策略往往最简单，趋势中的回调提供低风险入场点'},
+{year:1987,name:'从场内做市商转型期货交易',entry:'因受伤无法站立交易，转向S&P 500期货屏幕交易，利用Taylor三日周期法则',result:'成功转型为独立期货交易者，连续多年正回报，被收录于《新市场奇才》',lesson:'交易核心技能是模式识别和纪律执行，不依赖特定市场或方式'},
+{year:2002,name:'LBR Group熊市中保持正收益',entry:'运用开盘区间突破、Turtle Soup反转、动量回调等多种短线策略组合',result:'在2000-2002年熊市中保持正收益，年化约15-20%，最大回撤极低',lesson:'短线交易不依赖市场方向，牛熊市均可盈利，关键是控制每笔交易风险'}]},
+li:{philosophy:'深度价值投资结合对中国经济转型的独特理解，寻找具有巨大竞争优势和成长空间的亚洲企业。受芒格影响深远，强调"能力圈"和"安全边际"，真正的投资机会极少，一生只需抓住几个大机会。',cases:[
+{year:2003,name:'投资比亚迪(BYD)——生涯最大赢家',entry:'深入研究后认为王传福是杰出企业家，比亚迪的电池技术和制造能力被严重低估，以约1港元/股买入',result:'比亚迪股价至今上涨超50倍（5600%+回报），后推荐给芒格和伯克希尔',lesson:'最好的投资来自对企业和企业家的深入了解，要有勇气重仓并有耐心持有十年以上'},
+{year:2003,name:'Timberland——经典价值洼地',entry:'发现账上现金几乎等于市值，品牌价值完全未被市场定价，管理层回购显示内部人信心',result:'股价在随后几年上涨数倍',lesson:'寻找"免费"的商业资产——市值接近净现金时，你在免费获得整个品牌和业务'},
+{year:2018,name:'重仓美光科技(Micron)',entry:'判断存储芯片行业整合后形成寡头垄断，周期性减弱、盈利能力永久提升，市场仍按周期股低估',result:'一度占投资组合超20%，持有期间获可观回报',lesson:'行业结构性变化（完全竞争→寡头垄断）可能导致市场长期错误定价'}]},
+ackman:{philosophy:'集中持有少数优质公司（6-10只），通过积极股东行动推动管理层改革、释放被低估的企业价值。偏好高壁垒的简单商业模式、强大现金流，敢于在公开市场发起激进对抗改变公司治理。',cases:[
+{year:2020,name:'新冠疫情CDS对冲——史诗级交易',entry:'2020年2月以$2700万买入信用违约互换，押注疫情将导致信贷市场崩溃',result:'30天内价值从$2700万飙升至$26亿，回报率接近100倍，随后平仓抄底股市',lesson:'不对称风险回报是交易圣杯——输最多输$2700万，赢可以赢几十亿'},
+{year:2012,name:'加拿大太平洋铁路(CP Rail)激进改革',entry:'以14%持股成为最大股东，公开批评管理层，发起代理权争夺战更换CEO为Hunter Harrison',result:'股价从$60涨至$200+，获利约$26亿',lesson:'"好公司差管理"时积极股东行动最有效，管理层变革可释放巨大价值'},
+{year:2012,name:'做空Herbalife——著名败仗',entry:'以$10亿做空康宝莱，公开指控其为"金字塔骗局"',result:'FTC罚款$2亿但股价未崩，2018年认赔约$5亿',lesson:'做空风险无限，即使判断正确，对手方介入和时间成本也可能导致失败'}]}
+};
+
+/* ==================== 巴菲特股东信知识库 ==================== */
+const BUFFETT_STATS=[
+  {v:'1965–2024',l:'股东信跨度'},{v:'19.9%',l:'年化复合收益'},{v:'5.5万倍',l:'累计回报'},{v:'$9,000亿',l:'伯克希尔市值'},
+];
+const BUFFETT_CONCEPTS=[
+  {t:'护城河 Moat',d:'企业抵御竞争对手的持久结构性优势。真正的护城河来自低成本、品牌、网络效应或转换成本，且能逐年加宽。',q:'我们寻找的是被宽阔、可持续的护城河所保护的经济城堡。'},
+  {t:'内在价值',d:'企业在其余生中所能产生现金流的折现值。它是估值的唯一逻辑标准，却无法精确计算，只能给出区间。',q:'内在价值是一个估计值，而非精确数字；并会随利率与现金流预测变化而调整。'},
+  {t:'安全边际',d:'以远低于内在价值的价格买入，为判断失误和坏运气预留缓冲。这是格雷厄姆传授的投资基石。',q:'用4毛钱买价值1块钱的东西——这就是投资的全部秘密。'},
+  {t:'能力圈',d:'只在自己真正理解的领域投资。圈子大小不重要，清楚边界在哪里才至关重要。',q:'风险来自你不知道自己在做什么。'},
+  {t:'市场先生',d:'把市场拟人化为情绪化的生意伙伴，每天报价。聪明的投资者利用它的报价，而非被它指挥。',q:'市场先生是来服务你的，不是来指导你的。'},
+  {t:'复利',d:'时间与可观回报率的乘积所产生的雪球效应。长长的坡道和厚厚的雪，是财富积累的根本。',q:'人生就像滚雪球，重要的是找到湿的雪和很长的坡。'},
+  {t:'透视盈余',d:'将所持股票按持股比例应享的留存利润计入自身收益，比账面会计利润更能反映真实价值创造。',q:'真正重要的是企业留存收益是否被高效再投资。'},
+  {t:'浮存金 Float',d:'保险业务先收保费后赔付而沉淀的低成本资金，可长期用于投资，是伯克希尔的复利引擎。',q:'浮存金是别人的钱，却能为我们持续创造收益。'},
+  {t:'资本配置',d:'CEO最重要的工作是理性分配现金：再投资、并购、回购或分红，取决于何者每元留存能创造超过一元市值。',q:'留存的每一美元，都应至少创造一美元的市场价值。'},
+  {t:'长期持有',d:'优秀企业的复利需要时间兑现，频繁交易只会让税收和成本侵蚀回报。',q:'我们最喜欢的持有期限是——永远。'},
+  {t:'股票回购',d:'当股价显著低于内在价值时回购，能提升每股内在价值；溢价回购则损害股东。',q:'回购只有在低于内在价值时进行才对继续持有者有利。'},
+  {t:'管理层品质',d:'寻找既能干又诚实、像所有者一样思考的经理人。德行与才干缺一不可。',q:'我们寻找诚实、聪明、充满活力的管理者；若缺第一项，后两项会害死你。'},
+];
+const BUFFETT_COMPANIES=[
+  {n:'See\'s Candies',y:'1972',d:'喜诗糖果——理解品牌定价权与轻资产高ROE的转折点投资。'},
+  {n:'Coca-Cola',y:'1988',d:'可口可乐——全球品牌护城河与永续特许经营权的典范。'},
+  {n:'GEICO',y:'1996',d:'政府雇员保险——低成本直销模式+浮存金引擎，全资收购。'},
+  {n:'American Express',y:'1964',d:'色拉油丑闻危机中逆向重仓，品牌韧性带来巨额回报。'},
+  {n:'Apple',y:'2016',d:'苹果——消费品牌生态+超强用户黏性，成第一大持仓。'},
+  {n:'BNSF',y:'2009',d:'伯灵顿北方铁路——押注美国经济长期增长的重资产基础设施。'},
+  {n:'Bank of America',y:'2011',d:'金融危机后注资优先股，附带认股权证的非对称下注。'},
+  {n:'Washington Post',y:'1973',d:'华盛顿邮报——以远低于资产价值买入的经典安全边际案例。'},
+];
+const BUFFETT_PEOPLE=[
+  {n:'查理·芒格',r:'黄金搭档 / 副主席',d:'推动巴菲特从"捡烟蒂"转向"以合理价格买伟大公司"，强调多元思维模型。'},
+  {n:'本杰明·格雷厄姆',r:'恩师',d:'价值投资之父，《聪明的投资者》作者，传授安全边际与市场先生理念。'},
+  {n:'阿吉特·贾恩',r:'保险业务负责人',d:'掌管再保险，被巴菲特誉为为伯克希尔创造数百亿价值的关键人物。'},
+  {n:'格雷格·阿贝尔',r:'指定接班人',d:'非保险业务副主席，2025年起接任CEO，能源与运营专家。'},
+  {n:'托德·库姆斯 & 泰德·韦施勒',r:'投资经理',d:'管理部分股票组合，被视为新一代投资决策者。'},
+  {n:'B夫人 Rose Blumkin',r:'传奇经营者',d:'内布拉斯加家具城创始人，以极致勤奋与商业直觉成为巴菲特推崇的典范。'},
+];
+const BUFFETT_LETTERS=[
+  {y:1977,r:'+21.9%',k:'首次系统阐述以ROE而非每股收益衡量管理绩效。'},
+  {y:1983,r:'+32.3%',k:'喜诗糖果案例：商誉与品牌的经济价值远超账面。'},
+  {y:1987,r:'+19.5%',k:'提出"市场先生"寓言，黑色星期一后的理性宣言。'},
+  {y:1988,r:'+20.1%',k:'重仓可口可乐，"最爱的持有期是永远"。'},
+  {y:1996,r:'+31.8%',k:'能力圈思想：投资者只需正确评估自己理解的少数公司。'},
+  {y:2002,r:'-3.8%',k:'称金融衍生品为"大规模杀伤性武器"，预警系统性风险。'},
+  {y:2008,r:'-9.6%',k:'金融危机中"别人贪婪我恐惧"，逆向投资高盛与通用电气。'},
+  {y:2017,r:'+21.9%',k:'剖析回购逻辑与现金堆积，强调耐心等待"大象级"机会。'},
+  {y:2021,r:'+29.6%',k:'"永不做空美国"，盛赞美国经济的长期顺风。'},
+  {y:2023,r:'+15.8%',k:'悼念芒格："伯克希尔的总设计师"，回顾60年合伙。'},
+];
+
+/* ==================== 霍华德·马克思备忘录知识库 ==================== */
+const MARKS_PILLARS=[
+  {t:'第一性原理',d:'回到事物本质思考，不被市场叙事和共识裹挟。先问"价格里已经包含了什么预期"。',k:'最危险的事，是相信"这次不一样"。'},
+  {t:'周期认知',d:'万物皆有周期，钟摆从不停在中点。理解我们身处周期何处，比预测未来更重要。',k:'我们无法预测，但可以做好准备。'},
+  {t:'第二层思维',d:'第一层思维人人都有；第二层思维要追问"我的看法与共识有何不同，差异是否已被定价"。',k:'要取得超额收益，你的判断必须既不同于共识，又被证明是对的。'},
+  {t:'非对称回报',d:'优秀投资者的标志是下跌时损失少、上涨时收益不打折——用控制风险换取不对称收益。',k:'投资的成功不在于买好东西，而在于买得好。'},
+];
+const MARKS_KEYWORDS=['周期定位','钟摆理论','风险控制','第二层思维','逆向投资','安全边际','市场情绪','信贷周期','非对称回报','均值回归','泡沫识别','防御性投资','耐心资本','价格 vs 价值','极端心理','流动性','收益率追逐','不确定性','概率思维','可知与不可知'];
+const MARKS_MEMOS=[
+  {y:2000,t:'bubble.com',s:'科网泡沫顶点前夕，警示估值脱离现实、"新经济"叙事掩盖风险。'},
+  {y:2007,t:'The Race to the Bottom',s:'信贷狂热中投资者为追逐收益不断放松标准，预警次贷危机临近。'},
+  {y:2008,t:'The Limits to Negativism',s:'危机最深处反思过度悲观的代价，提出敢于在恐慌中买入。'},
+  {y:2011,t:'How Quickly They Forget',s:'危机记忆消退之快令人担忧，风险偏好重新抬头。'},
+  {y:2018,t:'The Seven Worst Words',s:'"太多钱追逐太少交易"——流动性过剩催生风险定价扭曲。'},
+  {y:2020,t:'Nobody Knows II',s:'新冠冲击下重申不可知论，强调在不确定中保持理性与行动力。'},
+  {y:2022,t:'Sea Change',s:'判断利率长期低位时代结束，"沧海桑田"式的环境转变正在发生。'},
+  {y:2023,t:'Taking the Temperature',s:'如何为市场情绪"量体温"，识别贪婪与恐惧的极端读数。'},
+  {y:2024,t:'The Folly of Certainty',s:'确定性的愚蠢——在复杂系统中，自信的预测往往是危险的。'},
+];
+const MARKS_ERAS=[
+  {y:'1968–1980',t:'通胀与漂亮50',d:'高通胀侵蚀回报，"漂亮50"泡沫破裂的早期教训。'},
+  {y:'1980–2000',t:'利率长牛',d:'通胀见顶后的利率下行大周期，资产价格普涨。'},
+  {y:'2000–2009',t:'两次泡沫',d:'科网与房地产次贷，连续两轮泡沫与崩塌。'},
+  {y:'2009–2021',t:'零利率时代',d:'量化宽松与超低利率推动风险资产长期繁荣。'},
+  {y:'2022–今',t:'沧海桑田',d:'利率中枢上移，从"涨潮托举所有船"转向甄别能力定胜负。'},
+];
+
+/* ==================== SCENARIOS ==================== */
+const SCENARIOS=[
+  {type:'optimistic',lbl:'乐观情景',prob:20,c:'#4caf72',sum:'AI革命加速 + 全球合作深化 → 新黄金十年',desc:'AI/AGI/量子计算/核聚变突破驱动全要素生产率大幅提升，中美达成阶段性贸易和解，全球供应链高效重组完成，新兴市场持续增长，通胀回归2%目标。',driv:['AGI 2028-2030实现，生产力飞跃','中美贸易协议(关税降至10%以下)','全球绿色能源转型加速','新兴市场人口红利释放','核聚变商业化2032+'],sp500:[10,15]},
+  {type:'neutral',lbl:'中性情景',prob:55,c:'#e0a23c',sum:'渐进式AI渗透 + 有限脱钩 → 缓慢增长',desc:'AI持续渗透但增速温和，中美维持竞争性共存，供应链区域化重组缓慢推进，通胀略高于目标，利率中枢下移但不会回到零利率。',driv:['AI提升效率但未引发革命','中美斗而不破, 选择性脱钩','全球GDP增速2.5-3.0%','供应链区域化: 近岸+友岸外包','利率中枢3-4%, 通胀2.5-3.0%'],sp500:[6,9]},
+  {type:'pessimistic',lbl:'悲观情景',prob:25,c:'#e05c5c',sum:'AI泡沫破裂 + 地缘冲突升级 → 全球衰退',desc:'AI商业化不及预期引发估值泡沫破裂，中美贸易战全面升级(关税>60%)，台海/南海地缘冲突，全球供应链断裂，滞胀困境。',driv:['AI商业化泡沫2027破裂','中美全面脱钩, 关税>60%','台海危机 / 南海冲突升级','全球滞胀: 高通胀+低增长','能源价格冲击(石油>$120)'],sp500:[3,-5]},
+];
+
+/* ==================== G2 CAMPS ==================== */
+const CAMPS=[
+  {type:'eastern',lbl:'东方阵营',en:'Eastern Bloc',c:'#e05c5c',gdp:21.7,pop:19.7,
+   chars:['以中国为核心的经济-安全网络','人民币国际化加速推进','一带一路基础设施纽带','技术自主可控路线'],
+   dyn:'内部凝聚力依赖中国经济吸引力，但各国对过度依赖中国存警惕。俄罗斯能源+中国制造形成互补。',
+   flags:['🇨🇳','🇷🇺','🇮🇷','🇵🇰','🇲🇲','🇰🇵','🇻🇪']},
+  {type:'bridge',lbl:'桥梁国家',en:'Bridge Nations',c:'#e0a23c',gdp:14.3,pop:25.1,
+   chars:['东西方双向贸易受益者','拒绝选边站队','近岸/友岸外包最大赢家','多极化外交获利者'],
+   dyn:'印度追求战略自主，沙特推动去美元化，墨西哥/越南承接供应链转移。桥梁国整体GDP增速最快。',
+   flags:['🇮🇳','🇧🇷','🇸🇦','🇦🇪','🇮🇩','🇹🇷','🇲🇽','🇻🇳','🇿🇦','🇹🇭']},
+  {type:'western',lbl:'西方阵营',en:'Western Alliance',c:'#5b9bd5',gdp:50.2,pop:7.0,
+   chars:['美国领导的技术-军事联盟','芯片联盟(Chip4)技术封锁','价值观外交+安全承诺','对华去风险化(非完全脱钩)'],
+   dyn:'内部存在分歧: 欧盟倾向战略自主，日韩安全依赖美国但经济依赖中国。技术封锁效果取决于ASML/TSMC配合度。',
+   flags:['🇺🇸','🇯🇵','🇩🇪','🇬🇧','🇰🇷','🇦🇺','🏳️','🇨🇦','🇳🇱','🇮🇱']},
+];
+const TRADE_FLOWS=['🔄 中国-东盟贸易额超越中美(2024起)','📈 印度GDP年增速6-7%，2030年前超日本','🏭 越南/墨西哥承接中国制造业转移加速','🛢️ 沙特对华石油人民币结算占比升至30%','💾 半导体供应链: 台湾先进制程+日韩存储+美欧设备','🌏 金砖国家扩容: GDP总量(PPP)超G7'];
+const TECH_AREAS=['🔒 先进半导体(<7nm): 西方封锁 vs 中国自研','🔒 AI大模型: 美国领先 vs 中国追赶','🔒 量子计算: 早期脱钩中','🔓 新能源(光伏/电池/EV): 中国领先','🔓 5G/6G: 华为 vs 爱立信/诺基亚','🔓 稀土加工: 中国垄断(>80%)'];
+
+// 23国经济数据: GDP(十亿美元2024), 增速(2024 YoY%), 人均GDP(美元), 人口(百万)
+const COUNTRY_ECON={
+  CN:{name:'中国',gdp:18530,growth:5.0,gdppc:13140,pop:1412},
+  RU:{name:'俄罗斯',gdp:2020,growth:3.6,gdppc:13820,pop:146},
+  IR:{name:'伊朗',gdp:404,growth:5.4,gdppc:4670,pop:87},
+  PK:{name:'巴基斯坦',gdp:375,growth:2.5,gdppc:1580,pop:237},
+  MM:{name:'缅甸',gdp:64,growth:1.0,gdppc:1170,pop:55},
+  KP:{name:'朝鲜',gdp:18,growth:0.5,gdppc:700,pop:26},
+  VE:{name:'委内瑞拉',gdp:95,growth:4.0,gdppc:3310,pop:29},
+  IN:{name:'印度',gdp:3940,growth:6.8,gdppc:2730,pop:1442},
+  BR:{name:'巴西',gdp:2170,growth:2.9,gdppc:10100,pop:215},
+  SA:{name:'沙特阿拉伯',gdp:1065,growth:1.3,gdppc:29600,pop:36},
+  AE:{name:'阿联酋',gdp:509,growth:3.5,gdppc:50600,pop:10},
+  ID:{name:'印度尼西亚',gdp:1400,growth:5.1,gdppc:4920,pop:284},
+  TR:{name:'土耳其',gdp:1110,growth:3.2,gdppc:12980,pop:86},
+  MX:{name:'墨西哥',gdp:1790,growth:3.2,gdppc:13600,pop:131},
+  VN:{name:'越南',gdp:450,growth:6.5,gdppc:4470,pop:101},
+  ZA:{name:'南非',gdp:405,growth:0.7,gdppc:6580,pop:62},
+  TH:{name:'泰国',gdp:520,growth:2.8,gdppc:7230,pop:72},
+  US:{name:'美国',gdp:28780,growth:2.8,gdppc:85370,pop:337},
+  JP:{name:'日本',gdp:4230,growth:0.3,gdppc:33950,pop:125},
+  DE:{name:'德国',gdp:4590,growth:0.0,gdppc:54370,pop:84},
+  GB:{name:'英国',gdp:3500,growth:0.4,gdppc:51080,pop:68},
+  KR:{name:'韩国',gdp:1710,growth:2.2,gdppc:33150,pop:52},
+  AU:{name:'澳大利亚',gdp:1790,growth:1.5,gdppc:67500,pop:27},
+  TW:{name:'台湾',gdp:790,growth:3.9,gdppc:33400,pop:24},
+  CA:{name:'加拿大',gdp:2140,growth:1.3,gdppc:54810,pop:39},
+  NL:{name:'荷兰',gdp:1090,growth:0.6,gdppc:61870,pop:18},
+  IL:{name:'以色列',gdp:530,growth:2.0,gdppc:55360,pop:10},
+};
+// 旗帜→ISO码映射
+const FLAG_ISO={'🇨🇳':'CN','🇷🇺':'RU','🇮🇷':'IR','🇵🇰':'PK','🇲🇲':'MM','🇰🇵':'KP','🇻🇪':'VE','🇮🇳':'IN','🇧🇷':'BR','🇸🇦':'SA','🇦🇪':'AE','🇮🇩':'ID','🇹🇷':'TR','🇲🇽':'MX','🇻🇳':'VN','🇿🇦':'ZA','🇹🇭':'TH','🇺🇸':'US','🇯🇵':'JP','🇩🇪':'DE','🇬🇧':'GB','🇰🇷':'KR','🇦🇺':'AU','🏳️':'TW','🇨🇦':'CA','🇳🇱':'NL','🇮🇱':'IL'};
+// 阵营配色映射
+const CAMP_COLOR={};
+CAMPS.forEach(c=>c.flags.forEach(f=>{const iso=FLAG_ISO[f];if(iso)CAMP_COLOR[iso]=c.type;}));
+const CAMP_FILL={eastern:'rgba(224,92,92,.4)',bridge:'rgba(76,175,114,.4)',western:'rgba(91,155,213,.4)'};
+const CAMP_STROKE={eastern:'#e05c5c',bridge:'#4caf72',western:'#5b9bd5'};
+
+/* ==================== DATA FETCH (全实时, 无离线回退) ====================
+   全部行情 → 东方财富 push2 公开接口(浏览器直连CORS, 国内可访问)
+   加密货币 → OKX(国内可访问) → Binance 公共数据(备用)
+   取数失败 → 抛错, 由 loadAll 显示加载/错误状态(绝不展示假数据)            */
+
+// 东方财富批量行情: secids 用逗号分隔, 返回 {secid: {price, chg(%), name}}
+// 中国大陆浏览器直连, CORS Access-Control-Allow-Origin: *
+// ===== 缓存层: 减少重复请求 =====
+const _cache=new Map(); // key → {data, ts}
+function cacheGet(key,ttlMs){const e=_cache.get(key);if(e&&Date.now()-e.ts<ttlMs)return e.data;return null;}
+function cacheSet(key,data){_cache.set(key,{data,ts:Date.now()});}
+
+// ===== JSONP 加载: 通过<script>标签加载东方财富, 完全绕过CORS限制 =====
+// 东方财富 push2 原生支持 cb=回调函数名 JSONP 模式, 国内浏览器最稳定
+function _emJSONP(url){
+  return new Promise((resolve,reject)=>{
+    const cbName='__emcb_'+Date.now()+'_'+Math.random().toString(36).slice(2,8);
+    const sep=url.includes('?')?'&':'?';
+    const fullUrl=url+sep+'cb='+cbName;
+    const script=document.createElement('script');
+    let done=false;
+    const cleanup=()=>{
+      done=true;
+      try{delete window[cbName];}catch(e){window[cbName]=undefined;}
+      if(script.parentNode)script.parentNode.removeChild(script);
+      clearTimeout(t);
+    };
+    const t=setTimeout(()=>{if(!done){cleanup();reject(new Error('JSONP timeout'));}},FETCH_TIMEOUT);
+    window[cbName]=(data)=>{if(!done){cleanup();resolve(data);}};
+    script.onerror=()=>{if(!done){cleanup();reject(new Error('JSONP script load error'));}};
+    script.src=fullUrl;
+    (document.head||document.documentElement).appendChild(script);
+  });
+}
+
+// ===== fetch 后备: 部分场景JSONP被屏蔽时使用 =====
+async function _emFetchOnce(url){
+  const ctrl=new AbortController(); const t=setTimeout(()=>ctrl.abort(),FETCH_TIMEOUT);
   try{
-    const arr=await fetch('https://data-api.binance.vision/api/v3/ticker/24hr?symbols=%5B%22BTCUSDT%22%2C%22ETHUSDT%22%5D').then(r=>r.json());
-    arr.forEach(x=>{if(x.symbol==='BTCUSDT'){o.btcPrice=nf(+x.lastPrice,0);o.btcChange=+x.priceChangePercent}if(x.symbol==='ETHUSDT'){o.eth=nf(+x.lastPrice,0);o.ethChange=+x.priceChangePercent}});
+    const r=await fetch(url,{signal:ctrl.signal,cache:'no-store',mode:'cors'});
+    if(!r.ok) throw new Error('HTTP '+r.status);
+    return await r.json();
+  } finally { clearTimeout(t); }
+}
+
+// 双通道竞速: JSONP 优先(无CORS限制) + fetch 兜底
+async function _emFetchRace(directUrl){
+  return await Promise.any([
+    _emJSONP(directUrl),
+    new Promise(r=>setTimeout(r,300)).then(()=>_emFetchOnce(directUrl)),
+  ]).catch(agg=>{
+    // 全部失败, 抛第一个错误
+    throw agg.errors?agg.errors[0]:agg;
+  });
+}
+async function emQuote(secids){
+  const ck='eq_'+secids.slice(0,60);
+  const cached=cacheGet(ck,20000); // 20s缓存
+  if(cached)return cached;
+  const baseUrl=`${EM_BASE}?fltt=2&fields=f12,f13,f14,f2,f3&secids=${secids}&_=${Date.now()}`;
+  const j=await _emFetchRace(baseUrl);
+  const diff=(j.data&&j.data.diff)||[];
+  if(!diff.length) throw new Error('东方财富返回空数据');
+  const m={};
+  diff.forEach(x=>{ m[x.f13+'.'+x.f12]={
+    price:(x.f2!=null&&x.f2!=='-')?Number(x.f2):null,
+    chg:(x.f3!=null&&x.f3!=='-')?Number(x.f3):null,
+    name:x.f14 }; });
+  cacheSet(ck,m);
+  return m;
+}
+
+// 外汇/人民币/美元指数 → 东方财富
+// 人民币四对: 以实时离岸人民币(133.USDCNH, 7×24实时报价)为锚, 用实时交叉汇率换算,
+// 比"央行中间价"(每日仅更新一次)更顺畅、更贴近盘面真实价格
+const FX_SECIDS='100.UDI,133.USDCNH,119.EURUSD,119.GBPUSD,119.USDJPY';
+async function fetchFX(){
+  const m=await emQuote(FX_SECIDS);
+  const P=sid=>{const x=m[sid]; return (x&&x.price!=null)?Number(x.price):null;};
+  const C=sid=>{const x=m[sid]; return (x&&x.chg!=null)?Number(x.chg):null;};
+  const usdcnh=P('133.USDCNH'), eurusd=P('119.EURUSD'), gbpusd=P('119.GBPUSD'), usdjpy=P('119.USDJPY');
+  const cnhC=C('133.USDCNH')||0, euC=C('119.EURUSD')||0, gbC=C('119.GBPUSD')||0, jpC=C('119.USDJPY')||0;
+  // 交叉换算: EUR/CNY=EURUSD×USDCNH; JPY/CNY=USDCNH/USDJPY; GBP/CNY=GBPUSD×USDCNH
+  const eurcny=(usdcnh!=null&&eurusd!=null)?eurusd*usdcnh:null;
+  const jpycny=(usdcnh!=null&&usdjpy!=null)?usdcnh/usdjpy:null;
+  const gbpcny=(usdcnh!=null&&gbpusd!=null)?gbpusd*usdcnh:null;
+  return {
+    fxDate: new Date().toLocaleString('zh-CN',{hour:'2-digit',minute:'2-digit'})+' 实时',
+    usdcny:usdcnh!=null?nf(usdcnh,4):null, usdcnyChange:C('133.USDCNH'),
+    eurcny:eurcny!=null?nf(eurcny,4):null, eurcnyChange:+(euC+cnhC).toFixed(2),
+    jpycny:jpycny!=null?nf(jpycny,4):null, jpycnyChange:+(cnhC-jpC).toFixed(2),
+    gbpcny:gbpcny!=null?nf(gbpcny,4):null, gbpcnyChange:+(gbC+cnhC).toFixed(2),
+    eurusd:eurusd!=null?nf(eurusd,4):null, eurusdChange:C('119.EURUSD'),
+    gbpusd:gbpusd!=null?nf(gbpusd,4):null, gbpusdChange:C('119.GBPUSD'),
+    usdjpy:usdjpy!=null?nf(usdjpy,2):null, usdjpyChange:C('119.USDJPY'),
+    dxyIndex:P('100.UDI')!=null?nf(P('100.UDI'),2):null, dxyChange:C('100.UDI'),
+  };
+}
+
+// 加密货币 BTC/ETH: OKX(国内可访问) 优先 → Binance 公共数据备用 → 失败则留空
+function fetchJSONq(url,ms){
+  const ctrl=new AbortController(); const t=setTimeout(()=>ctrl.abort(),ms);
+  return fetch(url,{signal:ctrl.signal}).then(r=>{clearTimeout(t);if(!r.ok)throw new Error('HTTP '+r.status);return r.json();},e=>{clearTimeout(t);throw e;});
+}
+async function fetchCrypto(){
+  const ck='crypto';
+  const cached=cacheGet(ck,30000); // 30s缓存
+  if(cached)return cached;
+  const o={};
+  // 竞速: OKX + Binance Vision 同时请求, 取最快
+  const okxP=(async()=>{
+    const [b,e]=await Promise.all([
+      fetchJSONq('https://www.okx.com/api/v5/market/ticker?instId=BTC-USDT',4000),
+      fetchJSONq('https://www.okx.com/api/v5/market/ticker?instId=ETH-USDT',4000),
+    ]);
+    const pb=b.data&&b.data[0], pe=e.data&&e.data[0];
+    if(!pb||!pe)throw new Error('OKX empty');
+    return {btcPrice:nf(+pb.last,0),btcChange:pct(+pb.last,+pb.open24h),eth:nf(+pe.last,0),ethChange:pct(+pe.last,+pe.open24h)};
+  })();
+  const binP=(async()=>{
+    await new Promise(r=>setTimeout(r,300)); // 给OKX 300ms优先窗口
+    const arr=await fetchJSONq('https://data-api.binance.vision/api/v3/ticker/24hr?symbols=%5B%22BTCUSDT%22%2C%22ETHUSDT%22%5D',5000);
+    const r={};
+    arr.forEach(x=>{
+      if(x.symbol==='BTCUSDT'){r.btcPrice=nf(+x.lastPrice,0);r.btcChange=Number(x.priceChangePercent);}
+      if(x.symbol==='ETHUSDT'){r.eth=nf(+x.lastPrice,0);r.ethChange=Number(x.priceChangePercent);}
+    });
+    if(!r.btcPrice)throw new Error('Binance empty');
+    return r;
+  })();
+  try{
+    const result=await Promise.any([okxP,binP]);
+    Object.assign(o,result);
+    cacheSet(ck,o);
   }catch(e){}
   return o;
 }
-async function fetchUniverse(){
-  const ck='univ';const cached=cacheGet(ck,25000);if(cached)return cached;
-  const m=await emQuote(ALL_STK.map(x=>x[0]).join(','));
-  const conv=list=>list.map(([sid,id,name])=>{const x=m[sid];return{id,name,price:x?x.price:null,changePct:x?x.chg:null,secid:sid}});
-  const r={us:conv(US_LIST),hk:conv(HK_LIST),cn:conv(CN_LIST)};cacheSet(ck,r);return r;
-}
-async function fetchKline(secid,days){
-  const ck='kl_'+secid;const cached=cacheGet(ck,300000);if(cached)return cached;
-  const url=`https://push2his.eastmoney.com/api/qt/stock/kline/get?secid=${secid}&fields1=f1,f2,f3,f4,f5,f6&fields2=f51,f52,f53,f54,f55,f56,f57&klt=101&fqt=1&end=20500101&lmt=${days||120}&_=${Date.now()}`;
-  try{const j=await fetch(url).then(r=>r.json());const kl=j.data&&j.data.klines;if(!kl||!kl.length)return[];
-  const r=kl.map(k=>{const p=k.split(',');return{date:p[0],open:+p[1],close:+p[2],high:+p[3],low:+p[4],vol:+p[5]}});cacheSet(ck,r);return r;}catch(e){return[];}
-}
-async function fetchFundamentals(secid){
-  const ck='fund_'+secid;const cached=cacheGet(ck,300000);if(cached)return cached;
-  const url=`https://push2.eastmoney.com/api/qt/stock/get?secid=${secid}&fields=f57,f58,f162,f163,f167,f173,f116,f117,f127,f183,f186&_=${Date.now()}`;
-  try{const j=await fetch(url).then(r=>r.json());const d=j.data;if(!d||!d.f57)return null;
-  const r={code:d.f57,name:d.f58,pe:d.f163!=null&&d.f163!=='-'?+(+d.f163/100).toFixed(2):null,pb:d.f167!=null&&d.f167!=='-'?+(+d.f167/100).toFixed(2):null,roe:d.f173!=null&&d.f173!=='-'?+(+d.f173/100).toFixed(2):null,mktCap:d.f116!=null&&d.f116!=='-'?d.f116:null};cacheSet(ck,r);return r;}catch(e){return null;}
+
+// 股指/商品 → 东方财富; 加密 → fetchCrypto. secid → [显示变量, 涨跌变量, 小数位]
+const EM_MKT={
+  '100.SPX'  :['sp500','sp500Change',2],   '100.NDX' :['nasdaq','nasdaqChange',2],
+  '100.DJIA' :['dow','dowChange',2],        '101.GC00Y':['goldPrice','goldChange',2],
+  '101.SI00Y':['silver','silverChange',2],  '102.CL00Y':['oil','oilChange',2],
+  '102.NG00Y':['natgas','natgasChange',3],
+};
+async function fetchMarket(){
+  const m=await emQuote(Object.keys(EM_MKT).join(','));
+  const o={};
+  for(const sid in EM_MKT){
+    const [vk,ck,dec]=EM_MKT[sid]; const x=m[sid];
+    if(x&&x.price!=null){ o[vk]=nf(x.price,dec); o[ck]=x.chg; }
+  }
+  try{ Object.assign(o, await fetchCrypto()); }catch(e){}
+  return o;
 }
 
-/* ===== RENDER: DASHBOARD ===== */
+/* ==================== STOCKS (个股分析) ==================== */
+// 全实时: 美股/港股/A股 → 东方财富(浏览器直连CORS). [secid, 显示代码, 显示名称]
+const US_LIST=[
+  ['105.AAPL','AAPL','苹果'],   ['105.MSFT','MSFT','微软'],     ['105.GOOGL','GOOGL','谷歌'],
+  ['105.AMZN','AMZN','亚马逊'], ['105.NVDA','NVDA','英伟达'],   ['105.META','META','Meta'],
+  ['105.TSLA','TSLA','特斯拉'], ['105.TQQQ','TQQQ','3倍做多纳指'],['105.SQQQ','SQQQ','3倍做空纳指'],
+  ['106.CRCL','CRCL','Circle'],['106.BABA','BABA','阿里巴巴'], ['105.JD','JD','京东'],
+  ['105.PDD','PDD','拼多多'],   ['106.TME','TME','腾讯音乐'],   ['105.NTES','NTES','网易'],
+  ['105.MU','MU','美光科技'],   ['107.DBA','DBA','农产品ETF'],  ['105.TCOM','TCOM','携程'],
+];
+const HK_LIST=[
+  ['116.00700','0700','腾讯控股'],   ['116.09988','9988','阿里巴巴-W'], ['116.03690','3690','美团-W'],
+  ['116.09992','9992','泡泡玛特'],   ['116.01810','1810','小米集团-W'], ['116.01211','1211','比亚迪股份'],
+  ['116.02800','2800','盈富基金'],   ['116.09999','9999','网易-S'],     ['116.02611','2611','国泰海通'],
+  ['116.00883','0883','中国海洋石油'],['116.09899','9899','网易云音乐'],
+];
+const CN_LIST=[
+  ['1.000001','SH','上证指数'],   ['1.000300','HS300','沪深300'],   ['1.510310','510310','沪深300ETF'],
+  ['1.561380','561380','电网设备ETF'],['0.159827','159827','农业ETF'],
+];
+const COMMOD_LIST=[
+  ['102.CL00Y','WTI','WTI原油'],
+  ['122.XAU','XAU','伦敦金现(黄金)'],
+];
+const BOND_US_LIST=[
+  ['171.US2Y','US2Y','美国2年期国债'],['171.US5Y','US5Y','美国5年期国债'],
+  ['171.US10Y','US10Y','美国10年期国债'],['171.US30Y','US30Y','美国30年期国债'],
+];
+const BOND_CN_LIST=[
+  ['171.CN2Y','CN2Y','中国2年期国债'],['171.CN5Y','CN5Y','中国5年期国债'],
+  ['171.CN10Y','CN10Y','中国10年期国债'],['171.CN30Y','CN30Y','中国30年期国债'],
+];
+const BOND_JP_LIST=[
+  ['171.JP2Y','JP2Y','日本2年期国债'],['171.JP5Y','JP5Y','日本5年期国债'],
+  ['171.JP10Y','JP10Y','日本10年期国债'],['171.JP30Y','JP30Y','日本30年期国债'],
+];
+const ALL_STOCKS=[...US_LIST,...HK_LIST,...CN_LIST,...COMMOD_LIST,...BOND_US_LIST,...BOND_CN_LIST,...BOND_JP_LIST];
+// secid → 列表项的快查
+const STOCK_MAP={};ALL_STOCKS.forEach(x=>STOCK_MAP[x[0]]=x);
+
+async function fetchUniverse(){
+  const ck='universe';
+  const cached=cacheGet(ck,25000); // 25s缓存(列表频繁刷新不必要)
+  if(cached)return cached;
+  const all=[...US_LIST,...HK_LIST,...CN_LIST,...COMMOD_LIST,...BOND_US_LIST,...BOND_CN_LIST,...BOND_JP_LIST];
+  const m=await emQuote(all.map(x=>x[0]).join(','));
+  const conv=list=>list.map(([sid,id,name])=>{
+    const x=m[sid];
+    return {id, name, price:x?x.price:null, changePct:x?x.chg:null, secid:sid};
+  });
+  const result={us:conv(US_LIST), hk:conv(HK_LIST), cn:conv(CN_LIST), commod:conv(COMMOD_LIST), bondUS:conv(BOND_US_LIST), bondCN:conv(BOND_CN_LIST), bondJP:conv(BOND_JP_LIST), asOf:Date.now()};
+  cacheSet(ck,result);
+  return result;
+}
+
+// ===== K线历史(东方财富 push2his, 120日日K, 带缓存+竞速) =====
+async function fetchKline(secid,days){
+  const ck='kl_'+secid+'_'+(days||120);
+  const cached=cacheGet(ck,300000); // 5分钟缓存
+  if(cached)return cached;
+  const url=`https://push2his.eastmoney.com/api/qt/stock/kline/get?secid=${secid}&fields1=f1,f2,f3,f4,f5,f6&fields2=f51,f52,f53,f54,f55,f56,f57&klt=101&fqt=1&end=20500101&lmt=${days||120}&_=${Date.now()}`;
+  try{
+    const j=await _emFetchRace(url);
+    const klines=j.data&&j.data.klines;
+    if(!klines||!klines.length)return[];
+    const result=klines.map(k=>{const p=k.split(',');return{date:p[0],open:+p[1],close:+p[2],high:+p[3],low:+p[4],vol:+p[5],amt:+p[6]};});
+    cacheSet(ck,result);
+    return result;
+  }catch(e){
+    console.warn('K线获取失败',secid,e.message||e);
+    return[];
+  }
+}
+
+// ===== 基本面(东方财富 push2 个股详情, 带缓存+竞速) =====
+async function fetchFundamentals(secid){
+  const ck='fund_'+secid;
+  const cached=cacheGet(ck,300000); // 5分钟缓存
+  if(cached)return cached;
+  const url=`https://push2.eastmoney.com/api/qt/stock/get?secid=${secid}&fields=f57,f58,f162,f163,f167,f173,f116,f117,f127,f183,f186&_=${Date.now()}`;
+  try{
+    const j=await _emFetchRace(url);
+    const d=j.data;if(!d||!d.f57)return null;
+    const result={
+      code:d.f57, name:d.f58, industry:d.f127||'—',
+      pe:d.f163!=null&&d.f163!=='-'?+(+d.f163/100).toFixed(2):null,
+      pb:d.f167!=null&&d.f167!=='-'?+(+d.f167/100).toFixed(2):null,
+      roe:d.f173!=null&&d.f173!=='-'?+(+d.f173/100).toFixed(2):null,
+      mktCap:d.f116!=null&&d.f116!=='-'?d.f116:null,
+      revenue:d.f183!=null&&d.f183!=='-'?d.f183:null,
+      eps:d.f186!=null&&d.f186!=='-'?+(+d.f186/100).toFixed(2):null,
+    };
+    cacheSet(ck,result);
+    return result;
+  }catch(e){
+    console.warn('基本面获取失败',secid,e.message||e);
+    return null;
+  }
+}
+
+// ===== 技术指标计算 =====
+function calcMA(data,period){
+  return data.map((_,i)=>{if(i<period-1)return null;let s=0;for(let j=i-period+1;j<=i;j++)s+=data[j].close;return+(s/period).toFixed(2);});
+}
+function calcRSI(data,period){
+  const rsi=new Array(data.length).fill(null);
+  if(data.length<=period)return rsi;
+  let gainAvg=0,lossAvg=0;
+  for(let i=1;i<=period;i++){const d=data[i].close-data[i-1].close;if(d>0)gainAvg+=d;else lossAvg-=d;}
+  gainAvg/=period;lossAvg/=period;
+  rsi[period]=lossAvg===0?100:+(100-100/(1+gainAvg/lossAvg)).toFixed(1);
+  for(let i=period+1;i<data.length;i++){
+    const d=data[i].close-data[i-1].close;
+    gainAvg=(gainAvg*(period-1)+Math.max(d,0))/period;
+    lossAvg=(lossAvg*(period-1)+Math.max(-d,0))/period;
+    rsi[i]=lossAvg===0?100:+(100-100/(1+gainAvg/lossAvg)).toFixed(1);
+  }
+  return rsi;
+}
+function calcMACD(data){
+  const ema=(arr,p)=>{const r=[arr[0]];const k=2/(p+1);for(let i=1;i<arr.length;i++)r.push(arr[i]*k+r[i-1]*(1-k));return r;};
+  const closes=data.map(d=>d.close);
+  const e12=ema(closes,12),e26=ema(closes,26);
+  const dif=e12.map((v,i)=>+(v-e26[i]).toFixed(3));
+  const dea=ema(dif,9);
+  const hist=dif.map((v,i)=>+((v-dea[i])*2).toFixed(3));
+  return{dif,dea,hist};
+}
+function calcBoll(data,period,mult){
+  return data.map((_,i)=>{
+    if(i<period-1)return{mid:null,upper:null,lower:null};
+    let s=0,ss=0;for(let j=i-period+1;j<=i;j++){s+=data[j].close;ss+=data[j].close**2;}
+    const avg=s/period,std=Math.sqrt(ss/period-avg*avg);
+    return{mid:+avg.toFixed(2),upper:+(avg+mult*std).toFixed(2),lower:+(avg-mult*std).toFixed(2)};
+  });
+}
+
+// ===== 斐波那契回撤计算 =====
+function calcFibonacci(data){
+  // 找120日内最高点和最低点
+  const n=data.length;if(n<20)return null;
+  let highIdx=0,lowIdx=0;
+  for(let i=0;i<n;i++){if(data[i].high>data[highIdx].high)highIdx=i;if(data[i].low<data[lowIdx].low)lowIdx=i;}
+  const high=data[highIdx].high,low=data[lowIdx].low;
+  const range=high-low;if(range<0.01)return null;
+  const last=data[n-1].close;
+  // 判断趋势方向: 高点在低点之后=下跌趋势(从高回撤), 否则=上涨趋势(从低回弹)
+  const downTrend=highIdx>lowIdx;
+  let levels;
+  if(downTrend){
+    // 从高点回撤
+    levels={
+      'r236':+(high-range*0.236).toFixed(2),
+      'r382':+(high-range*0.382).toFixed(2),
+      'r500':+(high-range*0.500).toFixed(2),
+      'r618':+(high-range*0.618).toFixed(2),
+      'r786':+(high-range*0.786).toFixed(2),
+    };
+  }else{
+    // 从低点反弹
+    levels={
+      'r236':+(low+range*0.236).toFixed(2),
+      'r382':+(low+range*0.382).toFixed(2),
+      'r500':+(low+range*0.500).toFixed(2),
+      'r618':+(low+range*0.618).toFixed(2),
+      'r786':+(low+range*0.786).toFixed(2),
+    };
+  }
+  // 最大三档回撤价格: 38.2% / 50% / 61.8%
+  const retraceLevels=[
+    {pct:'38.2%',price:levels.r382},
+    {pct:'50.0%',price:levels.r500},
+    {pct:'61.8%',price:levels.r618},
+  ];
+  // 所有关键位(含23.6%和78.6%)用于找支撑/阻力
+  const allLevels=[
+    {pct:'23.6%',price:levels.r236},
+    {pct:'38.2%',price:levels.r382},
+    {pct:'50.0%',price:levels.r500},
+    {pct:'61.8%',price:levels.r618},
+    {pct:'78.6%',price:levels.r786},
+  ];
+  // 支撑: 当前价下方最近的关键位, 没有则用区间低点
+  let nearestSupport=allLevels.filter(l=>l.price<last).sort((a,b)=>b.price-a.price)[0]||null;
+  if(!nearestSupport) nearestSupport={pct:'低点',price:low};
+  // 阻力: 当前价上方最近的关键位, 没有则用区间高点
+  let nearestResist=allLevels.filter(l=>l.price>last).sort((a,b)=>a.price-b.price)[0]||null;
+  if(!nearestResist) nearestResist={pct:'高点',price:high};
+  // 评分: 价格在关键位附近 → 信号更强
+  let fibScore=50;
+  const distPct=Math.abs(last-nearestSupport.price)/last*100;
+  if(distPct<2)fibScore=70; // 接近支撑=看多
+  if(Math.abs(last-nearestResist.price)/last*100<2)fibScore=30; // 接近阻力=看空
+  if(downTrend&&last<levels.r618)fibScore=Math.max(fibScore-15,10); // 深度回撤=风险
+  if(!downTrend&&last>levels.r618)fibScore=Math.min(fibScore+15,90); // 强势突破
+  return{high,low,levels,retraceLevels,nearestSupport,nearestResist,fibScore,downTrend,last};
+}
+
+// ===== 主力资金成本线(量价加权均价 VWAP) =====
+function calcVWAP(data){
+  // 近N日成交量加权平均价(Volume Weighted Average Price)
+  let sumPV=0,sumV=0;
+  const vwap=data.map((d,i)=>{
+    const tp=(d.high+d.low+d.close)/3; // typical price
+    sumPV+=tp*d.vol; sumV+=d.vol;
+    return sumV>0?+(sumPV/sumV).toFixed(2):null;
+  });
+  return vwap;
+}
+
+// ===== AI 综合评分(5新维度: 技术指标/斐波那契/宏观货币政策/财报基本面/市场情绪) =====
+function aiScore(data,fund){
+  const n=data.length;if(n<20)return null;
+  const last=data[n-1].close,ma5=calcMA(data,5),ma20=calcMA(data,20),rsi=calcRSI(data,14);
+  const macd=calcMACD(data);const boll=calcBoll(data,20,2);
+  const lastRSI=rsi[n-1]||50,lastMACD=macd.hist[n-1]||0;
+  const lastBoll=boll[n-1];
+  const ret5=n>=6?(last-data[n-6].close)/data[n-6].close*100:0;
+  const ret20=n>=21?(last-data[n-21].close)/data[n-21].close*100:0;
+  const fib=calcFibonacci(data);
+
+  // ===== 1. 技术指标 (RSI/MACD/MA/布林/VWAP综合) =====
+  let techScore=50;
+  // RSI
+  if(lastRSI<30)techScore+=12;else if(lastRSI<40)techScore+=6;else if(lastRSI>70)techScore-=12;else if(lastRSI>60)techScore-=6;
+  // MACD
+  if(lastMACD>0){techScore+=8;if(macd.hist[n-2]<=0)techScore+=5;} // 金叉加分
+  else{techScore-=8;if(macd.hist[n-2]>0)techScore-=5;} // 死叉扣分
+  // MA金叉/死叉
+  if(ma5[n-1]>ma20[n-1])techScore+=6;else techScore-=6;
+  // 布林位置
+  if(lastBoll&&lastBoll.lower&&last<=lastBoll.lower)techScore+=8; // 触及下轨=超卖
+  if(lastBoll&&lastBoll.upper&&last>=lastBoll.upper)techScore-=8; // 触及上轨=超买
+  // VWAP位置
+  const vwap=calcVWAP(data);
+  const lastVWAP=vwap[n-1];
+  if(lastVWAP&&last>lastVWAP)techScore+=4; // 在成本线上方=强势
+  else if(lastVWAP)techScore-=4;
+  techScore=Math.min(100,Math.max(0,techScore));
+
+  // ===== 2. 斐波那契 =====
+  const fibScore=fib?fib.fibScore:50;
+
+  // ===== 3. 宏观货币政策 (基于市场环境推断) =====
+  // 使用: 长期趋势(60日MA vs 120日均线)作为宏观宽松/紧缩proxy
+  let macroScore=50;
+  if(n>=60){
+    const ma60avg=data.slice(-60).reduce((s,d)=>s+d.close,0)/60;
+    const ma30avg=data.slice(-30).reduce((s,d)=>s+d.close,0)/30;
+    if(ma30avg>ma60avg*1.05)macroScore=70; // 中期强势=宽松环境
+    else if(ma30avg>ma60avg)macroScore=60;
+    else if(ma30avg<ma60avg*0.95)macroScore=30; // 中期弱势=紧缩环境
+    else macroScore=40;
+  }
+  // 波动率补充: 近20日波动率高→市场不确定性↑
+  const vol20=data.slice(-20);
+  const avgClose20=vol20.reduce((s,d)=>s+d.close,0)/vol20.length;
+  const stdDev=Math.sqrt(vol20.reduce((s,d)=>s+(d.close-avgClose20)**2,0)/vol20.length);
+  const volatility=stdDev/avgClose20*100;
+  if(volatility>4)macroScore=Math.max(macroScore-10,10); // 高波动扣分
+  macroScore=Math.min(100,Math.max(0,macroScore));
+
+  // ===== 4. 财报基本面 =====
+  let fundScore=50;
+  if(fund){
+    if(fund.pe!=null&&fund.pe>0){
+      if(fund.pe<12)fundScore+=18;else if(fund.pe<20)fundScore+=10;else if(fund.pe<30)fundScore+=3;
+      else if(fund.pe>60)fundScore-=15;else if(fund.pe>40)fundScore-=8;
+    }
+    if(fund.roe!=null){
+      if(fund.roe>25)fundScore+=12;else if(fund.roe>15)fundScore+=7;else if(fund.roe>8)fundScore+=2;
+      else if(fund.roe<3)fundScore-=8;
+    }
+    if(fund.pb!=null){
+      if(fund.pb>0&&fund.pb<1.5)fundScore+=8;else if(fund.pb>5)fundScore-=8;
+    }
+    if(fund.eps!=null&&fund.eps>0)fundScore+=5;
+  }
+  fundScore=Math.min(100,Math.max(0,fundScore));
+
+  // ===== 5. 市场情绪 =====
+  let sentScore=50;
+  // 动量: 近5日涨跌
+  sentScore+=Math.min(20,Math.max(-20,ret5*3));
+  // 成交量趋势: 近5日均量 vs 近20日均量
+  if(n>=20){
+    const vol5=data.slice(-5).reduce((s,d)=>s+d.vol,0)/5;
+    const volAll=data.slice(-20).reduce((s,d)=>s+d.vol,0)/20;
+    if(vol5>volAll*1.5)sentScore+=10; // 放量=情绪高涨
+    else if(vol5<volAll*0.5)sentScore-=8; // 缩量=情绪低迷
+  }
+  // RSI情绪补充
+  if(lastRSI>65)sentScore+=5;else if(lastRSI<35)sentScore-=5;
+  sentScore=Math.min(100,Math.max(0,sentScore));
+
+  // ===== 综合评分 (5维度等权20%各) =====
+  const overall=Math.round(techScore*0.10+fibScore*0.15+macroScore*0.30+fundScore*0.15+sentScore*0.30);
+  const verdict=overall>=70?{t:'强烈看多',c:'#4caf72'}:overall>=60?{t:'偏多',c:'#5b9bd5'}:overall>=50?{t:'中性偏多',c:'#8bc34a'}:overall>=40?{t:'中性',c:'#e0a23c'}:overall>=30?{t:'偏空',c:'#e05c5c'}:{t:'强烈看空',c:'#d32f2f'};
+  return{techScore,fibScore,macroScore,fundScore,sentScore,overall,verdict,fib,lastRSI,lastMACD,ret5:+ret5.toFixed(2),ret20:+ret20.toFixed(2),volatility:+volatility.toFixed(2),lastVWAP,lastBoll};
+}
+
+// ===== 大师框架分析引擎 =====
+// 每位大师基于其交易逻辑,对当前个股的技术面+宏观环境给出独立判断
+function masterFrameworkAnalysis(kdata,fund,stockInfo){
+  if(!kdata||kdata.length<30) return null;
+  const n=kdata.length;
+  const last=kdata[n-1].close, prev=kdata[n-2]?.close||last;
+  const ma5=calcMA(kdata,5), ma20=calcMA(kdata,20);
+  const rsi=calcRSI(kdata,14), macd=calcMACD(kdata), boll=calcBoll(kdata,20,2);
+  const vwap=calcVWAP(kdata);
+  const lastRSI=rsi[n-1]||50, lastMACD=macd.hist[n-1]||0, prevMACD=macd.hist[n-2]||0;
+  const lastBoll=boll[n-1], lastVWAP=vwap[n-1];
+  const ma5v=ma5[n-1], ma20v=ma20[n-1], prevMa5=ma5[n-2], prevMa20=ma20[n-2];
+  const ret5=n>=6?(last-kdata[n-6].close)/kdata[n-6].close*100:0;
+  const ret20=n>=21?(last-kdata[n-21].close)/kdata[n-21].close*100:0;
+  const ret60=n>=61?(last-kdata[n-61].close)/kdata[n-61].close*100:0;
+  // 波动率
+  const vol20=kdata.slice(-20);
+  const avgC20=vol20.reduce((s,d)=>s+d.close,0)/vol20.length;
+  const std20=Math.sqrt(vol20.reduce((s,d)=>s+(d.close-avgC20)**2,0)/vol20.length);
+  const volatility=std20/avgC20*100;
+  // 成交量
+  const vol5avg=kdata.slice(-5).reduce((s,d)=>s+d.vol,0)/5;
+  const vol20avg=kdata.slice(-20).reduce((s,d)=>s+d.vol,0)/20;
+  const volRatio=vol20avg>0?vol5avg/vol20avg:1;
+  // MA趋势
+  const ma60avg=n>=60?kdata.slice(-60).reduce((s,d)=>s+d.close,0)/60:avgC20;
+  const ma120avg=n>=120?kdata.slice(-120).reduce((s,d)=>s+d.close,0)/120:ma60avg;
+  const trendUp=last>ma60avg&&ma60avg>ma120avg;
+  const trendDown=last<ma60avg&&ma60avg<ma120avg;
+  // 布林位置
+  const bollPos=lastBoll&&lastBoll.upper&&lastBoll.lower?(last-lastBoll.lower)/(lastBoll.upper-lastBoll.lower):0.5;
+  // PE
+  const pe=fund?.pe||null;
+  const roe=fund?.roe||null;
+  // 宏观环境推断(从cache全局变量)
+  const md=cache||{};
+  const fedRate=parseFloat((md.fedRate||'4.5').replace(/[^\d.]/g,''))||4.5;
+  const vix=parseFloat(md.vixIndex)||15;
+  const dxyChg=md.dxyChange||0;
+  const sp500Chg=md.sp500Change||0;
+
+  // ===== 10位大师分析逻辑 =====
+  const results=[];
+
+  // 1. 达里欧 - 全天候/风险平价: 关注宏观环境(利率周期+美元+波动率)
+  (function(){
+    let score=50; const reasons=[];
+    if(fedRate>5){score-=15;reasons.push('联储利率偏高('+fedRate+'%)，紧缩环境压制估值');}
+    else if(fedRate<3){score+=15;reasons.push('低利率环境利好资产定价');}
+    else{score+=5;reasons.push('利率中性区间('+fedRate+'%)，政策温和');}
+    if(volatility<2){score+=10;reasons.push('波动率极低('+volatility.toFixed(1)+'%)，风险平价环境良好');}
+    else if(volatility>4){score-=10;reasons.push('高波动('+volatility.toFixed(1)+'%)环境，分散化需求增加');}
+    if(trendUp){score+=10;reasons.push('中长期趋势向上，增长环境偏友好');}
+    else if(trendDown){score-=10;reasons.push('中长期趋势向下，建议降低风险敞口');}
+    if(vix>25){score-=8;reasons.push('VIX恐慌指数偏高('+vix+')，市场不确定性大');}
+    score=Math.min(100,Math.max(0,score));
+    results.push({id:'dalio',score,reasons});
+  })();
+
+  // 2. 西蒙斯 - 量化动量/统计套利: RSI+MACD+均值回归
+  (function(){
+    let score=50; const reasons=[];
+    // 动量因子
+    if(ret5>2){score+=12;reasons.push('5日动量强劲(+'+ret5.toFixed(1)+'%)，短期正因子触发');}
+    else if(ret5<-2){score-=8;reasons.push('5日动量走弱('+ret5.toFixed(1)+'%)，短期负因子');}
+    // 均值回归信号
+    if(lastRSI<25){score+=15;reasons.push('RSI极度超卖('+lastRSI.toFixed(0)+')，统计回归概率高');}
+    else if(lastRSI>75){score-=12;reasons.push('RSI超买区('+lastRSI.toFixed(0)+')，回归压力大');}
+    // MACD金叉/死叉
+    if(lastMACD>0&&prevMACD<=0){score+=10;reasons.push('MACD金叉(底部翻多)，模型捕捉到动量切换');}
+    else if(lastMACD<0&&prevMACD>=0){score-=10;reasons.push('MACD死叉，动量转空信号');}
+    // 量价配合
+    if(volRatio>1.5&&ret5>0){score+=8;reasons.push('放量上涨(量比'+volRatio.toFixed(1)+')，价量共振');}
+    score=Math.min(100,Math.max(0,score));
+    results.push({id:'simons',score,reasons});
+  })();
+
+  // 3. 马克思 - 周期钟摆/逆向: 寻找市场极端情绪时的反向机会
+  (function(){
+    let score=50; const reasons=[];
+    // 情绪极端=机会
+    if(lastRSI<30&&ret20<-15){score+=20;reasons.push('市场恐慌性抛售(RSI '+lastRSI.toFixed(0)+',20日跌'+ret20.toFixed(1)+'%)，钟摆到极端悲观端');}
+    else if(lastRSI>70&&ret20>15){score-=15;reasons.push('市场过度乐观(RSI '+lastRSI.toFixed(0)+')，钟摆在极端乐观端，风险累积');}
+    // 布林下轨=恐慌
+    if(bollPos<0.1){score+=12;reasons.push('价格跌穿布林下轨，恐慌定价错位可能出现');}
+    else if(bollPos>0.9){score-=8;reasons.push('价格触及布林上轨，贪婪情绪驱动');}
+    // 周期位置
+    if(trendDown&&lastRSI<40){score+=8;reasons.push('下跌周期后期，第二层思维提示：别人恐惧时贪婪');}
+    if(pe&&pe<12){score+=10;reasons.push('PE仅'+pe+'x，低估值提供安全边际');}
+    score=Math.min(100,Math.max(0,score));
+    results.push({id:'marks',score,reasons});
+  })();
+
+  // 4. 德鲁肯米勒 - 集中押注/趋势突破/政策转向
+  (function(){
+    let score=50; const reasons=[];
+    // 趋势突破
+    if(ma5v>ma20v&&prevMa5<=prevMa20){score+=18;reasons.push('均线金叉(MA5上穿MA20)，趋势突破确认');}
+    else if(ma5v<ma20v&&prevMa5>=prevMa20){score-=15;reasons.push('均线死叉，趋势转空');}
+    // 强势趋势中加仓
+    if(trendUp&&ret20>5){score+=12;reasons.push('中期强势趋势(20日+'+ret20.toFixed(1)+'%)，集中加仓信号');}
+    else if(trendDown&&ret20<-10){score-=12;reasons.push('中期趋势恶化，止损离场信号');}
+    // 政策信号
+    if(fedRate<4&&sp500Chg>0){score+=8;reasons.push('联储偏鸽+市场上涨=顺势做多环境');}
+    if(volatility>5){score-=5;reasons.push('高波动环境('+volatility.toFixed(1)+'%)，不适合集中押注');}
+    score=Math.min(100,Math.max(0,score));
+    results.push({id:'druck',score,reasons});
+  })();
+
+  // 5. 林奇 - PEG估值/成长股/生活中发现
+  (function(){
+    let score=50; const reasons=[];
+    if(pe&&pe>0){
+      if(pe<15){score+=15;reasons.push('PE仅'+pe+'x，属于"稳定增长股"合理估值区间');}
+      else if(pe<25){score+=8;reasons.push('PE '+pe+'x适中，需观察增长是否匹配');}
+      else if(pe>50){score-=12;reasons.push('PE '+pe+'x过高，若非快速增长股则有估值陷阱风险');}
+      else if(pe>35){score-=5;reasons.push('PE '+pe+'x偏贵，密切关注增长率能否支撑');}
+    }
+    if(roe&&roe>20){score+=10;reasons.push('ROE '+roe+'%优秀，具备"好公司"特征');}
+    else if(roe&&roe>12){score+=5;reasons.push('ROE '+roe+'%良好');}
+    // 趋势代表增长
+    if(ret60>20){score+=8;reasons.push('60日涨幅+'+ret60.toFixed(0)+'%，可能进入快速增长期');}
+    else if(ret60<-20){score-=5;reasons.push('60日跌幅显著，需判断是周期还是基本面恶化');}
+    // 放量突破
+    if(volRatio>1.3&&ret5>0&&ma5v>ma20v){score+=5;reasons.push('放量突破，机构关注度提升');}
+    score=Math.min(100,Math.max(0,score));
+    results.push({id:'lynch',score,reasons});
+  })();
+
+  // 6. 格罗斯 - 利率周期/收益率曲线/债券思维
+  (function(){
+    let score=50; const reasons=[];
+    // 利率环境对股票的影响
+    if(fedRate>=5){score-=15;reasons.push('利率高企('+fedRate+'%)，类债券资产估值承压');}
+    else if(fedRate<=3){score+=12;reasons.push('低利率环境('+fedRate+'%)，利好估值扩张');}
+    else{score+=3;reasons.push('利率中性('+fedRate+'%)，估值压力有限');}
+    // 趋势=利率周期代理
+    if(trendUp){score+=10;reasons.push('中长期上行趋势暗示流动性宽松环境');}
+    if(dxyChg<-0.3){score+=5;reasons.push('美元走弱有利于全球资产定价');}
+    else if(dxyChg>0.5){score-=5;reasons.push('美元走强对非美资产构成压力');}
+    if(volatility<2){score+=5;reasons.push('极低波动率=稳定收益环境，债券型思维看多');}
+    score=Math.min(100,Math.max(0,score));
+    results.push({id:'gross',score,reasons});
+  })();
+
+  // 7. 琼斯 - 全球宏观/200日均线/不对称风险
+  (function(){
+    let score=50; const reasons=[];
+    // 200日均线(用120日代替,因数据限制)
+    const ma120=n>=120?kdata.slice(-120).reduce((s,d)=>s+d.close,0)/120:ma60avg;
+    if(last>ma120){score+=15;reasons.push('价格在200日均线之上(+'+((last/ma120-1)*100).toFixed(1)+'%)，趋势看多');}
+    else{score-=12;reasons.push('价格跌破200日均线('+((last/ma120-1)*100).toFixed(1)+'%)，趋势转空');}
+    // 不对称风险回报
+    if(lastRSI<35&&bollPos<0.2){score+=12;reasons.push('RSI低位+布林下轨=极佳风险回报比(上行空间>>下行)');}
+    else if(lastRSI>70&&bollPos>0.85){score-=10;reasons.push('RSI高位+布林上轨=风险回报比恶化');}
+    // 极端情绪反转
+    if(vix>30){score+=5;reasons.push('VIX高位('+vix+')=市场恐慌,历史上是反向指标');}
+    if(ret5<-5){score+=5;reasons.push('短期急跌('+ret5.toFixed(1)+'%)后反弹概率大,可寻找入场点');}
+    score=Math.min(100,Math.max(0,score));
+    results.push({id:'jones',score,reasons});
+  })();
+
+  // 8. 拉施克 - 短线波段/动量+均值回归/ADX趋势强度
+  (function(){
+    let score=50; const reasons=[];
+    // 模拟ADX: 用方向运动指标近似
+    const trendStrength=Math.abs(ret5)/volatility*20; // 趋势强度比
+    if(trendStrength>1.5){
+      // 强趋势中回调=入场
+      if(ret5>0&&last<ma5v){score+=15;reasons.push('强势趋势中价格回调至MA5(圣杯策略触发)');}
+      else if(ret5>0){score+=8;reasons.push('趋势动量强(强度指标'+trendStrength.toFixed(1)+')，顺势持有');}
+    }
+    // 布林反弹(均值回归)
+    if(bollPos<0.15){score+=12;reasons.push('价格触及布林下轨反弹区,短线做多信号');}
+    else if(bollPos>0.85){score-=8;reasons.push('布林上轨附近,短线获利了结区');}
+    // MACD背离
+    if(lastMACD>prevMACD&&ret5<0){score+=8;reasons.push('MACD底背离,动能恢复中,短线反弹信号');}
+    // 量价分析
+    if(volRatio>1.5&&ret5>1){score+=5;reasons.push('放量拉升,短线多头占优');}
+    else if(volRatio>1.5&&ret5<-1){score-=5;reasons.push('放量下跌,短线空头主导');}
+    score=Math.min(100,Math.max(0,score));
+    results.push({id:'raschke',score,reasons});
+  })();
+
+  // 9. 李录 - 深度价值/安全边际/能力圈
+  (function(){
+    let score=50; const reasons=[];
+    if(pe&&pe>0&&pe<12){score+=20;reasons.push('PE仅'+pe+'x，显著低估=巨大安全边际');}
+    else if(pe&&pe>0&&pe<20){score+=10;reasons.push('PE '+pe+'x合理偏低，价值投资者关注区间');}
+    else if(pe&&pe>40){score-=10;reasons.push('PE '+pe+'x偏高，安全边际不足');}
+    if(roe&&roe>20){score+=15;reasons.push('ROE '+roe+'%优秀,可能具备"宽阔护城河"特征');}
+    else if(roe&&roe>12){score+=5;reasons.push('ROE '+roe+'%良好，盈利能力可接受');}
+    // 价格远低于长期均线=深度价值
+    if(last<ma60avg*0.85){score+=12;reasons.push('价格大幅低于60日均线(折价'+((1-last/ma60avg)*100).toFixed(0)+'%)，可能存在价值洼地');}
+    // 长期持有逻辑
+    if(trendUp&&pe&&pe<25&&roe&&roe>15){score+=8;reasons.push('估值合理+ROE优秀+趋势向上=优质成长投资标的');}
+    score=Math.min(100,Math.max(0,score));
+    results.push({id:'li',score,reasons});
+  })();
+
+  // 10. 阿克曼 - 激进/集中持仓/估值洼地+催化剂
+  (function(){
+    let score=50; const reasons=[];
+    // 估值洼地
+    if(pe&&pe>0&&pe<15){score+=15;reasons.push('低估值(PE '+pe+'x)，若有催化剂可集中重仓');}
+    else if(pe&&pe>40){score-=10;reasons.push('高估值,激进投资者通常回避');}
+    // 催化剂信号: 放量突破(可能有事件驱动)
+    if(volRatio>2&&ret5>3){score+=15;reasons.push('异常放量+大幅上涨=可能出现催化事件(财报/重组/管理层变动)');}
+    else if(volRatio>1.5&&Math.abs(ret5)>2){score+=5;reasons.push('放量活跃,关注是否有催化剂出现');}
+    // 趋势反转(困境反转)
+    if(ret60<-30&&ret5>3){score+=12;reasons.push('深跌后强力反弹(困境反转信号),阿克曼式机会');}
+    // 基本面支撑
+    if(roe&&roe>15&&pe&&pe<20){score+=8;reasons.push('强ROE+合理PE=具备"好公司被低估"特征');}
+    score=Math.min(100,Math.max(0,score));
+    results.push({id:'ackman',score,reasons});
+  })();
+
+  // ===== 综合信号 =====
+  const avgScore=Math.round(results.reduce((s,r)=>s+r.score,0)/results.length);
+  const buyCount=results.filter(r=>r.score>=60).length;
+  const sellCount=results.filter(r=>r.score<=35).length;
+  let signal,signalLabel,signalDesc,signalColor;
+  if(avgScore>=68&&buyCount>=7){signal='buy';signalLabel='强烈买入';signalColor='#4caf72';signalDesc='多数大师框架看多，技术面+宏观环境共振向上';}
+  else if(avgScore>=60&&buyCount>=5){signal='buy';signalLabel='建议买入';signalColor='#4caf72';signalDesc='大师共识偏多，当前位置风险回报比良好';}
+  else if(avgScore>=52){signal='hold';signalLabel='持有观望';signalColor='#e0a23c';signalDesc='信号分歧,建议观望等待更明确方向';}
+  else if(avgScore>=40){signal='hold';signalLabel='谨慎持有';signalColor='#e0a23c';signalDesc='多数框架中性偏弱,注意风险管理';}
+  else if(sellCount>=5){signal='sell';signalLabel='建议卖出';signalColor='#e05c5c';signalDesc='多数大师框架看空,技术面恶化+宏观逆风';}
+  else{signal='sell';signalLabel='减仓/离场';signalColor='#e05c5c';signalDesc='综合信号偏空,建议降低仓位';}
+
+  // 资产周期传导分析
+  const cycleAnalysis=[];
+  if(fedRate>=4.5)cycleAnalysis.push({lbl:'货币政策',val:'紧缩',desc:'高利率压制估值,利空成长股',c:'#e05c5c'});
+  else if(fedRate>=3)cycleAnalysis.push({lbl:'货币政策',val:'中性',desc:'利率温和,对股价影响有限',c:'#e0a23c'});
+  else cycleAnalysis.push({lbl:'货币政策',val:'宽松',desc:'低利率利好股市估值扩张',c:'#4caf72'});
+  if(dxyChg<-0.3)cycleAnalysis.push({lbl:'美元周期',val:'走弱',desc:'美元贬值利好大宗商品和新兴市场',c:'#4caf72'});
+  else if(dxyChg>0.3)cycleAnalysis.push({lbl:'美元周期',val:'走强',desc:'美元升值压制非美资产',c:'#e05c5c'});
+  else cycleAnalysis.push({lbl:'美元周期',val:'平稳',desc:'汇率波动对资产影响有限',c:'#e0a23c'});
+  if(vix>25)cycleAnalysis.push({lbl:'风险情绪',val:'恐慌',desc:'VIX高位=避险情绪主导,利好黄金债券',c:'#e05c5c'});
+  else if(vix<15)cycleAnalysis.push({lbl:'风险情绪',val:'贪婪',desc:'VIX低位=乐观情绪,利好风险资产',c:'#4caf72'});
+  else cycleAnalysis.push({lbl:'风险情绪',val:'中性',desc:'情绪指标无明显极端',c:'#e0a23c'});
+  if(sp500Chg>0.5)cycleAnalysis.push({lbl:'市场趋势',val:'Risk On',desc:'标普上涨=风险偏好,资金流入股市',c:'#4caf72'});
+  else if(sp500Chg<-0.5)cycleAnalysis.push({lbl:'市场趋势',val:'Risk Off',desc:'标普下跌=避险模式,资金流出',c:'#e05c5c'});
+  else cycleAnalysis.push({lbl:'市场趋势',val:'震荡',desc:'指数窄幅波动,观望为主',c:'#e0a23c'});
+  if(volatility>3.5)cycleAnalysis.push({lbl:'波动率周期',val:'高波动',desc:'市场不确定性大,适合对冲策略',c:'#e05c5c'});
+  else if(volatility<1.5)cycleAnalysis.push({lbl:'波动率周期',val:'低波动',desc:'趋势稳定,适合趋势跟踪',c:'#4caf72'});
+  else cycleAnalysis.push({lbl:'波动率周期',val:'正常',desc:'波动在合理区间',c:'#e0a23c'});
+  if(trendUp)cycleAnalysis.push({lbl:'个股周期',val:'上升趋势',desc:'均线多头排列,顺势做多',c:'#4caf72'});
+  else if(trendDown)cycleAnalysis.push({lbl:'个股周期',val:'下降趋势',desc:'均线空头排列,回避或做空',c:'#e05c5c'});
+  else cycleAnalysis.push({lbl:'个股周期',val:'盘整',desc:'趋势不明朗,等待方向选择',c:'#e0a23c'});
+
+  return{results,avgScore,signal,signalLabel,signalDesc,signalColor,buyCount,sellCount,cycleAnalysis};
+}
+
+// ===== 个股详情页渲染 =====
+
+/* ========== HELPER FUNCTIONS ========== */
+function sentiment(md){
+  let s=0;
+  if(md.sp500Change>.5)s+=2;else if(md.sp500Change<-.5)s-=2;
+  if(md.goldChange>1)s-=1;else if(md.goldChange<-1)s+=1;
+  if(md.btcChange>2)s+=1;else if(md.btcChange<-2)s-=1;
+  if(md.oilChange>2)s-=1;else if(md.oilChange<-2)s+=1;
+  if(s>=3)return{l:'Risk On',d:'风险偏好',c:'#4caf72',e:'☀️'};
+  if(s>=1)return{l:'偏多',d:'温和乐观',c:'#5b9bd5',e:'⛅'};
+  if(s<=-3)return{l:'Risk Off',d:'风险规避',c:'#e05c5c',e:'⛈️'};
+  if(s<=-1)return{l:'偏空',d:'谨慎观望',c:'#e0a23c',e:'☁️'};
+  return{l:'中性',d:'多空平衡',c:'#b9b4ab',e:'☁'};
+}
+function getTodayCalendar(){
+  const n=new Date(),m=n.getMonth(),d=n.getDate(),w=n.getDay();const ev=[];
+  // u = 官方数据来源链接(点击直达发布机构)
+  const BLS='https://www.bls.gov/schedule/news_release/',BEA='https://www.bea.gov/news/schedule',
+        DOL='https://www.dol.gov/ui/data.pdf',FED='https://www.federalreserve.gov/newsevents/pressreleases.htm',
+        STATS='https://www.stats.gov.cn/sj/zxfb/',PBC='http://www.pbc.gov.cn/zhengcehuobisi/125207/125213/125440/index.html',
+        BOJ='https://www.boj.or.jp/en/mopo/mpmsche_minu/index.htm',EUROSTAT='https://ec.europa.eu/eurostat/web/main/news/euro-indicators',
+        ONS='https://www.ons.gov.uk/economy/inflationandpriceindices',EARN='https://www.earningswhispers.com/calendar';
+  if(w===4)ev.push({t:'20:30',f:'🇺🇸',e:'初请失业金人数',i:'medium',p:'22.1万',fc:'22.0万',u:DOL});
+  if(d===2||(d<=8&&w===5)){ev.push({t:'20:30',f:'🇺🇸',e:'非农就业人数',i:'high',p:'17.7万',fc:'18.5万',u:BLS});ev.push({t:'20:30',f:'🇺🇸',e:'失业率',i:'high',p:'4.2%',fc:'4.1%',u:BLS})}
+  if([0,3,6,9].includes(m)&&d>=10&&d<=15){ev.push({t:'20:30',f:'🇺🇸',e:'CPI (月环比)',i:'high',p:'0.2%',fc:'0.3%',u:BLS});ev.push({t:'20:30',f:'🇺🇸',e:'核心CPI (同比)',i:'high',p:'3.3%',fc:'3.2%',u:BLS})}
+  if(d>=25)ev.push({t:'20:30',f:'🇺🇸',e:'PCE物价指数',i:'high',p:'2.7%',fc:'2.6%',u:BEA});
+  if(d===15||d===20)ev.push({t:'09:15',f:'🇨🇳',e:'LPR利率公布',i:'high',p:'3.10%',fc:'3.10%',u:PBC});
+  if(d>=9&&d<=15&&m%3===0){ev.push({t:'09:30',f:'🇨🇳',e:'CPI (同比)',i:'high',p:'0.1%',fc:'0.3%',u:STATS});ev.push({t:'09:30',f:'🇨🇳',e:'PPI (同比)',i:'high',p:'-2.2%',fc:'-1.8%',u:STATS})}
+  if(d===1||d>=28)ev.push({t:'09:45',f:'🇨🇳',e:'制造业PMI',i:'high',p:'50.1',fc:'50.3',u:STATS});
+  if(d>=1&&d<=5)ev.push({t:'11:00',f:'🇯🇵',e:'日央行利率决议',i:'high',p:'0.25%',fc:'0.25%',u:BOJ});
+  if(d>=1&&d<=5)ev.push({t:'17:00',f:'🇪🇺',e:'CPI (同比)',i:'high',p:'2.0%',fc:'2.1%',u:EUROSTAT});
+  if(d>=12&&d<=20){ev.push({t:'14:00',f:'🇬🇧',e:'CPI (同比)',i:'high',p:'2.6%',fc:'2.5%',u:ONS})}
+  if(w>=1&&w<=5)ev.push({t:'盘后',f:'🇺🇸',e:'重要财报季(关注科技巨头)',i:'medium',u:EARN});
+  const ord={high:0,medium:1,low:2};ev.sort((a,b)=>ord[a.i]-ord[b.i]||a.t.localeCompare(b.t));
+  if(!ev.length)ev.push({t:'全天',f:'🌍',e:'今日无重大宏观数据公布',i:'low'},{t:'20:30',f:'🇺🇸',e:'关注美联储官员讲话',i:'medium',u:FED});
+  return ev.slice(0,8);
+}
+function genSummary(md){
+  const it=[];
+  if(md.sp500Change!=null){
+    if(md.sp500Change>.5)it.push({c:'#4caf72',t:`标普500上涨${md.sp500Change.toFixed(2)}%，市场情绪偏乐观`});
+    else if(md.sp500Change<-.5)it.push({c:'#e05c5c',t:`标普500下跌${Math.abs(md.sp500Change).toFixed(2)}%，市场承压`});
+    else it.push({c:'#76726c',t:`标普500窄幅震荡(${md.sp500Change>=0?'+':''}${md.sp500Change.toFixed(2)}%)，多空博弈`});
+  }
+  if(md.goldChange!=null){
+    if(md.goldChange>.5)it.push({c:'#e0a23c',t:`黄金走强 $${md.goldPrice}，避险需求升温`});
+    else if(md.goldChange<-.5)it.push({c:'#4caf72',t:`黄金回落 $${md.goldPrice}，风险偏好回升`});
+  }
+  if(md.btcChange!=null){
+    if(md.btcChange>2)it.push({c:'#e0a23c',t:`BTC大涨${md.btcChange.toFixed(2)}%，加密市场活跃`});
+    else if(md.btcChange<-2)it.push({c:'#76726c',t:`BTC下跌${Math.abs(md.btcChange).toFixed(2)}%，加密市场降温`});
+  }
+  if(md.dxyChange!=null){
+    if(md.dxyChange<-.3)it.push({c:'#5b9bd5',t:`美元走弱(DXY ${md.dxyIndex})，新兴市场受益`});
+    else if(md.dxyChange>.3)it.push({c:'#e0a23c',t:`美元走强(DXY ${md.dxyIndex})，非美资产承压`});
+  }
+  it.push({c:'#d4af37',t:`美联储维持 ${md.fedRate}，关注下次议息会议点阵图`});
+  if(!it.length||it.length===1)it.unshift({c:'#76726c',t:'部分实时行情加载中，稍后将自动更新'});
+  return it.slice(0,5);
+}
+
+/* ========== MOBILE RENDER FUNCTIONS ========== */
+function chgStr(c){return c==null?'—':(c>=0?'+':'')+Number(c).toFixed(2)+'%'}
+function nf(n,d){return n==null?'—':Number(n).toLocaleString('en-US',{minimumFractionDigits:d||0,maximumFractionDigits:d||0})}
+
 function renderDash(md){
-  const mc=(k,l,pre,suf)=>{const v=md[k],c=md[k+'Change'];
-    return `<div class="mkt-card"><div class="lbl">${l}</div><div class="val">${pre||''}${v||'—'}${suf||''}</div><div class="chg ${c>=0?'up':'dn'}">${chgStr(c)}</div></div>`;};
+  const st=sentiment(md);
+  const cal=getTodayCalendar();
+  const sum=genSummary(md);
+  const now=new Date();
+  const dateStr=now.toLocaleDateString('zh-CN',{month:'long',day:'numeric',weekday:'short'});
+  const mc=(k,l,pre,suf)=>{const v=md[k],c=md[k+'Change'];return `<div class="mkt-card"><div class="lbl">${l}</div><div class="val">${pre||''}${v||'—'}${suf||''}</div><div class="chg ${c>=0?'up':'dn'}">${chgStr(c)}</div></div>`;};
+  const calRows=cal.map(e=>`<div class="cal-row"><span class="cal-time">${e.t}</span><span class="cal-flag">${e.f}</span><div class="cal-ev">${e.e}</div><span class="cal-imp">${e.i==='high'?'🔴':e.i==='medium'?'🟡':'⚪'}</span></div>`).join('');
+  const sumHTML=sum.map(i=>`<div class="sum-item"><span class="sum-dot" style="background:${i.c}"></span>${i.t}</div>`).join('');
   const cbHTML=CENTRAL_BANKS.map(b=>`<div class="cb-item"><div class="cb-flag">${b.flag}</div><div class="cb-info"><div class="cb-name">${b.name}</div><div class="cb-rate">${b.rate}</div></div><div class="cb-next">${nextMeeting(b)}</div></div>`).join('');
   document.getElementById('v-dash').innerHTML=`
-    <div class="sec-t">全球市场</div>
-    <div class="mkt-grid">
-      ${mc('sp500','标普500')}${mc('nasdaq','纳斯达克')}${mc('dow','道琼斯')}
-      ${mc('goldPrice','黄金','$')}${mc('silver','白银','$')}${mc('oil','原油WTI','$')}
-      ${mc('natgas','天然气','$')}${mc('btcPrice','比特币','$')}${mc('eth','以太坊','$')}${mc('dxyIndex','美元DXY')}
+    <div class="sent-box" style="border-color:${st.c}40;background:${st.c}0d">
+      <div class="sent-emoji">${st.e}</div>
+      <div><div class="sent-label" style="color:${st.c}">${st.l}</div><div class="sent-desc">市场情绪 · ${st.d} · ${dateStr}</div></div>
     </div>
-    <div class="sec-t">人民币汇率</div>
-    <div class="mkt-grid">
-      ${mc('usdcny','USD/CNY')}${mc('eurcny','EUR/CNY')}${mc('jpycny','JPY/CNY')}${mc('gbpcny','GBP/CNY')}
-    </div>
-    <div class="sec-t">主要汇率</div>
-    <div class="mkt-grid">
-      ${mc('eurusd','EUR/USD')}${mc('gbpusd','GBP/USD')}${mc('usdjpy','USD/JPY')}
-    </div>
-    <div class="sec-t">政策利率与波动率</div>
-    <div class="mkt-grid">
-      <div class="mkt-card"><div class="lbl">VIX恐慌指数</div><div class="val">${md.vixIndex||'—'}</div></div>
-      <div class="mkt-card"><div class="lbl">美联储利率</div><div class="val">${md.fedRate||'—'}</div></div>
-      <div class="mkt-card"><div class="lbl">中国LPR</div><div class="val">${md.chinaLPR||'—'}%</div></div>
-    </div>
-    <div class="sec-t">央行议息日历</div>
-    <div class="card gold-edge">${cbHTML}</div>
-    <div class="disclaimer"><b>风险提示</b> · 数据仅供研究参考，不构成投资建议。来源：东方财富(实时) · Binance(加密) · 政策利率为最新公布值。</div>
-    <a class="pc-link" href="../">💻 返回PC完整版</a>`;
+    <div class="sec-t">📅 今日投资日历</div>
+    <div class="card gold-edge" style="padding:8px 12px">${calRows||'<div style="padding:10px;text-align:center;color:var(--text-3)">今日无重大数据</div>'}</div>
+    <div class="sec-t">💡 今日摘要</div>
+    <div class="card gold-edge" style="padding:10px 14px">${sumHTML}</div>
+    <div class="sec-t">📈 全球市场</div>
+    <div class="mkt-grid">${mc('sp500','标普500')}${mc('nasdaq','纳斯达克')}${mc('dow','道琼斯')}${mc('goldPrice','黄金','$')}${mc('silver','白银','$')}${mc('oil','原油WTI','$')}${mc('natgas','天然气','$')}${mc('btcPrice','比特币','$')}${mc('eth','以太坊','$')}${mc('dxyIndex','美元DXY')}</div>
+    <div class="sec-t">💱 人民币汇率</div>
+    <div class="mkt-grid">${mc('usdcny','USD/CNY')}${mc('eurcny','EUR/CNY')}${mc('jpycny','JPY/CNY')}${mc('gbpcny','GBP/CNY')}</div>
+    <div class="sec-t">🏛️ 央行议息日历</div>
+    <div class="card gold-edge" style="padding:6px 12px">${cbHTML}</div>
+    <div class="disclaimer"><b>数据来源</b> · 东方财富(实时) · Binance(加密) · ${new Date().toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit'})}</div>
+    <a class="pc-link" href="../">💻 PC完整版</a>`;
 }
 
-/* ===== RENDER: CRISIS ===== */
 function renderCrisis(){
   const sc=overlapScore();
-  const dimsHTML=COMPARE_DIMS.map(d=>`<div class="card cmp-card gold-edge"><div class="cmp-dim">${d.ic} ${d.dim}</div><div class="cmp-h">1999: ${d.h}</div><div class="cmp-cur">2026: ${d.cur}</div><div class="cmp-bar"><div class="fill" style="width:${d.sim}%"></div></div><div class="cmp-sim">相似度 ${d.sim}%</div></div>`).join('');
+  const dimsHTML=COMPARE_DIMS.map(d=>`<div class="card cmp-card gold-edge"><div class="cmp-dim">${d.icon||d.ic||''} ${d.dim}</div><div class="cmp-h">1999: ${d.h||d.bench||''}</div><div class="cmp-cur">2026: ${d.cur||''}</div><div class="cmp-bar"><div class="fill" style="width:${d.sim||50}%"></div></div><div class="cmp-sim">相似度 ${d.sim||50}%</div></div>`).join('');
+  const anoHTML=CW_ANOMALIES.map(a=>`<div class="card ano-card gold-edge ${a.signal}"><div class="ano-metric">${a.signal==='danger'?'🔴':a.signal==='warn'?'🟡':'🟢'} ${a.metric}</div><div class="ano-detail">${a.detail}</div></div>`).join('');
   const tcHTML=TRUTH_CHECK.map(t=>`<div class="card tc-card gold-edge" style="border-left-color:${t.c}"><div class="tc-item">${t.item}</div><div class="tc-verdict" style="color:${t.c}">${t.v}</div><div class="tc-reason">${t.reason}</div></div>`).join('');
   const advHTML=MASTER_ADVICE.map(a=>`<div class="card adv-card gold-edge" style="border-top-color:${a.c}"><div class="adv-nm">${a.av} ${a.nm}</div><div class="adv-stance" style="color:${a.c}">${a.stance}</div><div class="adv-port">${a.port}</div></div>`).join('');
   document.getElementById('v-crisis').innerHTML=`
-    <div class="score-badge"><div class="num">${sc.trimmed}%</div><div class="lbl">1999互联网泡沫 vs 2026 总体相似度<br>(IQR去异常后 · ${sc.kept}/${sc.total}维度)</div></div>
-    <div class="sec-t">多维对比</div>${dimsHTML}
-    <div class="sec-t">真假繁荣判断</div>${tcHTML}
-    <div class="sec-t">四位大师当前布局</div>${advHTML}
+    <div class="score-badge"><div class="num">${sc.trimmed}%</div><div class="lbl">1999互联网泡沫 vs 2026 总体相似度<br>(IQR去异常 · ${sc.kept}/${sc.total}维度)</div></div>
+    <div class="sec-t">⚠️ 异常信号<span class="cnt">${CW_ANOMALIES.length}项</span></div>${anoHTML}
+    <div class="sec-t">📊 多维对比</div>${dimsHTML}
+    <div class="sec-t">🔍 真假繁荣判断</div>${tcHTML}
+    <div class="sec-t">♔ 四位大师当前布局</div>${advHTML}
     <div class="disclaimer"><b>风险提示</b> · 历史对比仅供参考，不构成投资建议。</div>`;
 }
 
-/* ===== RENDER: CYCLES ===== */
 function renderCycles(){
-  const html=CYCLES.map(c=>`<div class="card cyc-card gold-edge"><div class="cyc-nm">${c.nm}</div><div class="cyc-en">${c.en} · ${c.dur}</div><div class="cyc-bar"><div class="fill" style="width:${c.prog}%;background:${c.pc}"></div></div><div class="cyc-pos">${c.pos}</div><div class="cyc-phase" style="color:${c.pc}">${c.phase} · ${c.prog}%</div></div>`).join('');
-  document.getElementById('v-cycle').innerHTML=`<div class="sec-t">经济周期定位</div>${html}<div class="disclaimer"><b>风险提示</b> · 周期定位为主观研判，不构成投资建议。</div>`;
+  const html=CYCLES.map(c=>`<div class="card cyc-card gold-edge"><div class="cyc-nm">${c.nm}</div><div class="cyc-en">${c.en}${c.dur?' · '+c.dur:''}</div><div class="cyc-bar"><div class="fill" style="width:${c.prog}%;background:${PHASE_COLOR[c.pc]||c.pc||'var(--gold)'}"></div></div><div class="cyc-pos">${c.pos}</div><div class="cyc-phase" style="color:${PHASE_COLOR[c.pc]||c.pc||'var(--gold)'}">${c.phase} · ${c.prog}%</div></div>`).join('');
+  document.getElementById('v-cycle').innerHTML=`<div class="sec-t">🔄 经济周期定位</div>${html}<div class="disclaimer"><b>风险提示</b> · 周期定位为主观研判。</div>`;
 }
 
-/* ===== RENDER: MASTERS ===== */
-let masterView='list';
+let masterTab='frameworks';
 function renderMastersList(){
-  const html=MASTERS.map(m=>`<div class="card m-card gold-edge" onclick="showMDetail('${m.id}')"><div class="m-av" style="background:${m.c}22;color:${m.c}">${m.av}</div><div><div class="m-nm">${m.nm}</div><div class="m-en">${m.en}</div><div class="m-style">${m.style}</div></div><div class="m-arrow">›</div></div>`).join('');
-  document.getElementById('v-masters').innerHTML=`<div class="sec-t">十位投研大师</div>${html}<div class="disclaimer"><b>风险提示</b> · 大师逻辑仅供学习参考。</div>`;
+  return MASTERS.map(m=>`<div class="card m-card gold-edge" onclick="showMDetail('${m.id}')"><div class="m-av" style="background:${m.c}22;color:${m.c}">${m.av}</div><div><div class="m-nm">${m.nm}</div><div class="m-en">${m.en}</div><div class="m-style">${m.style}</div></div><div class="m-arrow">›</div></div>`).join('');
+}
+function renderBuffettKB(){
+  const stats=BUFFETT_STATS.map(s=>`<div class="kb-stat"><div class="v">${s.v}</div><div class="l">${s.l}</div></div>`).join('');
+  const concepts=BUFFETT_CONCEPTS.map(c=>`<div class="card kb-card gold-edge"><div class="ct">${c.t}</div><div class="cd">${c.d}</div><div class="cq">"${c.q}"</div></div>`).join('');
+  const letters=BUFFETT_LETTERS.map(l=>`<div class="card tl-item gold-edge"><span class="tl-yr">${l.y}年</span><div class="tl-k">${l.k}</div></div>`).join('');
+  return `<div class="kb-stats">${stats}</div><div class="card gold-edge" style="padding:12px;font-size:11px;color:var(--text-2);line-height:1.6;margin-bottom:14px">巴菲特自1965年执掌伯克希尔,每年撰写致股东信,本知识库提炼其核心理念与经典案例。</div><div class="sec-t">💎 核心理念</div>${concepts}<div class="sec-t">📜 历年精读</div>${letters}`;
+}
+function renderMarksKB(){
+  const pillars=MARKS_PILLARS.map(p=>`<div class="card gold-edge" style="padding:12px"><div style="font-size:13px;font-weight:700;color:var(--gold);margin-bottom:4px">${p.t}</div><div style="font-size:11px;color:var(--text-2);line-height:1.5;margin-bottom:4px">${p.d}</div><div style="font-size:10px;color:var(--text-3);font-style:italic">"${p.k}"</div></div>`).join('');
+  const memos=MARKS_MEMOS.map(m=>`<div class="card tl-item gold-edge"><span class="tl-yr">${m.y}</span><div style="font-size:12px;font-weight:600;margin:3px 0">${m.t}</div><div class="tl-k">${m.s}</div></div>`).join('');
+  return `<div class="card gold-edge" style="padding:12px;font-size:11px;color:var(--text-2);line-height:1.6;margin-bottom:14px">霍华德·马克思的投资备忘录自1990年起发布,围绕周期、风险控制与第二层思维展开。</div><div class="sec-t">🏛️ 四大支柱</div>${pillars}<div class="sec-t">📝 经典备忘录</div>${memos}`;
+}
+function renderMasters(){
+  const tabs=`<div class="stabs"><div class="stab ${masterTab==='frameworks'?'active':''}" onclick="masterTab='frameworks';renderMasters()">🎯 十位大师</div><div class="stab ${masterTab==='buffett'?'active':''}" onclick="masterTab='buffett';renderMasters()">📖 巴菲特</div><div class="stab ${masterTab==='marks'?'active':''}" onclick="masterTab='marks';renderMasters()">📝 马克思</div></div>`;
+  const body=masterTab==='buffett'?renderBuffettKB():masterTab==='marks'?renderMarksKB():renderMastersList();
+  document.getElementById('v-masters').innerHTML=tabs+body+`<div class="disclaimer"><b>风险提示</b> · 大师逻辑仅供学习参考。</div>`;
 }
 function showMDetail(id){
   const m=MASTERS.find(x=>x.id===id);if(!m)return;
   const mc=MASTER_CASES[id];if(!mc)return;
   const casesHTML=mc.cases.map(c=>`<div class="card md-case gold-edge"><div class="yr">${c.year}</div><div class="nm">${c.name}</div><div class="row"><b>入场▸ </b>${c.entry}</div><div class="row"><b>结果▸ </b>${c.result}</div><div class="lesson">💡 ${c.lesson}</div></div>`).join('');
   document.getElementById('v-masters').innerHTML=`
-    <div class="md-back" onclick="renderMastersList()">← 返回</div>
+    <div class="md-back" onclick="renderMasters()">← 返回</div>
     <div class="md-hdr"><div class="av" style="background:${m.c}22;color:${m.c}">${m.av}</div><div><div class="nm">${m.nm}</div><div class="en">${m.en}</div><div class="ti">${m.title}</div></div></div>
-    <div class="sec-t">核心交易哲学</div>
-    <div class="card md-philo gold-edge">${mc.philosophy}</div>
+    <div class="sec-t">核心交易哲学</div><div class="card md-philo gold-edge">${mc.philosophy}</div>
     <div class="sec-t">经典案例</div>${casesHTML}`;
   window.scrollTo({top:0,behavior:'smooth'});
 }
 
-/* ===== RENDER: STOCKS ===== */
-let stockView='list';
+function renderScenario(){
+  const cards=SCENARIOS.map(s=>`<div class="card scen-card gold-edge" style="border-top-color:${s.c}"><div class="scen-prob" style="color:${s.c}">${s.prob}<span style="font-size:16px">%</span></div><div class="scen-lbl" style="color:${s.c}">${s.lbl}</div><div class="scen-sum">${s.sum}</div>${s.driv.map(d=>`<div class="scen-driv">${d}</div>`).join('')}</div>`).join('');
+  document.getElementById('v-scenario').innerHTML=`<div class="sec-t">🔮 三路径情景推演</div>${cards}<div class="disclaimer"><b>风险提示</b> · 情景概率为主观估计。</div>`;
+}
+
+function renderCamps(){
+  const total=CAMPS.reduce((s,c)=>s+c.gdp,0);
+  const cards=CAMPS.map(c=>`<div class="card camp-card gold-edge" style="border-top-color:${c.c}"><div class="camp-nm" style="color:${c.c}">${c.lbl}</div><div class="camp-en">${c.en}</div><div class="camp-stats"><div class="camp-stat"><div class="v" style="color:${c.c}">$${c.gdp}万亿</div><div class="l">GDP</div></div><div class="camp-stat"><div class="v">${c.pop}亿</div><div class="l">人口</div></div><div class="camp-stat"><div class="v">${c.flags.length}</div><div class="l">国家</div></div></div><div class="camp-chars">${c.chars.map(x=>`<div class="c"><span style="color:${c.c}">◆</span> ${x}</div>`).join('')}</div><div class="camp-flags">${c.flags.join(' ')}</div><div class="camp-dyn">${c.dyn}</div></div>`).join('');
+  const flows=TRADE_FLOWS.map(f=>`<div class="flow-item">${f}</div>`).join('');
+  const tech=TECH_AREAS.map(t=>`<div class="tech-item">${t}</div>`).join('');
+  document.getElementById('v-camps').innerHTML=`
+    <div class="sec-t">🌐 G2三极格局</div>${cards}
+    <div class="sec-t">🔄 贸易流向</div><div class="card gold-edge" style="padding:8px 14px">${flows}</div>
+    <div class="sec-t">🔬 科技脱钩</div><div class="card gold-edge" style="padding:8px 14px">${tech}</div>
+    <div class="disclaimer"><b>风险提示</b> · 地缘格局分析为主观研判。</div>`;
+}
+
 function renderStockList(data){
-  const renderSection=(title,list)=>{
+  const section=(title,list)=>{
     const items=list.map(s=>{
       const cls=s.changePct>=0?'up':'dn';
-      const priceStr=s.price!=null?s.price.toLocaleString():'—';
-      return `<div class="stk-item" onclick="showStockDetail('${s.secid}','${s.id}','${s.name}')"><div class="stk-name"><div class="code">${s.id}</div><div class="cn">${s.name}</div></div><div class="stk-price">${priceStr}</div><div class="stk-chg ${cls}">${chgStr(s.changePct)}</div></div>`;
+      return `<div class="stk-item" onclick="showStockDetail('${s.secid}','${s.id}','${s.name}')"><div class="stk-name"><div class="code">${s.id}</div><div class="cn">${s.name}</div></div><div class="stk-price">${s.price!=null?Number(s.price).toLocaleString():'—'}</div><div class="stk-chg ${cls}">${chgStr(s.changePct)}</div></div>`;
     }).join('');
-    return `<div class="sec-t">${title}</div><div class="card gold-edge" style="padding:0 14px">${items}</div>`;
+    return `<div class="sec-t">${title}</div><div class="card gold-edge" style="padding:0 12px">${items}</div>`;
   };
   document.getElementById('v-stocks').innerHTML=
-    renderSection('🇺🇸 美股',data.us)+renderSection('🇭🇰 港股',data.hk)+renderSection('🇨🇳 A股',data.cn)+
-    `<div class="disclaimer"><b>数据来源</b> · 东方财富 Eastmoney 实时行情</div>`;
+    section('🇺🇸 美股',data.us||[])+section('🇭🇰 港股',data.hk||[])+section('🇨🇳 A股',data.cn||[])+
+    (data.commod?`${section('🏭 大宗商品',data.commod)}`:'')+
+    (data.bondUS?`${section('🇺🇸 美债',data.bondUS)}`:'')+
+    `<div class="disclaimer"><b>数据来源</b> · 东方财富实时行情 · 点击查看详细分析</div>`;
 }
+
 async function showStockDetail(secid,code,name){
   const el=document.getElementById('v-stocks');
-  el.innerHTML=`<div class="sd-back" onclick="reloadStocks()">← 返回列表</div><div class="sd-hdr"><div class="nm">${name} (${code})</div></div><div class="loading-box"><span class="spin"></span> 加载K线…</div>`;
-  const [kline,fund]=await Promise.all([fetchKline(secid,120),fetchFundamentals(secid)]);
-  // Build SVG K-line
-  let chartHTML='<div style="color:var(--text-3);text-align:center;padding:20px">暂无K线数据</div>';
+  el.innerHTML=`<div class="sd-back" onclick="reloadStocks()">← 返回列表</div><div class="sd-hdr"><div class="nm">${name} (${code})</div></div><div class="loading-box"><span class="spin"></span> 加载中…</div>`;
+  const [kdata,fund]=await Promise.allSettled([fetchKline(secid,120),fetchFundamentals(secid)]);
+  const kline=kdata.status==='fulfilled'?kdata.value:[];
+  const fundData=fund.status==='fulfilled'?fund.value:null;
+  const stockInfo={name,id:code,price:null,changePct:null,secid};
+  if(kline.length>0){stockInfo.price=kline[kline.length-1].close;}
+
+  // K-line SVG (simplified mobile version with MA + candles)
+  let chartHTML='<div style="color:var(--text-3);text-align:center;padding:16px;font-size:11px">暂无K线数据</div>';
   if(kline.length>10){
-    const W=window.innerWidth-64,H=200,pad=4;
+    const W=Math.min(window.innerWidth-48,600),H=180,padL=40,padR=8,padT=10,padB=20;
+    const gw=(W-padL-padR)/kline.length;
     const prices=kline.flatMap(k=>[k.high,k.low]);
-    const hi=Math.max(...prices),lo=Math.min(...prices);
-    const rng=hi-lo||1;
-    const bw=Math.max(2,(W-pad*2)/kline.length-1);
-    const yOf=v=>pad+(1-(v-lo)/rng)*(H-pad*2);
-    let bars='';
-    kline.forEach((k,i)=>{
-      const x=pad+i*(bw+1);
-      const col=k.close>=k.open?'#4caf72':'#e05c5c';
-      const bodyTop=Math.min(k.open,k.close),bodyBot=Math.max(k.open,k.close);
-      bars+=`<line x1="${x+bw/2}" y1="${yOf(k.high)}" x2="${x+bw/2}" y2="${yOf(k.low)}" stroke="${col}" stroke-width="1"/>`;
-      bars+=`<rect x="${x}" y="${yOf(bodyBot)}" width="${bw}" height="${Math.max(1,yOf(bodyTop)-yOf(bodyBot))}" fill="${col}" rx="1"/>`;
+    const pMax=Math.max(...prices),pMin=Math.min(...prices),pRange=pMax-pMin||1;
+    const py=v=>padT+(pMax-v)/pRange*(H-padT-padB);
+    let candles='';
+    kline.forEach((d,i)=>{
+      const x=padL+i*gw+gw*0.1,w=gw*0.8;
+      const bull=d.close>=d.open;const col=bull?'#4caf72':'#e05c5c';
+      const bodyTop=py(Math.max(d.open,d.close)),bodyBot=py(Math.min(d.open,d.close));
+      candles+=`<line x1="${x+w/2}" y1="${py(d.high)}" x2="${x+w/2}" y2="${py(d.low)}" stroke="${col}" stroke-width="1"/>`;
+      candles+=`<rect x="${x}" y="${bodyTop}" width="${w}" height="${Math.max(1,bodyBot-bodyTop)}" fill="${col}" rx="1"/>`;
     });
-    chartHTML=`<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">${bars}</svg><div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text-3);margin-top:4px"><span>${kline[0].date}</span><span>120日K线</span><span>${kline[kline.length-1].date}</span></div>`;
+    // MA lines
+    const ma5=calcMA(kline,5),ma20=calcMA(kline,20);
+    const maLine=(arr,color)=>{const pts=arr.map((v,i)=>v!=null?`${padL+i*gw+gw/2},${py(v)}`:null).filter(Boolean);return pts.length>1?`<polyline points="${pts.join(' ')}" fill="none" stroke="${color}" stroke-width="1.2" opacity=".7"/>`:'';};
+    chartHTML=`<svg viewBox="0 0 ${W} ${H}" class="kline-svg">${candles}${maLine(ma5,'#d4af37')}${maLine(ma20,'#5b9bd5')}</svg><div style="display:flex;justify-content:space-between;font-size:9px;color:var(--text-3);margin-top:3px"><span>${kline[0].date}</span><span>MA5·MA20·120日</span><span>${kline[kline.length-1].date}</span></div>`;
   }
+
   // Fundamentals
   let fundHTML='';
-  if(fund){
-    const items=[
-      {l:'市盈率PE',v:fund.pe!=null?fund.pe:'—'},
-      {l:'市净率PB',v:fund.pb!=null?fund.pb:'—'},
-      {l:'ROE(%)',v:fund.roe!=null?fund.roe+'%':'—'},
-      {l:'总市值',v:fund.mktCap!=null?(fund.mktCap>1e12?(fund.mktCap/1e12).toFixed(1)+'万亿':fund.mktCap>1e8?(fund.mktCap/1e8).toFixed(0)+'亿':fund.mktCap):'—'},
-    ];
-    fundHTML=`<div class="sec-t">基本面</div><div class="sd-fund">${items.map(i=>`<div class="item"><div class="v">${i.v}</div><div class="l">${i.l}</div></div>`).join('')}</div>`;
+  if(fundData){
+    const items=[{l:'PE',v:fundData.pe},{l:'PB',v:fundData.pb},{l:'ROE',v:fundData.roe?fundData.roe+'%':null},{l:'市值',v:fundData.mktCap?(fundData.mktCap>1e12?(fundData.mktCap/1e12).toFixed(1)+'万亿':(fundData.mktCap/1e8).toFixed(0)+'亿'):null}];
+    fundHTML=`<div class="sec-t">📊 基本面</div><div class="sd-fund">${items.map(i=>`<div class="item"><div class="v">${i.v||'—'}</div><div class="l">${i.l}</div></div>`).join('')}</div>`;
   }
-  el.innerHTML=`<div class="sd-back" onclick="reloadStocks()">← 返回列表</div><div class="sd-hdr"><div class="nm">${name} (${code})</div></div><div class="sd-chart">${chartHTML}</div>${fundHTML}`;
+
+  // AI Score
+  let scoreHTML='';
+  const score=kline.length>=20?aiScore(kline,fundData):null;
+  if(score){
+    const bar=(lbl,pct,col)=>`<div class="ai-dim"><span class="ai-lbl">${lbl}</span><div class="ai-bar"><div class="ai-fill" style="width:${pct}%;background:${col}"></div></div><span class="ai-pct">${pct}</span></div>`;
+    scoreHTML=`<div class="sec-t">🤖 AI评分</div><div class="card ai-box gold-edge"><div class="ai-overall"><span class="ai-score" style="color:${score.verdict.c}">${score.overall}</span><span class="ai-verdict" style="color:${score.verdict.c}">${score.verdict.t}</span></div>${bar('宏观30%',score.macroScore,'#ab47bc')}${bar('情绪30%',score.sentScore,'#e0a23c')}${bar('斐波那契15%',score.fibScore,'#5b9bd5')}${bar('基本面15%',score.fundScore,'#4caf72')}${bar('技术10%',score.techScore,'#d4af37')}<div class="ai-meta">RSI ${score.lastRSI} · MACD ${score.lastMACD>0?'金叉':'死叉'} · 波动 ${score.volatility}% · 5日 ${score.ret5>=0?'+':''}${score.ret5}%</div></div>`;
+  }
+
+  // Fibonacci
+  let fibHTML='';
+  if(score&&score.fib){
+    const f=score.fib;
+    fibHTML=`<div class="sec-t">📐 斐波那契</div><div class="card gold-edge" style="padding:10px 12px">${f.retraceLevels.map(l=>{const dist=((l.price-f.last)/f.last*100).toFixed(1);const col=l.price<f.last?'#4caf72':'#e05c5c';return `<div class="fib-row"><span class="fib-pct">${l.pct}</span><span class="fib-price" style="color:${col}">${l.price.toFixed(2)}</span><span class="fib-dist" style="color:${col}">${dist>0?'+':''}${dist}%</span></div>`;}).join('')}<div class="fib-tags"><span class="fib-tag support">支撑 ${f.nearestSupport.pct} = ${f.nearestSupport.price.toFixed(2)}</span><span class="fib-tag resist">阻力 ${f.nearestResist.pct} = ${f.nearestResist.price.toFixed(2)}</span></div></div>`;
+  }
+
+  // Master Framework Analysis
+  let mfHTML='';
+  const mfResult=masterFrameworkAnalysis(kline,fundData,stockInfo);
+  if(mfResult){
+    const sigIcon=mfResult.signal==='buy'?'🟢':mfResult.signal==='sell'?'🔴':'🟡';
+    const masterCards=mfResult.results.map(r=>{
+      const m=MASTERS.find(x=>x.id===r.id);if(!m)return '';
+      const sig=r.score>=60?'buy':r.score<=35?'sell':'hold';
+      const sigText=sig==='buy'?'看多':sig==='sell'?'看空':'中性';
+      return `<div class="mf-card"><div class="mf-card-head"><div class="mf-card-av" style="background:${m.c}22;color:${m.c}">${m.av}</div><div><div class="mf-card-nm">${m.nm}</div><div class="mf-card-style">${m.style}</div></div></div><div class="mf-card-signal"><span class="tag ${sig}">${sigText}</span><span class="score" style="color:${sig==='buy'?'#4caf72':sig==='sell'?'#e05c5c':'#e0a23c'}">${r.score}</span></div><div class="mf-card-reasons">${r.reasons.slice(0,2).map(x=>'<div class="r">'+x+'</div>').join('')}</div></div>`;
+    }).join('');
+    const cycleItems=mfResult.cycleAnalysis.map(c=>`<div class="mf-cycle-item"><div class="lbl">${c.lbl}</div><div class="val" style="color:${c.c}">${c.val}</div></div>`).join('');
+    mfHTML=`<div class="sec-t">♔ 大师框架分析<span class="cnt">${mfResult.buyCount}看多/${mfResult.sellCount}看空</span></div>
+    <div class="mf-signal ${mfResult.signal}"><div class="mf-signal-icon">${sigIcon}</div><div class="mf-signal-text"><div class="mf-signal-label" style="color:${mfResult.signalColor}">${mfResult.signalLabel}</div><div class="mf-signal-desc">${mfResult.signalDesc}</div></div><div class="mf-signal-score" style="color:${mfResult.signalColor}">${mfResult.avgScore}</div></div>
+    <div class="mf-grid">${masterCards}</div>
+    <div class="mf-cycle"><div class="mf-cycle-title">🔄 资产周期传导</div><div class="mf-cycle-grid">${cycleItems}</div></div>
+    <div style="font-size:9px;color:var(--text-3);padding:8px 0;line-height:1.4">⚠️ 以上分析基于大师交易逻辑的量化映射,仅供参考。</div>`;
+  }
+
+  el.innerHTML=`<div class="sd-back" onclick="reloadStocks()">← 返回列表</div>
+    <div class="sd-hdr"><div class="nm">${name} (${code})</div></div>
+    <div class="sec-t">📈 K线(120日)</div><div class="sd-chart">${chartHTML}</div>
+    ${fundHTML}${scoreHTML}${fibHTML}${mfHTML}`;
 }
+
 async function reloadStocks(){
   const el=document.getElementById('v-stocks');
   el.innerHTML='<div class="loading-box"><span class="spin"></span> 加载行情…</div>';
-  try{const d=await fetchUniverse();renderStockList(d);}catch(e){el.innerHTML='<div class="loading-box">行情加载失败，请稍后重试</div>';}
+  try{const d=await fetchUniverse();renderStockList(d);}catch(e){el.innerHTML='<div class="loading-box" style="color:var(--orange)">行情加载失败，请下拉刷新</div>';}
 }
 
-/* ===== APP CONTROL ===== */
-const views=['dash','crisis','cycle','masters','stocks'];
+/* ========== APP CONTROL ========== */
+const viewRendered={dash:false,crisis:false,cycle:false,masters:false,scenario:false,camps:false,stocks:false};
 document.querySelectorAll('.tab').forEach(t=>t.addEventListener('click',()=>{
   const v=t.dataset.v;
   document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));t.classList.add('active');
   document.querySelectorAll('.view').forEach(x=>x.classList.remove('active'));
   document.getElementById('v-'+v).classList.add('active');
-  // Lazy render
-  if(v==='crisis'&&!document.getElementById('v-crisis').innerHTML)renderCrisis();
-  if(v==='cycle'&&!document.getElementById('v-cycle').innerHTML)renderCycles();
-  if(v==='masters'&&!document.getElementById('v-masters').innerHTML)renderMastersList();
-  if(v==='stocks'&&!document.getElementById('v-stocks').innerHTML)reloadStocks();
+  if(v==='crisis'&&!viewRendered.crisis){renderCrisis();viewRendered.crisis=true;}
+  if(v==='cycle'&&!viewRendered.cycle){renderCycles();viewRendered.cycle=true;}
+  if(v==='masters'&&!viewRendered.masters){renderMasters();viewRendered.masters=true;}
+  if(v==='scenario'&&!viewRendered.scenario){renderScenario();viewRendered.scenario=true;}
+  if(v==='camps'&&!viewRendered.camps){renderCamps();viewRendered.camps=true;}
+  if(v==='stocks'&&!viewRendered.stocks){reloadStocks();viewRendered.stocks=true;}
   window.scrollTo({top:0,behavior:'smooth'});
 }));
 
@@ -494,18 +1871,22 @@ function setStatus(state,txt){
   document.getElementById('statusText').textContent=txt;
 }
 
+let cache=null;
 async function loadAll(){
   setStatus('loading','加载中…');
   const md=Object.assign({},CURATED);
   try{
-    const [fx,mkt]=await Promise.allSettled([fetchFX(),fetchMarket()]);
-    if(fx.status==='fulfilled')Object.assign(md,fx.value);
-    if(mkt.status==='fulfilled')Object.assign(md,mkt.value);
+    const results=await Promise.allSettled([fetchFX(),fetchMarket()]);
+    if(results[0].status==='fulfilled')Object.assign(md,results[0].value);
+    if(results[1].status==='fulfilled')Object.assign(md,results[1].value);
+    cache=md;
     renderDash(md);
-    const ts=new Date().toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit'});
-    setStatus('live','实时 · '+ts);
+    viewRendered.dash=true;
+    setStatus('live','实时 · '+new Date().toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit'}));
   }catch(e){
+    cache=md;
     renderDash(md);
+    viewRendered.dash=true;
     setStatus('','离线');
   }
 }
