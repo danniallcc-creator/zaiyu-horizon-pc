@@ -162,6 +162,13 @@ body{font-family:'Noto Sans SC',system-ui,-apple-system,sans-serif;background:va
 .sd-hdr .nm{font-size:18px;font-weight:700}
 .sd-hdr .price{font-family:'JetBrains Mono',monospace;font-size:24px;font-weight:700;margin:3px 0}
 .sd-hdr .chg{font-family:'JetBrains Mono',monospace;font-size:13px}
+.sd-rt-price{display:flex;align-items:baseline;gap:10px;padding:10px 0 6px}
+.sd-rt-price .price{font-family:'JetBrains Mono',monospace;font-size:28px;font-weight:700}
+.sd-rt-price .chg{font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:600}
+.sd-rt-price .prev{font-size:11px;color:var(--text-3);margin-left:4px}
+.sd-rt-price.up .price,.sd-rt-price.up .chg{color:var(--red)}
+.sd-rt-price.down .price,.sd-rt-price.down .chg{color:var(--green)}
+.sd-rt-price.flat .price,.sd-rt-price.flat .chg{color:var(--text-2)}
 .sd-chart{background:var(--card);border-radius:10px;padding:10px;margin-bottom:14px;overflow-x:auto}
 .sd-fund{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:14px}
 .sd-fund .item{text-align:center;padding:8px 6px;background:var(--card);border-radius:8px;border:1px solid var(--line)}
@@ -273,6 +280,9 @@ body{font-family:'Noto Sans SC',system-ui,-apple-system,sans-serif;background:va
 .hf-card-ticker{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text-3);margin-left:4px}
 .hf-card-price{font-family:'JetBrains Mono',monospace;font-size:12px;margin-top:2px}
 .hf-card-price.up{color:var(--green)}.hf-card-price.down{color:var(--red)}.hf-card-price.flat{color:var(--text-3)}
+.hf-card-price-row{display:flex;align-items:baseline;gap:6px;margin-top:2px}
+.hf-card-realprice{font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:700;color:var(--text-1)}
+.hf-card-prevclose{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text-3)}
 .hf-card-right{display:flex;align-items:center;gap:10px;flex-shrink:0}
 .hf-card-conf{text-align:right}
 .hf-card-conf .val{font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:700}
@@ -1255,10 +1265,10 @@ async function fetchFundamentals(secid){
         code:d.f57, name:d.f58, industry:d.f127||'—',
         pe:d.f163!=null&&d.f163!=='-'?+(+d.f163/100).toFixed(2):null,
         pb:d.f167!=null&&d.f167!=='-'?+(+d.f167/100).toFixed(2):null,
-        roe:d.f173!=null&&d.f173!=='-'?+(+d.f173/100).toFixed(2):null,
+        roe:d.f173!=null&&d.f173!=='-'?+(+d.f173).toFixed(2):null,
         mktCap:d.f116!=null&&d.f116!=='-'?d.f116:null,
         revenue:d.f183!=null&&d.f183!=='-'?d.f183:null,
-        eps:d.f186!=null&&d.f186!=='-'?+(+d.f186/100).toFixed(2):null,
+        eps:d.f186!=null&&d.f186!=='-'?+(+d.f186).toFixed(2):null,
       };
       cacheSet(ck,result);
       return result;
@@ -1909,17 +1919,27 @@ function renderStockList(data){
 async function showStockDetail(secid,code,name){
   const el=document.getElementById('v-stocks');
   el.innerHTML=`<div class="sd-back" onclick="reloadStocks()">← 返回列表</div><div class="sd-hdr"><div class="nm">${name} (${code})</div></div><div class="loading-box"><span class="spin"></span> 加载K线与基本面…</div>`;
-  let kline=[],fundData=null;
+  let kline=[],fundData=null,rtQuote=null;
   try{
-    const [kRes,fRes]=await Promise.allSettled([fetchKline(secid,120),fetchFundamentals(secid)]);
+    const [kRes,fRes,qRes]=await Promise.allSettled([fetchKline(secid,120),fetchFundamentals(secid),emQuote(secid)]);
     kline=kRes.status==='fulfilled'?kRes.value:[];
     fundData=fRes.status==='fulfilled'?fRes.value:null;
+    if(qRes.status==='fulfilled'&&qRes.value){const q=qRes.value[secid];if(q&&q.price!=null)rtQuote={price:Number(q.price),chg:Number(q.chg)||0};}
   }catch(e){
     el.innerHTML=`<div class="sd-back" onclick="reloadStocks()">← 返回列表</div><div class="sd-hdr"><div class="nm">${name} (${code})</div></div><div class="loading-box" style="color:var(--orange)">数据加载失败<br><span style="font-size:10px;color:var(--text-3)">${e.message||'网络超时'}</span><br><span style="margin-top:10px;display:inline-block;color:var(--gold);cursor:pointer" onclick="showStockDetail('${secid}','${code}','${name}')">点击重试</span></div>`;
     return;
   }
   const stockInfo={name,id:code,price:null,changePct:null,secid};
-  if(kline.length>0){stockInfo.price=kline[kline.length-1].close;}
+  if(rtQuote){stockInfo.price=rtQuote.price;stockInfo.changePct=rtQuote.chg;}
+  else if(kline.length>0){stockInfo.price=kline[kline.length-1].close;}
+  // 实时行情头部
+  let rtPriceHTML='';
+  if(rtQuote){
+    const pCls=rtQuote.chg>0?'up':rtQuote.chg<0?'down':'flat';
+    const pStr=rtQuote.chg>=0?'+':'';
+    const prevClose=rtQuote.chg!=null?+(rtQuote.price/(1+rtQuote.chg/100)).toFixed(2):null;
+    rtPriceHTML=`<div class="sd-rt-price ${pCls}"><span class="price">${rtQuote.price.toFixed(2)}</span><span class="chg">${pStr}${rtQuote.chg.toFixed(2)}%</span>${prevClose?'<span class="prev">昨收 '+prevClose+'</span>':''}</div>`;
+  }
 
   // K-line SVG (simplified mobile version with MA + candles)
   let chartHTML='<div style="color:var(--text-3);text-align:center;padding:16px;font-size:11px">暂无K线数据</div>';
@@ -1986,6 +2006,7 @@ async function showStockDetail(secid,code,name){
 
   el.innerHTML=`<div class="sd-back" onclick="reloadStocks()">← 返回列表</div>
     <div class="sd-hdr"><div class="nm">${name} (${code})</div></div>
+    ${rtPriceHTML}
     <div class="sec-t">📈 K线(120日)</div><div class="sd-chart">${chartHTML}</div>
     ${fundHTML}${scoreHTML}${fibHTML}${mfHTML}`;
 }
@@ -2341,16 +2362,29 @@ async function loadHedgeFund(silent){
     <div class="hf-progress"><div class="lbl" id="hfProgLbl">准备中…</div><div class="bar"><span id="hfProgBar"></span></div></div>`;
   const progBar=el.querySelector('#hfProgBar'),progLbl=el.querySelector('#hfProgLbl');
   const uProg=(i,s)=>{if(progBar)progBar.style.width=((i+1)/total*100)+'%';if(progLbl)progLbl.textContent=(i+1)+'/'+total+' '+s;};
+  // 批量获取实时行情 (emQuote 20秒缓存, 盘中实时)
+  let quoteMap={};
+  try{quoteMap=await emQuote(HF_TRADEABLE.map(x=>x[0]).join(','));}catch(e){console.warn('对冲实时行情获取失败',e);}
   const results=[];
   for(let i=0;i<HF_TRADEABLE.length;i++){
     const [secid,code,name]=HF_TRADEABLE[i];
     uProg(i,name);
+    if(i>0)await new Promise(r=>setTimeout(r,500)); // 避免push2his API限流
     let kdata=[],fund=null;
     try{[kdata,fund]=await Promise.allSettled([fetchKline(secid,60),fetchFundamentals(secid)]).then(r=>[r[0].status==='fulfilled'?r[0].value:[],r[1].status==='fulfilled'?r[1].value:null]);}catch(e){}
-    if(!kdata||!kdata.length){uProg(i,name+' (无数据)');results.push({secid,code,name,kdata:null,decision:null});continue;}
-    const curPrice=kdata[kdata.length-1].close;
-    const prevP=kdata.length>5?kdata[kdata.length-6].close:curPrice;
-    const priceChange=prevP?((curPrice-prevP)/prevP*100):0;
+    const q=quoteMap[secid];
+    const rtPrice=(q&&q.price!=null)?Number(q.price):null;
+    const rtChg=(q&&q.chg!=null)?Number(q.chg):null;
+    const prevClose=(rtChg!=null&&rtPrice)?+(rtPrice/(1+rtChg/100)).toFixed(2):null;
+    if(!kdata||!kdata.length){
+      uProg(i,name+' (K线不可用,仅显示实时行情)');
+      results.push({secid,code,name,kdata:null,currentPrice:rtPrice,prevClose,priceChange:rtChg||0,decision:{action:'hold',actionLabel:'数据不足',confidence:0,reasons:['K线数据暂时不可用,无法进行完整分析'],buyCount:0,sellCount:0,neutralCount:0,totalAgents:0,weightedScore:0,maxPositionPct:0},risk:{volatility:0,remainingLimit:0,corrAdjust:1},signals:{},crisis:null});
+      continue;
+    }
+    const kClose=kdata[kdata.length-1].close;
+    const curPrice=rtPrice||kClose;
+    // 涨跌幅: emQuote的chg是以上一交易日收盘为基准的实时涨跌幅
+    const priceChange=(rtChg!=null)?rtChg:((kdata.length>1&&kdata[kdata.length-2].close)?((curPrice-kdata[kdata.length-2].close)/kdata[kdata.length-2].close*100):0);
     const info={id:code,name,price:curPrice,changePct:priceChange};
     const tech=hfTechnicalAgent(kdata);
     const fundA=hfFundamentalsAgent(fund);
@@ -2361,7 +2395,7 @@ async function loadHedgeFund(silent){
     const risk=hfRiskManager(kdata,fund,info);
     const decision=hfPortfolioManager({technical:tech,fundamentals:fundA,valuation:val,growth:grow,sentiment:sent,masters},{...risk,currentPrice:curPrice});
     const crisis=crisisCheckStock(kdata,fund,info);
-    results.push({secid,code,name,kdata,fund,currentPrice:curPrice,priceChange,info,agents:{technical:tech,fundamentals:fundA,valuation:val,growth:grow,sentiment:sent,masters},risk,decision,crisis});
+    results.push({secid,code,name,kdata,fund,currentPrice:curPrice,prevClose,priceChange,info,agents:{technical:tech,fundamentals:fundA,valuation:val,growth:grow,sentiment:sent,masters},risk,decision,crisis});
     uProg(i,name+' ✓');
   }
   el.dataset.ts=new Date().toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
@@ -2417,39 +2451,47 @@ function renderHedgeFundResults(el,results){
     const d=r.decision,a=r.agents,rs=r.risk,cr=r.crisis;
     const pCls=r.priceChange>0?'up':r.priceChange<0?'down':'flat';
     const pStr=r.priceChange>=0?'+':'';
+    // 实时价格显示
+    const priceFmt=r.currentPrice!=null?r.currentPrice.toFixed(2):'—';
+    const prevFmt=r.prevClose!=null?r.prevClose.toFixed(2):'—';
     // 卡片头部: 如果有危机预警则显示小图标
     const crisisIcon=cr&&cr.level==='danger'?'<span style="color:#e05c5c;font-size:10px;margin-left:4px">⚠危险</span>':cr&&(cr.level==='warn'||cr.level==='watch')?'<span style="color:#e0a23c;font-size:10px;margin-left:4px">⚠关注</span>':'';
     html+='<div class="hf-card '+actCls(d.action)+'" onclick="this.classList.toggle(\'expanded\')">'+
       '<div class="hf-card-top"><div class="hf-card-info">'+
       '<span class="hf-card-name">'+r.name+'</span><span class="hf-card-ticker">'+r.code+'</span>'+crisisIcon+
+      '<div class="hf-card-price-row"><span class="hf-card-realprice">'+priceFmt+'</span><span class="hf-card-prevclose">昨收 '+prevFmt+'</span></div>'+
       '<div class="hf-card-price '+pCls+'">'+pStr+r.priceChange.toFixed(2)+'%</div></div>'+
       '<div class="hf-card-right"><div class="hf-card-conf"><div class="val">'+d.confidence+'%</div><div class="lbl">置信度</div></div>'+
       '<div class="hf-badge '+actCls(d.action)+'">'+(actMap[d.action]||d.action)+'</div></div></div>'+
       '<div class="hf-card-reason">'+d.reasons.join(' · ')+' · 综合评分'+d.overallScore+'</div>'+
       '<div class="hf-expand-hint">点击展开详细分析</div>'+
-      '<div class="hf-detail">'+
-      '<div class="hf-section-title">量化策略Agent</div>'+
-      '<div class="hf-agent-grid">'+
-      hfAgentCard('技术分析','tech',a.technical)+
-      hfAgentCard('基本面','fund',a.fundamentals)+
-      hfAgentCard('估值','val',a.valuation)+
-      hfAgentCard('成长','grow',a.growth)+
-      hfAgentCard('情绪','sent',a.sentiment)+'</div>';
-    if(a.masters){
-      html+='<div class="hf-section-title" style="margin-top:10px">大师框架Agent ('+a.masters.buyCount+'看多/'+a.masters.sellCount+'看空)</div><div class="hf-agent-grid">';
-      a.masters.agents.forEach(function(m){html+=hfAgentCard(m.name,m.id,m);});
-      html+='</div>';
-    }
-    // 危机预警面板
-    if(cr&&cr.signals&&cr.signals.length>0){
-      const crLvl=cr.level==='danger'?'danger':'warn';
-      const crTitle=cr.level==='danger'?'⚠ 危机预警 — 建议卖出/做空':cr.level==='warn'?'⚠ 风险预警 — 谨慎持有':'🔍 关注信号';
-      html+='<div class="hf-crisis-alert '+crLvl+'" style="margin-top:10px"><div class="ca-title">'+crTitle+'</div>';
-      cr.signals.forEach(function(s){
-        const icon=s.level==='danger'?'🔴':'🟡';
-        html+='<div class="ca-item">'+icon+' '+s.msg+'</div>';
-      });
-      html+='</div>';
+      '<div class="hf-detail">';
+    if(a){
+      html+='<div class="hf-section-title">量化策略Agent</div>'+
+        '<div class="hf-agent-grid">'+
+        hfAgentCard('技术分析','tech',a.technical)+
+        hfAgentCard('基本面','fund',a.fundamentals)+
+        hfAgentCard('估值','val',a.valuation)+
+        hfAgentCard('成长','grow',a.growth)+
+        hfAgentCard('情绪','sent',a.sentiment)+'</div>';
+      if(a.masters){
+        html+='<div class="hf-section-title" style="margin-top:10px">大师框架Agent ('+a.masters.buyCount+'看多/'+a.masters.sellCount+'看空)</div><div class="hf-agent-grid">';
+        a.masters.agents.forEach(function(m){html+=hfAgentCard(m.name,m.id,m);});
+        html+='</div>';
+      }
+      // 危机预警面板
+      if(cr&&cr.signals&&cr.signals.length>0){
+        const crLvl=cr.level==='danger'?'danger':'warn';
+        const crTitle=cr.level==='danger'?'⚠ 危机预警 — 建议卖出/做空':cr.level==='warn'?'⚠ 风险预警 — 谨慎持有':'🔍 关注信号';
+        html+='<div class="hf-crisis-alert '+crLvl+'" style="margin-top:10px"><div class="ca-title">'+crTitle+'</div>';
+        cr.signals.forEach(function(s){
+          const icon=s.level==='danger'?'🔴':'🟡';
+          html+='<div class="ca-item">'+icon+' '+s.msg+'</div>';
+        });
+        html+='</div>';
+      }
+    } else {
+      html+='<div class="hf-section-title">K线数据暂时不可用</div><div style="color:var(--text-3);font-size:11px;padding:8px 0">无法进行完整分析，仅显示实时行情</div>';
     }
     html+='<div class="hf-risk-panel"><div class="ttl">风控管理</div>'+
       '<div class="hf-risk-grid">'+
