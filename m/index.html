@@ -1223,28 +1223,54 @@ async function fetchUniverse(){
 }
 
 // ===== K线历史(东方财富 push2his, 120日日K, 带缓存+竞速+重试) =====
+// 腾讯财经K线symbol映射(美股交易所后缀: OQ=NASDAQ, N=NYSE, AM=NYSE Arca/AMEX ETF)
+const TENCENT_US_SUFFIX={
+  'AAPL':'OQ','MSFT':'OQ','GOOGL':'OQ','AMZN':'OQ','NVDA':'OQ','META':'OQ','TSLA':'OQ',
+  'TQQQ':'AM','SQQQ':'AM','JD':'OQ','PDD':'OQ','NTES':'OQ','MU':'OQ','TCOM':'OQ',
+  'CRCL':'N','BABA':'N','TME':'N','DBA':'AM','VIXY':'AM','VXX':'AM','UVXY':'AM'
+};
+function secidToTencent(secid){
+  if(!secid||typeof secid!=='string')return null;
+  const [mkt,code]=secid.split('.');if(!code)return null;
+  if(mkt==='105'||mkt==='106'||mkt==='107'){
+    const suf=TENCENT_US_SUFFIX[code]||(mkt==='105'?'OQ':mkt==='107'?'AM':'N');
+    return{api:'usfqkline',symbol:'us'+code+'.'+suf};
+  }
+  if(mkt==='116')return{api:'hkfqkline',symbol:'hk'+code};
+  if(mkt==='1')return{api:'fqkline',symbol:'sh'+code};
+  if(mkt==='0')return{api:'fqkline',symbol:'sz'+code};
+  return null; // 商品/债券/指数(102/122/171等)腾讯不一定支持
+}
+async function fetchKlineTencent(secid,days){
+  const t=secidToTencent(secid);if(!t)return[];
+  const url=`https://web.ifzq.gtimg.cn/appstock/app/${t.api}/get?param=${t.symbol},day,,,${days||120},qfq&_=${Date.now()}`;
+  try{
+    const ctrl=new AbortController();const tm=setTimeout(()=>ctrl.abort(),FETCH_TIMEOUT);
+    const r=await fetch(url,{signal:ctrl.signal,cache:'no-store',mode:'cors'});clearTimeout(tm);
+    if(!r.ok)return[];
+    const j=await r.json();
+    const obj=j.data&&j.data[t.symbol];if(!obj)return[];
+    const arr=obj.qfqday||obj.day||obj.kline||[];if(!arr.length)return[];
+    return arr.map(k=>({date:k[0],open:+k[1],close:+k[2],high:+k[3],low:+k[4],vol:+k[5]||0,amt:+k[8]||+k[5]||0}));
+  }catch(e){return[];}
+}
 async function fetchKline(secid,days){
   const ck='kl_'+secid+'_'+(days||120);
   const cached=cacheGet(ck,300000); // 5分钟缓存
   if(cached)return cached;
+  // 主源: 东方财富push2his
   const url=`https://push2his.eastmoney.com/api/qt/stock/kline/get?secid=${secid}&fields1=f1,f2,f3,f4,f5,f6&fields2=f51,f52,f53,f54,f55,f56,f57&klt=101&fqt=1&end=20500101&lmt=${days||120}&_=${Date.now()}`;
-  for(let attempt=0;attempt<2;attempt++){
-    try{
-      const j=await _emFetchRace(url);
-      const klines=j.data&&j.data.klines;
-      if(!klines||!klines.length){
-        if(attempt===0){await new Promise(r=>setTimeout(r,1000));continue;}
-        return[];
-      }
+  try{
+    const j=await _emFetchRace(url);
+    const klines=j.data&&j.data.klines;
+    if(klines&&klines.length){
       const result=klines.map(k=>{const p=k.split(',');return{date:p[0],open:+p[1],close:+p[2],high:+p[3],low:+p[4],vol:+p[5],amt:+p[6]};});
-      cacheSet(ck,result);
-      return result;
-    }catch(e){
-      if(attempt===0){await new Promise(r=>setTimeout(r,1500));continue;}
-      console.warn('K线获取失败',secid,e.message||e);
-      return[];
+      cacheSet(ck,result);return result;
     }
-  }
+  }catch(e){/* 主源失败,降级 */}
+  // 备用源: 腾讯财经
+  const tcResult=await fetchKlineTencent(secid,days);
+  if(tcResult&&tcResult.length){cacheSet(ck,tcResult);return tcResult;}
   return[];
 }
 
@@ -2369,7 +2395,7 @@ async function loadHedgeFund(silent){
   for(let i=0;i<HF_TRADEABLE.length;i++){
     const [secid,code,name]=HF_TRADEABLE[i];
     uProg(i,name);
-    if(i>0)await new Promise(r=>setTimeout(r,500)); // 避免push2his API限流
+    if(i>0)await new Promise(r=>setTimeout(r,150)); // 轻量延迟,腾讯备用源CORS友好
     let kdata=[],fund=null;
     try{[kdata,fund]=await Promise.allSettled([fetchKline(secid,60),fetchFundamentals(secid)]).then(r=>[r[0].status==='fulfilled'?r[0].value:[],r[1].status==='fulfilled'?r[1].value:null]);}catch(e){}
     const q=quoteMap[secid];
