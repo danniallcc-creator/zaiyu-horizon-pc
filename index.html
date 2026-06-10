@@ -716,6 +716,16 @@ a{color:inherit;text-decoration:none}
 .hf-pm-reason{margin-top:12px;padding:12px 16px;border-radius:8px;background:rgba(76,175,114,.04);border:1px solid rgba(76,175,114,.12);font-size:12px;color:var(--text-2);line-height:1.6}
 .hf-disclaimer{margin-top:24px;padding:14px 18px;border-radius:8px;background:rgba(212,175,55,.04);border:1px dashed var(--line-gold);font-size:11px;color:var(--text-3);line-height:1.6}
 .hf-section-title{font-size:12px;font-weight:700;color:var(--gold);margin:16px 0 8px;letter-spacing:.5px;text-transform:uppercase}
+/* 危机预警 */
+.hf-crisis-alert{margin-top:10px;padding:12px 16px;border-radius:10px;border:1px solid;font-size:12px;line-height:1.7}
+.hf-crisis-alert.danger{background:rgba(224,92,92,.10);border-color:rgba(224,92,92,.35)}
+.hf-crisis-alert.warn{background:rgba(224,162,60,.08);border-color:rgba(224,162,60,.30)}
+.hf-crisis-alert.watch{background:rgba(91,155,213,.08);border-color:rgba(91,155,213,.25)}
+.hf-crisis-alert .ca-title{font-weight:700;margin-bottom:6px;font-size:13px}
+.hf-crisis-alert.danger .ca-title{color:#e05c5c}
+.hf-crisis-alert.warn .ca-title{color:#e0a23c}
+.hf-crisis-alert.watch .ca-title{color:#5b9bd5}
+.hf-crisis-alert .ca-item{color:var(--text-2);font-size:11px;padding:2px 0}
 @media(max-width:700px){.hf-summary{grid-template-columns:repeat(2,1fr)}.hf-agent-grid{grid-template-columns:1fr 1fr}.hf-card-top{flex-direction:column;align-items:flex-start}.hf-card-right{align-self:flex-end}}
 </style>
 </head>
@@ -4166,6 +4176,88 @@ function hfRiskManager(kdata,fund,info){
   return{remainingLimit:+(finalLimit*100).toFixed(1),volatility:+(annVol*100).toFixed(1),volAdj,corrMultiplier:corrMult,annualizedVol:annVol};
 }
 
+// ---- 危机预警系统 (基于2000/2008/1993/2022历史危机特征) ----
+// 宏观信号: 利率、信用、波动率、流动性 | 微观信号: 估值、技术面、企业质量
+function crisisCheckStock(kdata, fund, info){
+  const warns=[];const md=cache||{};
+  // ===== 宏观信号 =====
+  // 1) 联储利率 — 高利率压制估值 (参考2000年6.3%, 1993年急加至6%)
+  const fedRateStr=md.fedRate||'4.25-4.50%';
+  const fedRateHi=parseFloat((fedRateStr.match(/[\d.]+/g)||[]).pop())||4.5;
+  if(fedRateHi>=5.5) warns.push({level:'danger',msg:'联储利率'+fedRateHi+'%偏高，压制估值 (参考1993/2000加息周期)'});
+  else if(fedRateHi>=5.0) warns.push({level:'warn',msg:'联储利率'+fedRateHi+'%处于限制性水平'});
+  // 2) VIX恐慌指数 (2008:55, 2020:65, 2000:35)
+  const vix=parseFloat(md.vixIndex)||15;
+  if(vix>30) warns.push({level:'danger',msg:'VIX恐慌指数'+vix.toFixed(1)+'，市场恐慌 (历史危机: 35-65)'});
+  else if(vix>20) warns.push({level:'warn',msg:'VIX '+vix.toFixed(1)+' 偏高，市场不确定性上升'});
+  // 3) 10Y-2Y利差倒挂 (2000:-0.6%, 2008:-0.2%, 2022:-0.85%, 1993前也倒挂)
+  const t2y=parseFloat(md.t2y)||null;
+  const t10yVal=parseFloat(md.t10y)||null;
+  if(t10yVal&&t2y){
+    const spread=t10yVal-t2y;
+    if(spread<-0.3) warns.push({level:'danger',msg:'收益率曲线倒挂('+spread.toFixed(2)+'%)，衰退强信号 (2000/2008/2022均出现)'});
+    else if(spread<0) warns.push({level:'warn',msg:'收益率曲线轻微倒挂('+spread.toFixed(2)+'%)，需关注'});
+  }
+  // 4) 高收益债信用利差 (2008:10.5%, 2020:8.5%, 正常:2-4%)
+  const hySpread=parseFloat(md.hySpread)||null;
+  if(hySpread&&hySpread>7) warns.push({level:'danger',msg:'高收益债利差'+hySpread+'%，信用市场紧张 (类似2008)'});
+  else if(hySpread&&hySpread>5) warns.push({level:'warn',msg:'高收益债利差'+hySpread+'%，信用风险抬升'});
+  // 5) CPI通胀 (2022:8%+, 2000:3.4%)
+  const cpi=parseFloat(md.cpi)||null;
+  if(cpi&&cpi>5) warns.push({level:'danger',msg:'CPI '+cpi+'%严重偏高，滞胀风险 (参考2022)'});
+  else if(cpi&&cpi>3.5) warns.push({level:'warn',msg:'CPI '+cpi+'%高于目标，关注联储政策'});
+  // 6) 失业率 (2008:7.3%, 2020:14.7%, 正常:3.5-4.5%)
+  const unrate=parseFloat(md.unemployment)||null;
+  if(unrate&&unrate>6) warns.push({level:'danger',msg:'失业率'+unrate+'%，经济衰退信号 (2008:7.3%)'});
+  else if(unrate&&unrate>5) warns.push({level:'warn',msg:'失业率'+unrate+'%偏高，经济放缓'});
+
+  // ===== 微观信号 (个股层面) =====
+  if(!kdata||kdata.length<20) return{level:'unknown',signals:warns};
+  const n=kdata.length,last=kdata[n-1].close;
+  // 7) PE极端估值 (2000年纳指PE>100的教训)
+  const pe=fund?.pe||null;
+  if(pe&&pe>60) warns.push({level:'danger',msg:'PE '+pe+'x极端高估，泡沫风险 (2000年教训)'});
+  else if(pe&&pe>40) warns.push({level:'warn',msg:'PE '+pe+'x估值偏高，需高增长支撑'});
+  // 8) 价格远离长期均线 (2000/2008崩盘前>30%偏离)
+  const ma60avg=n>=60?kdata.slice(-60).reduce((s,d)=>s+d.close,0)/60:null;
+  if(ma60avg){
+    const deviation=(last/ma60avg-1)*100;
+    if(deviation>30) warns.push({level:'danger',msg:'价格高于60日均线'+deviation.toFixed(0)+'%，过热信号'});
+    else if(deviation>20) warns.push({level:'warn',msg:'价格高于60日均线'+deviation.toFixed(0)+'%，注意回调风险'});
+  }
+  // 9) 短期急跌 (2008/2020崩盘特征)
+  const ret5=n>=6?(last-kdata[n-6].close)/kdata[n-6].close*100:0;
+  const ret20=n>=21?(last-kdata[n-21].close)/kdata[n-21].close*100:0;
+  if(ret5<-10) warns.push({level:'danger',msg:'5日暴跌'+ret5.toFixed(1)+'%，可能进入危机模式'});
+  else if(ret20<-20) warns.push({level:'danger',msg:'20日跌幅'+ret20.toFixed(1)+'%，趋势性下跌'});
+  else if(ret20<-10) warns.push({level:'warn',msg:'20日下跌'+ret20.toFixed(1)+'%，下行趋势明显'});
+  // 10) 波动率异常放大 (危机前兆)
+  const vol20=kdata.slice(-20);
+  const avgC20=vol20.reduce((s,d)=>s+d.close,0)/vol20.length;
+  const std20=Math.sqrt(vol20.reduce((s,d)=>s+(d.close-avgC20)**2,0)/vol20.length);
+  const volatility=std20/avgC20*100;
+  if(volatility>8) warns.push({level:'danger',msg:'日波动率'+volatility.toFixed(1)+'%异常(年化>'+Math.round(volatility*Math.sqrt(252))+'%)'});
+  else if(volatility>5) warns.push({level:'warn',msg:'日波动率'+volatility.toFixed(1)+'%偏高(年化~'+Math.round(volatility*Math.sqrt(252))+'%)'});
+  // 11) ROE恶化 (2000年dot-com企业无盈利)
+  const roe=fund?.roe;
+  if(roe!=null&&roe<0) warns.push({level:'warn',msg:'ROE为负('+roe+'%)，企业亏损'});
+  else if(roe!=null&&roe<3&&roe>=0) warns.push({level:'warn',msg:'ROE仅'+roe+'%，盈利能力极弱'});
+  // 12) 放量暴跌 (典型恐慌性抛售, 2008/2020常见)
+  const vol5avg=kdata.slice(-5).reduce((s,d)=>s+d.vol,0)/5;
+  const vol20avg=kdata.slice(-20).reduce((s,d)=>s+d.vol,0)/20;
+  const volRatio=vol20avg>0?vol5avg/vol20avg:1;
+  if(volRatio>2&&ret5<-5) warns.push({level:'danger',msg:'放量暴跌(量比'+volRatio.toFixed(1)+'x, 5日'+ret5.toFixed(1)+'%)，恐慌抛售'});
+  else if(volRatio>1.5&&ret5<-3) warns.push({level:'warn',msg:'放量下跌(量比'+volRatio.toFixed(1)+'x)，卖压加重'});
+
+  const dangerCount=warns.filter(w=>w.level==='danger').length;
+  const warnCount=warns.filter(w=>w.level==='warn').length;
+  let level='safe';
+  if(dangerCount>=2) level='danger';
+  else if(dangerCount>=1||warnCount>=3) level='warn';
+  else if(warnCount>=2) level='watch';
+  return{level,signals:warns,dangerCount,warnCount};
+}
+
 // ---- 组合管理Agent (聚合19路信号 → 最终交易指令) ----
 function hfPortfolioManager(allSignals,risk){
   const SV={bullish:1,neutral:0,bearish:-1};
@@ -4198,7 +4290,9 @@ function hfPortfolioManager(allSignals,risk){
   else if(ns>0.05){action='buy';actionLabel='谨慎买入';confidence=Math.max(30,avgConf-10);}
   else if(ns<-0.05){action='sell';actionLabel='谨慎减仓';confidence=Math.max(30,avgConf-10);}
   else{action='hold';actionLabel='持有观望';confidence=avgConf;}
-  const volPenalty=risk.volatility>30?Math.max(0.5,(50-risk.volatility)/50):1;
+  // 对数衰减惩罚: 低波动(vol≤15%)不惩罚, 高波动渐进式衰减, 下限0.25
+  // 对比旧方案(线性floor=0.5): vol=30%→0.80(旧1.0), vol=50%→0.47(旧0.5), vol=80%→0.33(旧0.5)
+  const volPenalty=risk.volatility<=15?1:Math.max(0.25,1/(1+Math.log(1+(risk.volatility-15)/15)));
   confidence=Math.round(Math.max(0,Math.min(100,confidence*volPenalty)));
   const reasons=[];
   reasons.push(buyC+'位看多 / '+sellC+'位看空 (共'+totalAgents+'位Agent)');
@@ -4239,7 +4333,8 @@ async function loadHedgeFund(silent){
     const masters=hfMasterAgents(kdata,fund,info);
     const risk=hfRiskManager(kdata,fund,info);
     const decision=hfPortfolioManager({technical:tech,fundamentals:fundA,valuation:val,growth:grow,sentiment:sent,masters},{...risk,currentPrice:curPrice});
-    results.push({secid,code,name,kdata,fund,currentPrice:curPrice,priceChange,info,agents:{technical:tech,fundamentals:fundA,valuation:val,growth:grow,sentiment:sent,masters},risk,decision});
+    const crisis=crisisCheckStock(kdata,fund,info);
+    results.push({secid,code,name,kdata,fund,currentPrice:curPrice,priceChange,info,agents:{technical:tech,fundamentals:fundA,valuation:val,growth:grow,sentiment:sent,masters},risk,decision,crisis});
     uProg(i,name+' 完成');
   }
   el.dataset.ts=new Date().toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
@@ -4263,9 +4358,12 @@ function renderHedgeFundResults(el,results){
   const sentCol=sentDir==='bullish'?'#4caf72':sentDir==='bearish'?'#e05c5c':'#e0a23c';
   const actCls=a=>a==='strong-buy'?'buy':a==='strong-sell'?'sell':a;
   const actMap={'strong-buy':'强烈买入','buy':'买入','hold':'持有观望','sell':'卖出','strong-sell':'强烈卖出'};
+  // 危机预警统计
+  const crisisDanger=valid.filter(r=>r.crisis&&r.crisis.level==='danger').length;
+  const crisisWarn=valid.filter(r=>r.crisis&&(r.crisis.level==='warn'||r.crisis.level==='watch')).length;
   let html=`
     <div class="hf-hero"><h2>AI对冲基金决策引擎</h2>
-    <p>19位Agent并行分析 · 5量化策略 + 10投资大师 + 波动率风控 · 更新于 ${ts}</p>
+    <p>19位Agent并行分析 · 5量化策略 + 10投资大师 + 危机预警 · 更新于 ${ts}</p>
     <div class="hf-actions"><button class="hf-btn" onclick="rendered.hedgefund=false;renderHedgeFund()">重新分析</button></div></div>
     <div class="hf-summary">
       <div class="hf-stat"><div class="num">${valid.length}</div><div class="lbl">分析标的</div></div>
@@ -4274,14 +4372,24 @@ function renderHedgeFundResults(el,results){
       <div class="hf-stat"><div class="num" style="color:#e05c5c">${sl}</div><div class="lbl">看空</div></div>
     </div>
     <div class="hf-sentiment ${sentCls}"><div class="dir" style="color:${sentCol}">${sentText}</div><div class="conf" style="color:${sentCol}">综合评分 ${avgScore}</div><div class="desc">${sentDesc}</div></div>`;
+  // 危机预警总览
+  if(crisisDanger>0||crisisWarn>0){
+    const cLvl=crisisDanger>=3?'danger':crisisDanger>=1||crisisWarn>=5?'warn':'watch';
+    const cIcon=cLvl==='danger'?'🔴':cLvl==='warn'?'🟡':'🔵';
+    const cTitle=cLvl==='danger'?'系统性危机预警':cLvl==='warn'?'风险预警信号':'关注信号';
+    const cDesc=cLvl==='danger'?'多只标的出现危机特征(参考2000/2008/1993/2022)，建议防御为主':cLvl==='warn'?'部分标的出现风险信号，建议关注并控制仓位':'部分指标偏离，持续观察';
+    html+=`<div class="hf-crisis-alert ${cLvl}"><div class="ca-title">${cIcon} ${cTitle} · ${crisisDanger}危险 / ${crisisWarn}警告</div>
+      <div style="color:var(--text-2);font-size:11px">${cDesc}</div></div>`;
+  }
   const sorted=[...valid].sort((a,b)=>{const o={'strong-buy':0,'buy':1,'hold':2,'sell':3,'strong-sell':4};return(o[a.decision.action]||2)-(o[b.decision.action]||2);});
   sorted.forEach(r=>{
-    const d=r.decision,a=r.agents,rs=r.risk;
+    const d=r.decision,a=r.agents,rs=r.risk,cr=r.crisis;
     const pCls=r.priceChange>0?'up':r.priceChange<0?'down':'flat';
     const pStr=r.priceChange>=0?'+':'';
+    const crisisIcon=cr&&cr.level==='danger'?'<span style="color:#e05c5c;font-size:11px;margin-left:5px">⚠危险</span>':cr&&(cr.level==='warn'||cr.level==='watch')?'<span style="color:#e0a23c;font-size:11px;margin-left:5px">⚠关注</span>':'';
     html+=`<div class="hf-card ${actCls(d.action)}" onclick="this.classList.toggle('expanded')">
       <div class="hf-card-top">
-        <div class="hf-card-info"><span class="hf-card-name">${r.name}</span><span class="hf-card-ticker">${r.code}</span>
+        <div class="hf-card-info"><span class="hf-card-name">${r.name}</span><span class="hf-card-ticker">${r.code}</span>${crisisIcon}
           <div class="hf-card-price ${pCls}">${pStr}${r.priceChange.toFixed(2)}%</div></div>
         <div class="hf-card-right">
           <div class="hf-card-conf"><div class="val">${d.confidence}%</div><div class="lbl">置信度</div></div>
@@ -4304,6 +4412,17 @@ function renderHedgeFundResults(el,results){
       a.masters.agents.forEach(m=>{html+=hfAgentCard(m.name,m.id,m);});
       html+=`</div>`;
     }
+    // 危机预警面板
+    if(cr&&cr.signals&&cr.signals.length>0){
+      const crLvl=cr.level==='danger'?'danger':'warn';
+      const crTitle=cr.level==='danger'?'⚠ 危机预警 — 建议卖出/做空':cr.level==='warn'?'⚠ 风险预警 — 谨慎持有':'🔍 关注信号';
+      html+=`<div class="hf-crisis-alert ${crLvl}" style="margin-top:12px"><div class="ca-title">${crTitle}</div>`;
+      cr.signals.forEach(s=>{
+        const icon=s.level==='danger'?'🔴':'🟡';
+        html+=`<div class="ca-item">${icon} ${s.msg}</div>`;
+      });
+      html+=`</div>`;
+    }
     html+=`<div class="hf-risk-panel"><div class="ttl">风控管理 · Volatility-Adjusted Risk</div>
       <div class="hf-risk-grid">
         <div class="hf-risk-item"><div class="lbl">年化波动率</div><div class="val">${rs.volatility}%</div></div>
@@ -4313,7 +4432,7 @@ function renderHedgeFundResults(el,results){
     html+=`<div class="hf-pm-reason"><b>组合管理决策:</b> ${actMap[d.action]||d.action} · 置信度${d.confidence}% · ${d.buyCount}看多/${d.sellCount}看空/${d.neutralCount}中性(共${d.totalAgents}位Agent) · 加权得分${d.weightedScore} · 建议最大仓位${d.maxPositionPct}%</div>`;
     html+=`</div></div>`;
   });
-  html+=`<div class="hf-disclaimer"><b>风险提示</b>: 本模块基于ai-hedge-fund多Agent决策架构,将10位投资大师的交易逻辑与5类量化策略融合为19个并行分析Agent,经波动率风控调整后由组合管理Agent输出最终交易指令。所有分析基于历史技术面数据与公开基本面信息,仅供研究学习参考,不构成任何投资建议。市场有风险,投资需谨慎。</div>`;
+  html+=`<div class="hf-disclaimer"><b>风险提示</b>: 本模块基于ai-hedge-fund多Agent决策架构,将10位投资大师的交易逻辑与5类量化策略融合为19个并行分析Agent,经波动率风控调整和危机预警检测后输出交易指令。危机预警参考2000互联网泡沫、2008金融危机、1993利率冲击、2022加息周期等历史特征。所有分析基于历史技术面数据与公开基本面信息,仅供研究学习参考,不构成任何投资建议。市场有风险,投资需谨慎。</div>`;
   el.innerHTML=html;
 }
 
