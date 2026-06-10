@@ -4445,15 +4445,23 @@ async function loadHedgeFund(silent){
     const q=quoteMap[secid];
     const rtPrice=(q&&q.price!=null)?Number(q.price):null;
     const rtChg=(q&&q.chg!=null)?Number(q.chg):null;
-    const prevClose=(rtChg!=null&&rtPrice)?+(rtPrice/(1+rtChg/100)).toFixed(2):null;
+    // 兜底前收(K线缺失时用)
+    const rtPrevClose=(rtChg!=null&&rtPrice)?+(rtPrice/(1+rtChg/100)).toFixed(2):null;
     if(!kdata||!kdata.length){
       uProg(i,name+' (K线不可用,仅显示实时行情)');
-      results.push({secid,code,name,kdata:null,currentPrice:rtPrice,prevClose,priceChange:rtChg||0,decision:{action:'hold',actionLabel:'数据不足',confidence:0,overallScore:0,reasons:['K线数据暂时不可用,无法进行完整分析'],buyCount:0,sellCount:0,neutralCount:0,totalAgents:0,weightedScore:0,maxPositionPct:0},risk:{volatility:0,remainingLimit:0,corrAdjust:1},signals:{},crisis:null});
+      results.push({secid,code,name,kdata:null,currentPrice:rtPrice,prevClose:rtPrevClose,priceChange:rtChg||0,decision:{action:'hold',actionLabel:'数据不足',confidence:0,overallScore:0,reasons:['K线数据暂时不可用,无法进行完整分析'],buyCount:0,sellCount:0,neutralCount:0,totalAgents:0,weightedScore:0,maxPositionPct:0},risk:{volatility:0,remainingLimit:0,corrAdjust:1},signals:{},crisis:null});
       continue;
     }
+    // K线可用 → 以K线最后两根的"官方正常交易时段收盘价"为权威源
+    // (避免美股盘前/盘后数据污染显示, 例如东财f2/f3在NY凌晨会切到盘前价)
     const kClose=kdata[kdata.length-1].close;
-    const curPrice=rtPrice||kClose;
-    const priceChange=(rtChg!=null)?rtChg:((kdata.length>1&&kdata[kdata.length-2].close)?((curPrice-kdata[kdata.length-2].close)/kdata[kdata.length-2].close*100):0);
+    const kPrev=(kdata.length>1)?kdata[kdata.length-2].close:null;
+    const kChg=(kPrev!=null&&kPrev)?((kClose-kPrev)/kPrev*100):0;
+    // 显示价: 仅当 emQuote 与 K线收盘"非常接近"(±3%, 表明在正常盘中)时使用实时价, 否则用K线收盘
+    const inSession=(rtPrice!=null&&kClose)?(Math.abs(rtPrice-kClose)/kClose<0.03):false;
+    const curPrice=inSession?rtPrice:kClose;
+    const prevClose=kPrev!=null?kPrev:rtPrevClose;
+    const priceChange=inSession&&rtChg!=null?rtChg:kChg;
     const info={id:code,name,price:curPrice,changePct:priceChange};
     const tech=hfTechnicalAgent(kdata);
     const fundA=hfFundamentalsAgent(fund);
