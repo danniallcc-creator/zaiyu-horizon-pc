@@ -2272,7 +2272,7 @@ function renderStockDetail(secid,stockInfo){
 }
 function renderDetailContent(container,secid,info,kdata,fund,rtQuote){
   const loading=container.querySelector('.stk-loading');
-  if(!kdata.length&&!fund){loading.innerHTML='<div style="color:#e0a23c">暂无历史数据(可能该标的不支持K线查询)，请返回列表。</div>';return;}
+  if(!kdata.length&&!fund&&!rtQuote){loading.innerHTML='<div style="color:#e0a23c">数据加载失败，可能API被限流。请稍后重试或返回列表。<br><span style="font-size:11px;color:var(--text-3);margin-top:6px;display:inline-block">提示: 30秒后再次点击</span></div>';return;}
   const score=kdata.length>=20?aiScore(kdata,fund):null;
   loading.remove();
   // K线SVG
@@ -4415,7 +4415,7 @@ async function loadHedgeFund(silent){
     const prevClose=(rtChg!=null&&rtPrice)?+(rtPrice/(1+rtChg/100)).toFixed(2):null;
     if(!kdata||!kdata.length){
       uProg(i,name+' (K线不可用,仅显示实时行情)');
-      results.push({secid,code,name,kdata:null,currentPrice:rtPrice,prevClose,priceChange:rtChg||0,decision:{action:'hold',actionLabel:'数据不足',confidence:0,reasons:['K线数据暂时不可用,无法进行完整分析'],buyCount:0,sellCount:0,neutralCount:0,totalAgents:0,weightedScore:0,maxPositionPct:0},risk:{volatility:0,remainingLimit:0,corrAdjust:1},signals:{},crisis:null});
+      results.push({secid,code,name,kdata:null,currentPrice:rtPrice,prevClose,priceChange:rtChg||0,decision:{action:'hold',actionLabel:'数据不足',confidence:0,overallScore:0,reasons:['K线数据暂时不可用,无法进行完整分析'],buyCount:0,sellCount:0,neutralCount:0,totalAgents:0,weightedScore:0,maxPositionPct:0},risk:{volatility:0,remainingLimit:0,corrAdjust:1},signals:{},crisis:null});
       continue;
     }
     const kClose=kdata[kdata.length-1].close;
@@ -4496,7 +4496,7 @@ function renderHedgeFundResults(el,results){
           <div class="hf-badge ${actCls(d.action)}">${actMap[d.action]||d.action}</div>
         </div>
       </div>
-      <div class="hf-card-reason">${d.reasons.join(' · ')} · 综合评分 ${d.overallScore}</div>
+      <div class="hf-card-reason">${d.reasons.join(' · ')}${a?' · 综合评分 '+d.overallScore:''}</div>
       <div class="hf-expand-hint">点击展开详细分析</div>
       <div class="hf-detail">`;
     if(a){

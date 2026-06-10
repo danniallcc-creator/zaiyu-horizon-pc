@@ -2378,7 +2378,7 @@ async function loadHedgeFund(silent){
     const prevClose=(rtChg!=null&&rtPrice)?+(rtPrice/(1+rtChg/100)).toFixed(2):null;
     if(!kdata||!kdata.length){
       uProg(i,name+' (K线不可用,仅显示实时行情)');
-      results.push({secid,code,name,kdata:null,currentPrice:rtPrice,prevClose,priceChange:rtChg||0,decision:{action:'hold',actionLabel:'数据不足',confidence:0,reasons:['K线数据暂时不可用,无法进行完整分析'],buyCount:0,sellCount:0,neutralCount:0,totalAgents:0,weightedScore:0,maxPositionPct:0},risk:{volatility:0,remainingLimit:0,corrAdjust:1},signals:{},crisis:null});
+      results.push({secid,code,name,kdata:null,currentPrice:rtPrice,prevClose,priceChange:rtChg||0,decision:{action:'hold',actionLabel:'数据不足',confidence:0,overallScore:0,reasons:['K线数据暂时不可用,无法进行完整分析'],buyCount:0,sellCount:0,neutralCount:0,totalAgents:0,weightedScore:0,maxPositionPct:0},risk:{volatility:0,remainingLimit:0,corrAdjust:1},signals:{},crisis:null});
       continue;
     }
     const kClose=kdata[kdata.length-1].close;
@@ -2463,7 +2463,7 @@ function renderHedgeFundResults(el,results){
       '<div class="hf-card-price '+pCls+'">'+pStr+r.priceChange.toFixed(2)+'%</div></div>'+
       '<div class="hf-card-right"><div class="hf-card-conf"><div class="val">'+d.confidence+'%</div><div class="lbl">置信度</div></div>'+
       '<div class="hf-badge '+actCls(d.action)+'">'+(actMap[d.action]||d.action)+'</div></div></div>'+
-      '<div class="hf-card-reason">'+d.reasons.join(' · ')+' · 综合评分'+d.overallScore+'</div>'+
+      '<div class="hf-card-reason">'+d.reasons.join(' · ')+(a?(' · 综合评分'+d.overallScore):'')+'</div>'+
       '<div class="hf-expand-hint">点击展开详细分析</div>'+
       '<div class="hf-detail">';
     if(a){
