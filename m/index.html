@@ -240,6 +240,66 @@ body{font-family:'Noto Sans SC',system-ui,-apple-system,sans-serif;background:va
 .sum-item{font-size:11px;padding:6px 0;display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--line)}
 .sum-item:last-child{border:none}
 .sum-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+/* Hedge Fund - AI对冲建议 */
+.hf-hero{text-align:center;padding:14px 0 16px}
+.hf-hero h2{font-size:17px;font-weight:800;color:var(--gold)}
+.hf-hero p{font-size:10px;color:var(--text-3);margin-top:5px;line-height:1.5}
+.hf-actions{display:flex;justify-content:center;gap:10px;margin-top:12px}
+.hf-btn{padding:8px 20px;border-radius:8px;border:1px solid var(--gold);background:rgba(212,175,55,.1);color:var(--gold-bright);font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;-webkit-tap-highlight-color:transparent}
+.hf-btn:active{background:rgba(212,175,55,.25)}
+.hf-progress{margin-top:12px;padding:0 10px}
+.hf-progress .bar{height:5px;border-radius:3px;background:var(--card);overflow:hidden;margin-top:5px}
+.hf-progress .bar span{display:block;height:100%;background:linear-gradient(90deg,var(--gold-deep),var(--gold));border-radius:3px;transition:width .3s;width:0}
+.hf-progress .lbl{font-size:10px;color:var(--text-3)}
+.hf-summary{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin:14px 0}
+.hf-stat{padding:12px;border-radius:10px;background:var(--card);border:1px solid var(--line);text-align:center}
+.hf-stat .num{font-family:'JetBrains Mono',monospace;font-size:24px;font-weight:800;line-height:1.1}
+.hf-stat .lbl{font-size:9px;color:var(--text-3);margin-top:4px}
+.hf-sentiment{text-align:center;padding:14px;border-radius:10px;margin-bottom:14px;border:1px solid var(--line)}
+.hf-sentiment.bullish{background:rgba(76,175,114,.08);border-color:rgba(76,175,114,.35)}
+.hf-sentiment.bearish{background:rgba(224,92,92,.08);border-color:rgba(224,92,92,.35)}
+.hf-sentiment.neutral{background:rgba(212,175,55,.06);border-color:var(--line-gold)}
+.hf-sentiment .dir{font-size:18px;font-weight:800}
+.hf-sentiment .conf{font-family:'JetBrains Mono',monospace;font-size:11px;margin-top:3px}
+.hf-sentiment .desc{font-size:10px;color:var(--text-3);margin-top:3px}
+.hf-card{padding:12px 14px;background:var(--card);border:1px solid var(--line);border-radius:10px;margin-bottom:8px;cursor:pointer;-webkit-tap-highlight-color:transparent;position:relative;overflow:hidden}
+.hf-card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px}
+.hf-card.buy::before{background:var(--green)}.hf-card.sell::before{background:var(--red)}.hf-card.hold::before{background:var(--orange)}
+.hf-card:active{background:var(--card2)}
+.hf-card.expanded{border-color:var(--gold);cursor:default}
+.hf-card-top{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.hf-card-info{flex:1;min-width:0}
+.hf-card-name{font-size:13px;font-weight:700;color:var(--text-1)}
+.hf-card-ticker{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text-3);margin-left:4px}
+.hf-card-price{font-family:'JetBrains Mono',monospace;font-size:12px;margin-top:2px}
+.hf-card-price.up{color:var(--green)}.hf-card-price.down{color:var(--red)}.hf-card-price.flat{color:var(--text-3)}
+.hf-card-right{display:flex;align-items:center;gap:10px;flex-shrink:0}
+.hf-card-conf{text-align:right}
+.hf-card-conf .val{font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:700}
+.hf-card-conf .lbl{font-size:8px;color:var(--text-3)}
+.hf-badge{padding:4px 10px;border-radius:5px;font-size:10px;font-weight:700;text-align:center}
+.hf-badge.buy{background:rgba(76,175,114,.15);color:#4caf72;border:1px solid rgba(76,175,114,.3)}
+.hf-badge.sell{background:rgba(224,92,92,.15);color:#e05c5c;border:1px solid rgba(224,92,92,.3)}
+.hf-badge.hold{background:rgba(212,175,55,.12);color:#e0a23c;border:1px solid rgba(212,175,55,.3)}
+.hf-card-reason{font-size:10px;color:var(--text-2);margin-top:8px;line-height:1.5;padding-top:8px;border-top:1px dashed var(--line)}
+.hf-expand-hint{font-size:9px;color:var(--text-3);margin-top:5px}
+.hf-detail{margin-top:12px;padding-top:12px;border-top:1px solid var(--line-gold);display:none}
+.hf-card.expanded .hf-detail{display:block}
+.hf-card.expanded .hf-expand-hint{display:none}
+.hf-agent-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:8px}
+.hf-ac{padding:8px 10px;border-radius:7px;background:rgba(0,0,0,.2);border:1px solid var(--line)}
+.hf-ac .nm{font-size:10px;font-weight:700;color:var(--gold);margin-bottom:3px}
+.hf-ac .sig{font-size:9px;font-weight:600;margin-bottom:2px}
+.hf-ac .sig.bullish{color:#4caf72}.hf-ac .sig.bearish{color:#e05c5c}.hf-ac .sig.neutral{color:#e0a23c}
+.hf-ac .ct{font-family:'JetBrains Mono',monospace;font-size:8px;color:var(--text-3)}
+.hf-ac .rs{font-size:9px;color:var(--text-2);margin-top:3px;line-height:1.3;max-height:36px;overflow:hidden}
+.hf-section-title{font-size:11px;font-weight:700;color:var(--gold);margin:12px 0 6px}
+.hf-risk-panel{padding:10px 12px;border-radius:8px;background:rgba(224,160,60,.04);border:1px solid rgba(224,160,60,.15);margin-top:10px}
+.hf-risk-panel .ttl{font-size:11px;font-weight:700;color:var(--orange);margin-bottom:6px}
+.hf-risk-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.hf-risk-item .lbl{font-size:8px;color:var(--text-3)}.hf-risk-item .val{font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:600}
+.hf-pm-reason{margin-top:10px;padding:10px 12px;border-radius:8px;background:rgba(76,175,114,.04);border:1px solid rgba(76,175,114,.12);font-size:10px;color:var(--text-2);line-height:1.5}
+.hf-disclaimer{margin-top:16px;padding:12px;border-radius:8px;background:rgba(212,175,55,.04);border:1px dashed var(--line-gold);font-size:9px;color:var(--text-3);line-height:1.5}
 </style>
 </head>
 <body>
@@ -255,6 +315,7 @@ body{font-family:'Noto Sans SC',system-ui,-apple-system,sans-serif;background:va
 <div class="view" id="v-scenario"></div>
 <div class="view" id="v-camps"></div>
 <div class="view" id="v-stocks"></div>
+<div class="view" id="v-hedgefund"><div id="hfContent"></div></div>
 
 <nav class="tabs">
   <div class="tab active" data-v="dash"><div class="ic">📊</div>首页</div>
@@ -264,6 +325,7 @@ body{font-family:'Noto Sans SC',system-ui,-apple-system,sans-serif;background:va
   <div class="tab" data-v="scenario"><div class="ic">🔮</div>情景</div>
   <div class="tab" data-v="camps"><div class="ic">🌐</div>G2</div>
   <div class="tab" data-v="stocks"><div class="ic">📈</div>个股</div>
+  <div class="tab" data-v="hedgefund"><div class="ic">♜</div>对冲</div>
 </nav>
 
 <script>
@@ -1899,8 +1961,338 @@ async function reloadStocks(){
   }
 }
 
+/* ==================== HEDGE FUND ENGINE ==================== */
+// AI对冲基金建议系统 — 移植自 virattt/ai-hedge-fund 多Agent决策架构
+// 15个Agent并行分析: 5量化策略 + 10大师框架 → 风控 → 组合决策
+
+const HF_TRADEABLE = [
+  ...US_LIST, ...HK_LIST,
+  ['1.510310','510310','沪深300ETF'], ['1.561380','561380','电网设备ETF'], ['0.159827','159827','农业ETF'],
+  ...COMMOD_LIST,
+];
+
+function hfTechnicalAgent(kdata){
+  if(!kdata||kdata.length<20) return {signal:'neutral',confidence:50,reasoning:'K线数据不足'};
+  const n=kdata.length, last=kdata[n-1].close;
+  const r=[];for(let i=1;i<n;i++){const p=kdata[i].close-kdata[i-1].close;r.push({d:p,u:p>0?p:0,l:p<0?-p:0});}
+  const ema8=calcMA(kdata,8),ema21=calcMA(kdata,21),ema55=calcMA(kdata,55);
+  const e8=ema8[n-1],e21=ema21[n-1],e55=ema55[n-1];
+  const upMove=r.slice(-14).reduce((s,x)=>s+x.u,0)/14;
+  const dnMove=r.slice(-14).reduce((s,x)=>s+x.l,0)/14;
+  const adx=upMove+dnMove>0?Math.abs(upMove-dnMove)/(upMove+dnMove)*100:50;
+  let tSig='neutral',tConf=0.5;
+  if(e8&&e21&&e55){if(e8>e21&&e21>e55){tSig='bullish';tConf=adx/100;}else if(e8<e21&&e21<e55){tSig='bearish';tConf=adx/100;}}
+  const ma50=calcMA(kdata,Math.min(50,n));const last50=ma50[n-1]||last;
+  const vals50=kdata.slice(-Math.min(50,n)).map(d=>d.close);
+  const m50=vals50.reduce((a,b)=>a+b,0)/vals50.length;
+  const s50=Math.sqrt(vals50.reduce((s,v)=>s+(v-m50)**2,0)/vals50.length)||1;
+  const zScore=(last-m50)/s50;
+  const boll=calcBoll(kdata,20,2);const bLast=boll[n-1];
+  const bollPos=bLast&&bLast.upper!==bLast.lower?(last-bLast.lower)/(bLast.upper-bLast.lower):0.5;
+  let mSig='neutral',mConf=0.5;
+  if(zScore<-2&&bollPos<0.2){mSig='bullish';mConf=Math.min(Math.abs(zScore)/4,1);}
+  else if(zScore>2&&bollPos>0.8){mSig='bearish';mConf=Math.min(Math.abs(zScore)/4,1);}
+  const ret1m=n>=21?(last-kdata[n-21].close)/kdata[n-21].close:0;
+  const ret3m=n>=63?(last-kdata[n-63].close)/kdata[n-63].close:ret1m;
+  const momScore=0.5*ret1m+0.5*ret3m;
+  const vol5a=kdata.slice(-5).reduce((s,d)=>s+d.vol,0)/5;
+  const vol20a=kdata.slice(-20).reduce((s,d)=>s+d.vol,0)/20;
+  const volConf=vol20a>0?vol5a/vol20a:1;
+  let pSig='neutral',pConf=0.5;
+  if(momScore>0.05&&volConf>1){pSig='bullish';pConf=Math.min(Math.abs(momScore)*5,1);}
+  else if(momScore<-0.05&&volConf>1){pSig='bearish';pConf=Math.min(Math.abs(momScore)*5,1);}
+  const rets=kdata.slice(-21).map((d,i,a)=>i===0?0:(d.close-a[i-1].close)/a[i-1].close).slice(1);
+  const avgR=rets.reduce((a,b)=>a+b,0)/rets.length;
+  const histVol=Math.sqrt(rets.reduce((s,r)=>s+(r-avgR)**2,0)/rets.length)*Math.sqrt(252);
+  let vSig='neutral',vConf=0.5;
+  if(histVol<0.15){vSig='bullish';vConf=0.7;}else if(histVol>0.4){vSig='bearish';vConf=0.6;}
+  const prices=kdata.slice(-20).map(d=>d.close);let tauSum=0,lagSum=0,cnt=0;
+  for(let lag=2;lag<Math.min(10,prices.length);lag++){
+    const diffs=[];for(let i=lag;i<prices.length;i++)diffs.push(prices[i]-prices[i-lag]);
+    const sd=Math.sqrt(diffs.reduce((s,v)=>s+v*v,0)/diffs.length);
+    if(sd>0){tauSum+=Math.log(sd);lagSum+=Math.log(lag);cnt++;}
+  }
+  const hurst=cnt>=2?(tauSum/cnt)/(lagSum/cnt):0.5;
+  let sSig='neutral',sConf=0.5;
+  if(hurst<0.4){sSig='bullish';sConf=(0.5-hurst)*2;}
+  const W={trend:0.25,mean:0.20,mom:0.25,vol:0.15,stat:0.15};
+  const SV={bullish:1,neutral:0,bearish:-1};
+  const signals=[{s:tSig,c:tConf,w:W.trend},{s:mSig,c:mConf,w:W.mean},{s:pSig,c:pConf,w:W.mom},{s:vSig,c:vConf,w:W.vol},{s:sSig,c:sConf,w:W.stat}];
+  let ws=0,tc=0;signals.forEach(x=>{ws+=SV[x.s]*x.w*x.c;tc+=x.w*x.c;});
+  const fs=tc>0?ws/tc:0;
+  const signal=fs>0.2?'bullish':fs<-0.2?'bearish':'neutral';
+  const details=[];
+  if(tSig!=='neutral')details.push('趋势:'+tSig);if(mSig!=='neutral')details.push('均值回归:'+mSig);
+  if(pSig!=='neutral')details.push('动量:'+pSig);if(vSig!=='neutral')details.push('波动率:'+vSig);
+  if(sSig!=='neutral')details.push('统计:'+sSig);
+  return{signal,confidence:Math.round(Math.abs(fs)*100),reasoning:details.join(' | ')||'技术指标信号中性'};
+}
+
+function hfFundamentalsAgent(fund){
+  if(!fund) return {signal:'neutral',confidence:50,reasoning:'基本面数据不可用'};
+  const signals=[],reasons=[];
+  if(fund.roe>15)signals.push('bullish');else if(fund.roe<5)signals.push('bearish');else signals.push('neutral');
+  reasons.push(fund.roe?'ROE '+(fund.roe).toFixed(1)+'%':'ROE N/A');
+  if(fund.pe&&fund.pe>0&&fund.pe<20)signals.push('bullish');else if(fund.pe&&fund.pe>35)signals.push('bearish');else signals.push('neutral');
+  reasons.push(fund.pe?'PE '+fund.pe.toFixed(1)+'x':'PE N/A');
+  if(fund.pb&&fund.pb>0&&fund.pb<2)signals.push('bullish');else if(fund.pb&&fund.pb>5)signals.push('bearish');else signals.push('neutral');
+  reasons.push(fund.pb?'PB '+fund.pb.toFixed(1)+'x':'PB N/A');
+  if(fund.eps&&fund.eps>0)signals.push('bullish');else if(fund.eps&&fund.eps<0)signals.push('bearish');else signals.push('neutral');
+  reasons.push(fund.eps?'EPS '+fund.eps.toFixed(2):'EPS N/A');
+  const bull=signals.filter(s=>s==='bullish').length,bear=signals.filter(s=>s==='bearish').length;
+  return{signal:bull>bear?'bullish':bear>bull?'bearish':'neutral',confidence:Math.round(Math.max(bull,bear)/signals.length*100),reasoning:reasons.join(', ')};
+}
+
+function hfValuationAgent(fund,kdata){
+  if(!fund) return {signal:'neutral',confidence:50,reasoning:'估值数据不足'};
+  let score=50;const reasons=[];
+  if(fund.pe&&fund.pe>0){
+    if(fund.pe<12){score+=20;reasons.push('PE '+fund.pe+'x 深度低估');}
+    else if(fund.pe<20){score+=10;reasons.push('PE '+fund.pe+'x 合理偏低');}
+    else if(fund.pe>40){score-=15;reasons.push('PE '+fund.pe+'x 高估值风险');}
+    else if(fund.pe>25){score-=5;reasons.push('PE '+fund.pe+'x 略高于均值');}
+  }
+  if(fund.pb&&fund.pb>0){
+    if(fund.pb<1){score+=15;reasons.push('PB '+fund.pb+'x 破净');}
+    else if(fund.pb<2){score+=8;reasons.push('PB '+fund.pb+'x 偏低');}
+    else if(fund.pb>6){score-=10;reasons.push('PB '+fund.pb+'x 偏高');}
+  }
+  if(fund.eps&&fund.pe&&fund.pe>0){
+    const earnYield=1/fund.pe*100;
+    if(earnYield>5){score+=10;reasons.push('盈利收益率'+earnYield.toFixed(1)+'%');}
+    else if(earnYield<2){score-=5;reasons.push('盈利收益率仅'+earnYield.toFixed(1)+'%');}
+  }
+  score=Math.min(100,Math.max(0,score));
+  return{signal:score>=60?'bullish':score<=40?'bearish':'neutral',confidence:Math.abs(score-50)*2,reasoning:reasons.join(' | ')||'估值中性'};
+}
+
+function hfGrowthAgent(fund,kdata){
+  if(!fund||!kdata||kdata.length<40) return {signal:'neutral',confidence:50,reasoning:'成长数据不足'};
+  let score=50;const reasons=[];const n=kdata.length;
+  const ret20=(kdata[n-1].close-kdata[n-21].close)/kdata[n-21].close*100;
+  const ret60=n>=61?(kdata[n-1].close-kdata[n-61].close)/kdata[n-61].close*100:ret20;
+  if(ret20>10){score+=12;reasons.push('20日涨+'+ret20.toFixed(1)+'%');}
+  else if(ret20<-10){score-=8;reasons.push('20日跌'+ret20.toFixed(1)+'%');}
+  if(ret60>25){score+=10;reasons.push('60日涨+'+ret60.toFixed(0)+'%');}
+  else if(ret60<-20){score-=10;reasons.push('60日跌'+ret60.toFixed(0)+'%');}
+  if(fund.pe&&fund.pe>0){
+    const peg=fund.pe/Math.max(Math.abs(ret60),1);
+    if(peg<1){score+=10;reasons.push('PEG '+peg.toFixed(2));}
+    else if(peg>2){score-=8;reasons.push('PEG '+peg.toFixed(2)+'偏高');}
+  }
+  score=Math.min(100,Math.max(0,score));
+  return{signal:score>=60?'bullish':score<=40?'bearish':'neutral',confidence:Math.abs(score-50)*2,reasoning:reasons.join(' | ')||'成长性中性'};
+}
+
+function hfSentimentAgent(kdata){
+  if(!kdata||kdata.length<20) return {signal:'neutral',confidence:50,reasoning:'数据不足'};
+  const n=kdata.length;let score=50;const reasons=[];
+  const vol5=kdata.slice(-5).reduce((s,d)=>s+d.vol,0)/5;
+  const vol20=kdata.slice(-20).reduce((s,d)=>s+d.vol,0)/20;
+  const vr=vol20>0?vol5/vol20:1;
+  const ret5=(kdata[n-1].close-kdata[n-6].close)/kdata[n-6].close*100;
+  if(vr>1.5&&ret5>0){score+=18;reasons.push('放量上涨(量比'+vr.toFixed(1)+')');}
+  else if(vr>1.5&&ret5<0){score-=15;reasons.push('放量下跌(量比'+vr.toFixed(1)+')');}
+  else if(vr<0.7&&ret5<0){score+=8;reasons.push('缩量下跌,抛压减轻');}
+  const ret10=n>=11?(kdata[n-1].close-kdata[n-11].close)/kdata[n-11].close*100:ret5;
+  if(ret10>8){score-=5;reasons.push('短期涨幅过大('+ret10.toFixed(1)+'%)');}
+  else if(ret10<-8){score+=8;reasons.push('短期跌幅过大('+ret10.toFixed(1)+'%)');}
+  score=Math.min(100,Math.max(0,score));
+  return{signal:score>=60?'bullish':score<=40?'bearish':'neutral',confidence:Math.abs(score-50)*2,reasoning:reasons.join(' | ')||'市场情绪中性'};
+}
+
+function hfMasterAgents(kdata,fund,info){
+  const mf=masterFrameworkAnalysis(kdata,fund,info);
+  if(!mf) return null;
+  const agents=mf.results.map(r=>{
+    const m=MASTERS.find(x=>x.id===r.id);
+    return{id:r.id,name:m?m.nm:r.id,en:m?m.en:r.id,avatar:m?m.av:'?',
+      signal:r.score>=60?'bullish':r.score<=35?'bearish':'neutral',
+      confidence:r.score,reasoning:r.reasons.slice(0,2).join(' | ')};
+  });
+  return{agents,avgScore:mf.avgScore,buyCount:mf.buyCount,sellCount:mf.sellCount};
+}
+
+function hfRiskManager(kdata,fund,info){
+  if(!kdata||kdata.length<20) return {remainingLimit:0,volatility:0.25,volAdj:'N/A',corrMultiplier:1};
+  const n=kdata.length,last=kdata[n-1].close;
+  const rets=[];for(let i=1;i<n;i++)rets.push((kdata[i].close-kdata[i-1].close)/kdata[i-1].close);
+  const avgR=rets.reduce((a,b)=>a+b,0)/rets.length;
+  const std=Math.sqrt(rets.reduce((s,r)=>s+(r-avgR)**2,0)/rets.length);
+  const annVol=std*Math.sqrt(252);
+  let volMult;
+  if(annVol<0.15) volMult=1.25;
+  else if(annVol<0.30) volMult=1.0-(annVol-0.15)*0.5;
+  else if(annVol<0.50) volMult=0.75-(annVol-0.30)*0.5;
+  else volMult=0.50;
+  volMult=Math.max(0.25,Math.min(1.25,volMult));
+  const limitPct=0.20*volMult;
+  let corrMult=1.0;
+  const md=cache||{};const spChg=md.sp500Change||0;
+  const stkChg=n>=6?(last-kdata[n-6].close)/kdata[n-6].close*100:0;
+  if(Math.abs(spChg)>0&&Math.abs(stkChg)>0){
+    const dir=Math.sign(spChg)*Math.sign(stkChg);
+    if(dir>0&&Math.abs(stkChg)>Math.abs(spChg)*2) corrMult=0.85;
+    else if(dir>0) corrMult=1.0;else corrMult=1.05;
+  }
+  const finalLimit=limitPct*corrMult;
+  let volAdj;
+  if(annVol<0.15) volAdj='低波动·高仓位';
+  else if(annVol<0.30) volAdj='中波动·标准';
+  else if(annVol<0.50) volAdj='高波动·缩减';
+  else volAdj='极高波动·最小';
+  return{remainingLimit:+(finalLimit*100).toFixed(1),volatility:+(annVol*100).toFixed(1),volAdj,corrMultiplier:corrMult};
+}
+
+function hfPortfolioManager(allSignals,risk){
+  const SV={bullish:1,neutral:0,bearish:-1};
+  let tws=0,tw=0,buyC=0,sellC=0;
+  const QUANT_W=0.50,MASTER_W=0.50;
+  const qw=QUANT_W/5;
+  ['technical','fundamentals','valuation','growth','sentiment'].forEach(k=>{
+    const s=allSignals[k];if(!s)return;
+    tws+=SV[s.signal]*(s.confidence/100)*qw;tw+=qw;
+    if(s.signal==='bullish')buyC++;if(s.signal==='bearish')sellC++;
+  });
+  if(allSignals.masters){
+    const mw=MASTER_W/Math.max(allSignals.masters.agents.length,1);
+    allSignals.masters.agents.forEach(a=>{
+      tws+=SV[a.signal]*(a.confidence/100)*mw;tw+=mw;
+      if(a.signal==='bullish')buyC++;if(a.signal==='bearish')sellC++;
+    });
+  }
+  const ns=tw>0?tws/tw:0;
+  const totalAgents=5+(allSignals.masters?allSignals.masters.agents.length:0);
+  const avgConf=Math.round(((allSignals.technical?.confidence||0)+(allSignals.fundamentals?.confidence||0)+(allSignals.valuation?.confidence||0)+(allSignals.growth?.confidence||0)+(allSignals.sentiment?.confidence||0)+(allSignals.masters?allSignals.masters.agents.reduce((s,a)=>s+a.confidence,0)/allSignals.masters.agents.length:0))/totalAgents);
+  const overallScore=Math.round((ns+1)/2*100);
+  let action,actionLabel,confidence;
+  if(ns>0.35&&buyC>=Math.ceil(totalAgents*0.6)){action='strong-buy';actionLabel='强烈买入';confidence=Math.min(95,avgConf+10);}
+  else if(ns>0.15&&buyC>=Math.ceil(totalAgents*0.4)){action='buy';actionLabel='买入';confidence=avgConf;}
+  else if(ns<-0.35&&sellC>=Math.ceil(totalAgents*0.6)){action='strong-sell';actionLabel='强烈卖出';confidence=Math.min(95,avgConf+10);}
+  else if(ns<-0.15&&sellC>=Math.ceil(totalAgents*0.4)){action='sell';actionLabel='卖出';confidence=avgConf;}
+  else if(ns>0.05){action='buy';actionLabel='谨慎买入';confidence=Math.max(30,avgConf-10);}
+  else if(ns<-0.05){action='sell';actionLabel='谨慎减仓';confidence=Math.max(30,avgConf-10);}
+  else{action='hold';actionLabel='持有观望';confidence=avgConf;}
+  const volPenalty=risk.volatility>30?Math.max(0.5,(50-risk.volatility)/50):1;
+  confidence=Math.round(Math.max(0,Math.min(100,confidence*volPenalty)));
+  const reasons=[];
+  reasons.push(buyC+'看多/'+sellC+'看空(共'+totalAgents+'Agent)');
+  if(risk.volatility>30)reasons.push('年化波动率'+risk.volatility+'%偏高');
+  return{action,actionLabel,confidence,buyCount:buyC,sellCount:sellC,neutralCount:totalAgents-buyC-sellC,totalAgents,overallScore,reasons,weightedScore:+ns.toFixed(3),maxPositionPct:risk.remainingLimit};
+}
+
+// ---- 主编排(移动端: 逐只串行, 避免并发限流) ----
+let hfRunning=false;
+async function loadHedgeFund(silent){
+  if(hfRunning)return;hfRunning=true;
+  const el=document.getElementById('hfContent');
+  if(!el){hfRunning=false;return;}
+  const total=HF_TRADEABLE.length;
+  if(!silent) el.innerHTML=`<div class="hf-hero"><h2>AI对冲基金决策引擎</h2>
+    <p>15位Agent并行分析 · 5量化策略 + 10投资大师 · 波动率风控</p></div>
+    <div class="hf-progress"><div class="lbl" id="hfProgLbl">准备中…</div><div class="bar"><span id="hfProgBar"></span></div></div>`;
+  const progBar=el.querySelector('#hfProgBar'),progLbl=el.querySelector('#hfProgLbl');
+  const uProg=(i,s)=>{if(progBar)progBar.style.width=((i+1)/total*100)+'%';if(progLbl)progLbl.textContent=(i+1)+'/'+total+' '+s;};
+  const results=[];
+  for(let i=0;i<HF_TRADEABLE.length;i++){
+    const [secid,code,name]=HF_TRADEABLE[i];
+    uProg(i,name);
+    let kdata=[],fund=null;
+    try{[kdata,fund]=await Promise.allSettled([fetchKline(secid,60),fetchFundamentals(secid)]).then(r=>[r[0].status==='fulfilled'?r[0].value:[],r[1].status==='fulfilled'?r[1].value:null]);}catch(e){}
+    if(!kdata||!kdata.length){uProg(i,name+' (无数据)');results.push({secid,code,name,kdata:null,decision:null});continue;}
+    const curPrice=kdata[kdata.length-1].close;
+    const prevP=kdata.length>5?kdata[kdata.length-6].close:curPrice;
+    const priceChange=prevP?((curPrice-prevP)/prevP*100):0;
+    const info={id:code,name,price:curPrice,changePct:priceChange};
+    const tech=hfTechnicalAgent(kdata);
+    const fundA=hfFundamentalsAgent(fund);
+    const val=hfValuationAgent(fund,kdata);
+    const grow=hfGrowthAgent(fund,kdata);
+    const sent=hfSentimentAgent(kdata);
+    const masters=hfMasterAgents(kdata,fund,info);
+    const risk=hfRiskManager(kdata,fund,info);
+    const decision=hfPortfolioManager({technical:tech,fundamentals:fundA,valuation:val,growth:grow,sentiment:sent,masters},{...risk,currentPrice:curPrice});
+    results.push({secid,code,name,kdata,fund,currentPrice:curPrice,priceChange,info,agents:{technical:tech,fundamentals:fundA,valuation:val,growth:grow,sentiment:sent,masters},risk,decision});
+    uProg(i,name+' ✓');
+  }
+  el.dataset.ts=new Date().toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+  renderHedgeFundResults(el,results);
+  hfRunning=false;
+}
+
+function hfAgentCard(name,id,agent){
+  if(!agent) return '';
+  const sc=agent.signal==='bullish'?'bullish':agent.signal==='bearish'?'bearish':'neutral';
+  const st=agent.signal==='bullish'?'看多':agent.signal==='bearish'?'看空':'中性';
+  return '<div class="hf-ac"><div class="nm">'+name+'</div><div class="sig '+sc+'">'+st+'</div><div class="ct">置信度 '+agent.confidence+'%</div>'+(agent.reasoning?'<div class="rs">'+agent.reasoning+'</div>':'')+'</div>';
+}
+
+function renderHedgeFundResults(el,results){
+  const valid=results.filter(r=>r.decision);
+  const ts=el.dataset.ts||new Date().toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit'});
+  const sb=valid.filter(r=>r.decision.action==='strong-buy').length;
+  const by=valid.filter(r=>r.decision.action==='buy').length;
+  const hd=valid.filter(r=>r.decision.action==='hold').length;
+  const sl=valid.filter(r=>['sell','strong-sell'].includes(r.decision.action)).length;
+  const avgScore=valid.length?Math.round(valid.reduce((s,r)=>s+r.decision.overallScore,0)/valid.length):0;
+  const sentDir=sb+by>sl*1.5?'bullish':sl>(sb+by)*1.5?'bearish':'neutral';
+  const sentCls=sentDir;
+  const sentText=sentDir==='bullish'?'整体偏多':sentDir==='bearish'?'整体偏空':'多空分歧';
+  const sentCol=sentDir==='bullish'?'#4caf72':sentDir==='bearish'?'#e05c5c':'#e0a23c';
+  const actCls=a=>a==='strong-buy'?'buy':a==='strong-sell'?'sell':a;
+  const actMap={'strong-buy':'强烈买入','buy':'买入','hold':'持有观望','sell':'卖出','strong-sell':'强烈卖出'};
+  let html='<div class="hf-hero"><h2>AI对冲基金决策引擎</h2>'+
+    '<p>15位Agent · 5量化+10大师 · 更新于 '+ts+'</p>'+
+    '<div class="hf-actions"><button class="hf-btn" onclick="viewRendered.hedgefund=false;renderHedgeFund()">重新分析</button></div></div>'+
+    '<div class="hf-summary">'+
+    '<div class="hf-stat"><div class="num">'+valid.length+'</div><div class="lbl">分析标的</div></div>'+
+    '<div class="hf-stat"><div class="num" style="color:#4caf72">'+(sb+by)+'</div><div class="lbl">看多(含'+sb+'强烈)</div></div>'+
+    '<div class="hf-stat"><div class="num" style="color:#e0a23c">'+hd+'</div><div class="lbl">中性观望</div></div>'+
+    '<div class="hf-stat"><div class="num" style="color:#e05c5c">'+sl+'</div><div class="lbl">看空</div></div></div>'+
+    '<div class="hf-sentiment '+sentCls+'"><div class="dir" style="color:'+sentCol+'">'+sentText+'</div>'+
+    '<div class="conf" style="color:'+sentCol+'">综合评分 '+avgScore+'</div></div>';
+  const sorted=[...valid].sort((a,b)=>{const o={'strong-buy':0,'buy':1,'hold':2,'sell':3,'strong-sell':4};return(o[a.decision.action]||2)-(o[b.decision.action]||2);});
+  sorted.forEach(function(r){
+    const d=r.decision,a=r.agents,rs=r.risk;
+    const pCls=r.priceChange>0?'up':r.priceChange<0?'down':'flat';
+    const pStr=r.priceChange>=0?'+':'';
+    html+='<div class="hf-card '+actCls(d.action)+'" onclick="this.classList.toggle(\'expanded\')">'+
+      '<div class="hf-card-top"><div class="hf-card-info">'+
+      '<span class="hf-card-name">'+r.name+'</span><span class="hf-card-ticker">'+r.code+'</span>'+
+      '<div class="hf-card-price '+pCls+'">'+pStr+r.priceChange.toFixed(2)+'%</div></div>'+
+      '<div class="hf-card-right"><div class="hf-card-conf"><div class="val">'+d.confidence+'%</div><div class="lbl">置信度</div></div>'+
+      '<div class="hf-badge '+actCls(d.action)+'">'+(actMap[d.action]||d.action)+'</div></div></div>'+
+      '<div class="hf-card-reason">'+d.reasons.join(' · ')+' · 综合评分'+d.overallScore+'</div>'+
+      '<div class="hf-expand-hint">点击展开详细分析</div>'+
+      '<div class="hf-detail">'+
+      '<div class="hf-section-title">量化策略Agent</div>'+
+      '<div class="hf-agent-grid">'+
+      hfAgentCard('技术分析','tech',a.technical)+
+      hfAgentCard('基本面','fund',a.fundamentals)+
+      hfAgentCard('估值','val',a.valuation)+
+      hfAgentCard('成长','grow',a.growth)+
+      hfAgentCard('情绪','sent',a.sentiment)+'</div>';
+    if(a.masters){
+      html+='<div class="hf-section-title" style="margin-top:10px">大师框架Agent ('+a.masters.buyCount+'看多/'+a.masters.sellCount+'看空)</div><div class="hf-agent-grid">';
+      a.masters.agents.forEach(function(m){html+=hfAgentCard(m.name,m.id,m);});
+      html+='</div>';
+    }
+    html+='<div class="hf-risk-panel"><div class="ttl">风控管理</div>'+
+      '<div class="hf-risk-grid">'+
+      '<div class="hf-risk-item"><div class="lbl">年化波动率</div><div class="val">'+rs.volatility+'%</div></div>'+
+      '<div class="hf-risk-item"><div class="lbl">波动率评级</div><div class="val">'+(rs.volAdj||'N/A')+'</div></div>'+
+      '<div class="hf-risk-item"><div class="lbl">最大仓位</div><div class="val">'+(rs.remainingLimit||0)+'%</div></div></div></div>'+
+      '<div class="hf-pm-reason"><b>组合决策:</b> '+(actMap[d.action]||d.action)+' · 置信度'+d.confidence+'% · '+d.buyCount+'看多/'+d.sellCount+'看空/'+d.neutralCount+'中性('+d.totalAgents+'Agent) · 得分'+d.weightedScore+' · 建议仓位'+d.maxPositionPct+'%</div>'+
+      '</div></div>';
+  });
+  html+='<div class="hf-disclaimer"><b>风险提示</b>: 基于ai-hedge-fund多Agent决策架构,15个并行分析Agent经波动率风控调整后输出交易指令。所有分析基于历史技术面与公开基本面,仅供研究参考,不构成投资建议。</div>';
+  el.innerHTML=html;
+}
+
+function renderHedgeFund(){loadHedgeFund(false);}
+
 /* ========== APP CONTROL ========== */
-const viewRendered={dash:false,crisis:false,cycle:false,masters:false,scenario:false,camps:false,stocks:false};
+const viewRendered={dash:false,crisis:false,cycle:false,masters:false,scenario:false,camps:false,stocks:false,hedgefund:false};
 document.querySelectorAll('.tab').forEach(t=>t.addEventListener('click',()=>{
   const v=t.dataset.v;
   document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));t.classList.add('active');
@@ -1912,6 +2304,7 @@ document.querySelectorAll('.tab').forEach(t=>t.addEventListener('click',()=>{
   if(v==='scenario'&&!viewRendered.scenario){renderScenario();viewRendered.scenario=true;}
   if(v==='camps'&&!viewRendered.camps){renderCamps();viewRendered.camps=true;}
   if(v==='stocks'&&!viewRendered.stocks){reloadStocks();viewRendered.stocks=true;}
+  if(v==='hedgefund'&&!viewRendered.hedgefund){renderHedgeFund();viewRendered.hedgefund=true;}
   window.scrollTo({top:0,behavior:'smooth'});
 }));
 
@@ -1932,6 +2325,7 @@ async function loadAll(){
     renderDash(md);
     viewRendered.dash=true;
     setStatus('live','实时 · '+new Date().toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit'}));
+    if(viewRendered.hedgefund) loadHedgeFund(true);
   }catch(e){
     cache=md;
     renderDash(md);
