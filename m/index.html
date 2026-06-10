@@ -1956,15 +1956,32 @@ async function showStockDetail(secid,code,name){
     return;
   }
   const stockInfo={name,id:code,price:null,changePct:null,secid};
-  if(rtQuote){stockInfo.price=rtQuote.price;stockInfo.changePct=rtQuote.chg;}
-  else if(kline.length>0){stockInfo.price=kline[kline.length-1].close;}
+  // K线vs实时行情双源校准: 美股盘前/盘后, 东财f2/f3会切到盘前价污染显示
+  // 策略: K线可用时以最后两根"正常交易时段收盘价"为权威源, 仅当rtQuote与kClose偏离<3%才用实时价
+  let displayPrice=null, displayChg=null, displayPrev=null;
+  const kLen=kline.length;
+  const kClose=kLen?kline[kLen-1].close:null;
+  const kPrev=kLen>1?kline[kLen-2].close:null;
+  const kChg=(kClose!=null&&kPrev)?((kClose-kPrev)/kPrev*100):null;
+  if(rtQuote&&kClose){
+    const inSession=Math.abs(rtQuote.price-kClose)/kClose<0.03;
+    displayPrice=inSession?rtQuote.price:kClose;
+    displayChg=inSession?rtQuote.chg:(kChg!=null?kChg:rtQuote.chg);
+    displayPrev=kPrev!=null?kPrev:+(rtQuote.price/(1+rtQuote.chg/100)).toFixed(2);
+  }else if(kClose){
+    displayPrice=kClose; displayChg=kChg; displayPrev=kPrev;
+  }else if(rtQuote){
+    displayPrice=rtQuote.price; displayChg=rtQuote.chg;
+    displayPrev=rtQuote.chg!=null?+(rtQuote.price/(1+rtQuote.chg/100)).toFixed(2):null;
+  }
+  if(displayPrice!=null){stockInfo.price=displayPrice;stockInfo.changePct=displayChg||0;}
   // 实时行情头部
   let rtPriceHTML='';
-  if(rtQuote){
-    const pCls=rtQuote.chg>0?'up':rtQuote.chg<0?'down':'flat';
-    const pStr=rtQuote.chg>=0?'+':'';
-    const prevClose=rtQuote.chg!=null?+(rtQuote.price/(1+rtQuote.chg/100)).toFixed(2):null;
-    rtPriceHTML=`<div class="sd-rt-price ${pCls}"><span class="price">${rtQuote.price.toFixed(2)}</span><span class="chg">${pStr}${rtQuote.chg.toFixed(2)}%</span>${prevClose?'<span class="prev">昨收 '+prevClose+'</span>':''}</div>`;
+  if(displayPrice!=null){
+    const c=displayChg||0;
+    const pCls=c>0?'up':c<0?'down':'flat';
+    const pStr=c>=0?'+':'';
+    rtPriceHTML=`<div class="sd-rt-price ${pCls}"><span class="price">${displayPrice.toFixed(2)}</span><span class="chg">${pStr}${c.toFixed(2)}%</span>${displayPrev!=null?'<span class="prev">昨收 '+(+displayPrev).toFixed(2)+'</span>':''}</div>`;
   }
 
   // K-line SVG (simplified mobile version with MA + candles)

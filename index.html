@@ -2288,19 +2288,38 @@ function renderStockDetail(secid,stockInfo){
     if(results[2].status==='fulfilled'&&results[2].value){const q=results[2].value[secid];if(q&&q.price!=null)rtQuote={price:Number(q.price),chg:Number(q.chg)||0};}
     const detail=el.querySelector('.stk-detail');
     if(!detail)return; // 用户已离开
-    // 用实时行情更新头部价格和涨跌幅
-    if(rtQuote){
-      stockInfo.price=rtQuote.price;stockInfo.changePct=rtQuote.chg;
-      const rCls=rtQuote.chg>0?'up':rtQuote.chg<0?'down':'flat';
-      const rStr=rtQuote.chg>=0?'+':'';
-      const prevClose=rtQuote.chg!=null?+(rtQuote.price/(1+rtQuote.chg/100)).toFixed(2):null;
+    // K线vs实时行情双源校准: 美股盘前/盘后, 东财f2/f3会切到盘前价污染显示
+    // 策略: K线可用时以最后两根"正常交易时段收盘价"为权威源, 仅当rtQuote与kClose偏离<3%才用实时价
+    const kLen=kdata.length;
+    const kClose=kLen?kdata[kLen-1].close:null;
+    const kPrev=kLen>1?kdata[kLen-2].close:null;
+    const kChg=(kClose!=null&&kPrev)?((kClose-kPrev)/kPrev*100):null;
+    let displayPrice=null, displayChg=null, displayPrev=null;
+    if(rtQuote&&kClose){
+      const inSession=Math.abs(rtQuote.price-kClose)/kClose<0.03;
+      displayPrice=inSession?rtQuote.price:kClose;
+      displayChg=inSession?rtQuote.chg:(kChg!=null?kChg:rtQuote.chg);
+      displayPrev=kPrev!=null?kPrev:+(rtQuote.price/(1+rtQuote.chg/100)).toFixed(2);
+    }else if(kClose){
+      displayPrice=kClose; displayChg=kChg; displayPrev=kPrev;
+    }else if(rtQuote){
+      displayPrice=rtQuote.price; displayChg=rtQuote.chg;
+      displayPrev=rtQuote.chg!=null?+(rtQuote.price/(1+rtQuote.chg/100)).toFixed(2):null;
+    }
+    // 校准后的快照传给stockInfo, 影响大师框架分析输入
+    if(displayPrice!=null){stockInfo.price=displayPrice;stockInfo.changePct=displayChg||0;}
+    // 更新头部价格条
+    if(displayPrice!=null){
+      const c=displayChg||0;
+      const rCls=c>0?'up':c<0?'down':'flat';
+      const rStr=c>=0?'+':'';
       const headEl=detail.querySelector('.stk-detail-head');
       if(headEl) headEl.innerHTML=`<div><span class="stk-d-name">${name}</span><span class="stk-d-code">${code}</span></div>
-        <div class="stk-d-price ${rCls}">${stkPrice(rtQuote.price)}<span class="stk-d-chg">${rStr}${rtQuote.chg.toFixed(2)}%</span>${prevClose?'<span style="font-size:11px;color:var(--text-3);margin-left:8px">昨收 '+prevClose+'</span>':''}</div>`;
-    }else if(!stockInfo.price&&kdata.length>0){
-      stockInfo.price=kdata[kdata.length-1].close;
+        <div class="stk-d-price ${rCls}">${stkPrice(displayPrice)}<span class="stk-d-chg">${rStr}${c.toFixed(2)}%</span>${displayPrev!=null?'<span style="font-size:11px;color:var(--text-3);margin-left:8px">昨收 '+(+displayPrev).toFixed(2)+'</span>':''}</div>`;
     }
-    renderDetailContent(detail,secid,stockInfo,kdata,fund,rtQuote);
+    // 将校准后的价格快照打包传给详情渲染器
+    const calibQuote=displayPrice!=null?{price:displayPrice,chg:displayChg||0,prev:displayPrev}:null;
+    renderDetailContent(detail,secid,stockInfo,kdata,fund,calibQuote);
   });
 }
 function renderDetailContent(container,secid,info,kdata,fund,rtQuote){
@@ -2415,13 +2434,14 @@ function renderDetailContent(container,secid,info,kdata,fund,rtQuote){
     </div>`;
   }
 
-  // 实时行情条
+  // 实时行情条 (已使用校准后的快照: K线优先, 仅盘中切实时)
   let rtPriceHTML='';
   if(rtQuote){
-    const rCls=rtQuote.chg>0?'up':rtQuote.chg<0?'down':'flat';
-    const rStr=rtQuote.chg>=0?'+':'';
-    const rtPrev=rtQuote.chg!=null?+(rtQuote.price/(1+rtQuote.chg/100)).toFixed(2):null;
-    rtPriceHTML=`<div class="stk-rt-bar ${rCls}"><span class="stk-rt-price">${rtQuote.price.toFixed(2)}</span><span class="stk-rt-chg">${rStr}${rtQuote.chg.toFixed(2)}%</span>${rtPrev?'<span class="stk-rt-prev">昨收 '+rtPrev+'</span>':''}<span class="stk-rt-tag">实时行情</span></div>`;
+    const c=rtQuote.chg||0;
+    const rCls=c>0?'up':c<0?'down':'flat';
+    const rStr=c>=0?'+':'';
+    const rtPrev=rtQuote.prev!=null?(+rtQuote.prev).toFixed(2):(c!=null?(+(rtQuote.price/(1+c/100))).toFixed(2):null);
+    rtPriceHTML=`<div class="stk-rt-bar ${rCls}"><span class="stk-rt-price">${rtQuote.price.toFixed(2)}</span><span class="stk-rt-chg">${rStr}${c.toFixed(2)}%</span>${rtPrev?'<span class="stk-rt-prev">昨收 '+rtPrev+'</span>':''}<span class="stk-rt-tag">实时行情</span></div>`;
   }
 
   container.insertAdjacentHTML('beforeend',`
