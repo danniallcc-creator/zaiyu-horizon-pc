@@ -20,8 +20,16 @@ export default {
       return handleProxy(request, url);
     }
     
-    // 非 /proxy 路径: 交给 Pages 的静态资产处理
-    return env.ASSETS.fetch(request);
+    // 非 /proxy 路径: 交给 Pages 的静态资产处理, 但对HTML禁用缓存确保用户总获取最新版
+    const resp = await env.ASSETS.fetch(request);
+    const ct = resp.headers.get('content-type') || '';
+    if (ct.includes('text/html')) {
+      const newResp = new Response(resp.body, resp);
+      newResp.headers.set('Cache-Control', 'no-cache, no-store, must-revalidate');
+      newResp.headers.set('Pragma', 'no-cache');
+      return newResp;
+    }
+    return resp;
   }
 };
 
