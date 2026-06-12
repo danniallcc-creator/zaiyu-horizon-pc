@@ -766,6 +766,7 @@ a{color:inherit;text-decoration:none}
       <div class="nav-item" data-view="camps"><span class="ic">⊕</span>G2阵营</div>
       <div class="nav-item" data-view="stocks"><span class="ic">⊞</span>个股分析</div>
       <div class="nav-item" data-view="hedgefund"><span class="ic">♜</span>AI对冲建议</div>
+      <div class="nav-item" data-view="quant"><span class="ic">⚡</span>量化交易</div>
     </nav>
     <div class="sidebar-foot">
       数据仅供参考 · 不构成投资建议<br>
@@ -870,6 +871,16 @@ a{color:inherit;text-decoration:none}
         <p class="page-sub">19位AI Agent并行分析 · 5类量化策略 + 10位投资大师 · 波动率风控 · 组合决策引擎</p>
       </div>
       <div id="hfContent"><div class="data-loading"><span class="spin"></span> 正在初始化AI对冲基金分析引擎…</div></div>
+    </section>
+
+    <!-- ===== Quant Trading ===== -->
+    <section class="view" id="view-quant">
+      <div class="page-head">
+        <div class="page-kicker">Quantitative Trading · Multi-Strategy Signal Engine</div>
+        <h1 class="page-title">量化<span class="gold">交易系统</span></h1>
+        <p class="page-sub">Parabolic SAR + MACD + RSI + 布林带 + 多Agent投票 · 三维度信号 · 买卖时点预测</p>
+      </div>
+      <div id="quantContent"><div class="data-loading"><span class="spin"></span> 量化交易系统就绪，请输入股票代码…</div></div>
     </section>
 
     <div class="view-foot"></div>
@@ -4675,7 +4686,7 @@ function renderHedgeFund(){loadHedgeFund(false);}
 
 /* ==================== APP CONTROL ==================== */
 let cache=null;
-const rendered={dashboard:false,crisis:false,cycle:false,masters:false,scenario:false,camps:false,stocks:false,hedgefund:false};
+const rendered={dashboard:false,crisis:false,cycle:false,masters:false,scenario:false,camps:false,stocks:false,hedgefund:false,quant:false};
 function renderView(v){
   if(v==='crisis'&&!rendered.crisis){renderCrisis();rendered.crisis=true}
   if(v==='cycle'&&!rendered.cycle){renderCycles();rendered.cycle=true}
@@ -4684,6 +4695,7 @@ function renderView(v){
   if(v==='camps'&&!rendered.camps){renderCamps();rendered.camps=true}
   if(v==='stocks'&&!rendered.stocks){loadStocks();rendered.stocks=true}
   if(v==='hedgefund'&&!rendered.hedgefund){renderHedgeFund();rendered.hedgefund=true}
+  if(v==='quant'&&!rendered.quant){renderQuantTrading();rendered.quant=true}
 }
 async function loadStocks(silent){
   const el=document.getElementById('stocksContent');
@@ -4770,6 +4782,533 @@ setInterval(()=>{
 },60000);
 // 今日要点(genSummary)+央行动态 每 10 分钟热更新(不重新请求行情, 仅重渲染已有数据)
 setInterval(()=>{if(cache&&rendered.dashboard)renderDashboard(cache);},600000);
+
+// ====================== 量化交易模块 ======================
+// 综合策略引擎: Parabolic SAR(最优) + MACD + RSI + 布林带 + 多Agent投票
+// 数据源: 东方财富push2his(日K) + searchapi(股票搜索) + push2(实时行情)
+// 输出: 当日/当周/当月三维度买卖信号 + 预期卖出时点
+
+function renderQuantTrading(){
+  const el=document.getElementById('quantContent');
+  el.innerHTML=`
+<style>
+.qt-wrap{max-width:1100px;margin:0 auto}
+.qt-search{display:flex;gap:12px;margin-bottom:24px;position:relative}
+.qt-search input{flex:1;background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:14px 18px;color:var(--text);font-size:15px;outline:none;transition:border .2s}
+.qt-search input:focus{border-color:var(--gold)}
+.qt-search input::placeholder{color:var(--text-3)}
+.qt-search button{background:linear-gradient(135deg,var(--gold-deep),var(--gold));color:#000;font-weight:600;border:none;border-radius:var(--r);padding:0 28px;cursor:pointer;font-size:14px;white-space:nowrap}
+.qt-search button:hover{opacity:.85}
+.qt-suggest{position:absolute;top:100%;left:0;right:120px;background:var(--panel-2);border:1px solid var(--line);border-radius:0 0 var(--r) var(--r);max-height:260px;overflow-y:auto;z-index:99;display:none}
+.qt-suggest.show{display:block}
+.qt-suggest-item{padding:10px 16px;cursor:pointer;display:flex;justify-content:space-between;border-bottom:1px solid var(--line);font-size:13px}
+.qt-suggest-item:hover{background:var(--panel-hi)}
+.qt-suggest-item .code{color:var(--gold);font-family:'JetBrains Mono',monospace}
+.qt-suggest-item .mkt{color:var(--text-3);font-size:11px}
+.qt-result{display:none}
+.qt-stock-header{display:flex;align-items:baseline;gap:16px;margin-bottom:6px;flex-wrap:wrap}
+.qt-stock-header h2{font-size:22px;font-weight:700;font-family:'Noto Serif SC',serif}
+.qt-stock-header .ticker{color:var(--gold);font-family:'JetBrains Mono';font-size:15px}
+.qt-stock-header .price{font-size:20px;font-weight:600;margin-left:auto}
+.qt-stock-header .chg{font-size:14px;padding:3px 8px;border-radius:6px}
+.qt-stock-header .chg.up{background:rgba(76,175,114,.15);color:var(--green)}
+.qt-stock-header .chg.dn{background:rgba(224,92,92,.15);color:var(--red)}
+.qt-signal-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin:20px 0}
+.qt-signal-card{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:20px;text-align:center;transition:border .3s}
+.qt-signal-card.buy{border-color:var(--green);box-shadow:0 0 20px rgba(76,175,114,.08)}
+.qt-signal-card.sell{border-color:var(--red);box-shadow:0 0 20px rgba(224,92,92,.08)}
+.qt-signal-card.hold{border-color:var(--gold);box-shadow:0 0 20px rgba(212,175,55,.08)}
+.qt-signal-card .dim{font-size:12px;color:var(--text-3);margin-bottom:8px;text-transform:uppercase;letter-spacing:1px}
+.qt-signal-card .sig{font-size:28px;font-weight:700}
+.qt-signal-card .sig.buy-text{color:var(--green)}
+.qt-signal-card .sig.sell-text{color:var(--red)}
+.qt-signal-card .sig.hold-text{color:var(--gold)}
+.qt-signal-card .conf{font-size:12px;color:var(--text-2);margin-top:6px}
+.qt-detail-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;margin:20px 0}
+.qt-detail-card{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:18px}
+.qt-detail-card h4{font-size:13px;color:var(--gold);margin-bottom:12px;font-weight:600}
+.qt-row{display:flex;justify-content:space-between;padding:5px 0;font-size:13px;border-bottom:1px solid rgba(38,38,47,.5)}
+.qt-row:last-child{border:none}
+.qt-row .lab{color:var(--text-2)}
+.qt-row .val{font-family:'JetBrains Mono';font-weight:500}
+.qt-row .val.up{color:var(--green)}
+.qt-row .val.dn{color:var(--red)}
+.qt-row .val.gold{color:var(--gold)}
+.qt-sell-plan{background:var(--panel);border:1px solid var(--line-gold);border-radius:var(--r);padding:20px;margin-top:16px}
+.qt-sell-plan h4{color:var(--gold);font-size:14px;margin-bottom:14px;font-weight:600}
+.qt-sell-plan .signal-row{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--line);font-size:13px}
+.qt-sell-plan .signal-row:last-child{border:none}
+.qt-strategy-bar{display:flex;gap:6px;flex-wrap:wrap;margin:12px 0}
+.qt-strat-tag{font-size:11px;padding:3px 10px;border-radius:20px;background:var(--panel-hi);color:var(--text-2);border:1px solid var(--line)}
+.qt-strat-tag.active{border-color:var(--gold);color:var(--gold);background:rgba(212,175,55,.08)}
+.qt-disclaimer{font-size:11px;color:var(--text-3);margin-top:20px;padding:12px;background:var(--panel);border-radius:var(--r);border-left:3px solid var(--gold-deep)}
+</style>
+<div class="qt-wrap">
+  <div class="qt-search">
+    <input type="text" id="qtInput" placeholder="输入股票代码或名称 (支持A股/美股, 如: TSLA, 贵州茅台, 600519, BABA)" autocomplete="off">
+    <button onclick="qtAnalyze()">分析</button>
+    <div class="qt-suggest" id="qtSuggest"></div>
+  </div>
+  <div class="qt-result" id="qtResult"></div>
+  <div class="qt-disclaimer">
+    数据源: 东方财富push2 API(实时) + push2his(历史K线) · 量化模型: Parabolic SAR + MACD双均线 + RSI均值回归 + 布林带 + 多因子投票引擎<br>
+    策略原型: <a href="https://github.com/je-suis-tm/quant-trading" style="color:var(--gold)">je-suis-tm/quant-trading</a> (10.1k Stars) + <a href="https://github.com/hsliuping/TradingAgents-CN" style="color:var(--gold)">TradingAgents-CN</a> (多Agent架构)<br>
+    信号仅供研究参考，不构成任何投资建议。市场有风险，入市需谨慎。
+  </div>
+</div>`;
+  // 绑定搜索事件
+  const inp=document.getElementById('qtInput');
+  let debounce=null;
+  inp.addEventListener('input',()=>{
+    clearTimeout(debounce);
+    debounce=setTimeout(()=>qtSearch(inp.value.trim()),300);
+  });
+  inp.addEventListener('keydown',e=>{if(e.key==='Enter')qtAnalyze()});
+}
+
+// 股票搜索(东方财富 searchapi)
+async function qtSearch(kw){
+  const box=document.getElementById('qtSuggest');
+  if(!kw||kw.length<1){box.classList.remove('show');return;}
+  try{
+    const url=`https://searchapi.eastmoney.com/api/suggest/get?input=${encodeURIComponent(kw)}&type=14&token=D43BF722C8E33BDC906FB84D85E326E8&count=8&_=${Date.now()}`;
+    const r=await fetch(url);const j=await r.json();
+    if(!j.QuotationCodeTable||!j.QuotationCodeTable.Data||!j.QuotationCodeTable.Data.length){box.classList.remove('show');return;}
+    const items=j.QuotationCodeTable.Data;
+    box.innerHTML=items.map(it=>{
+      const mktMap={'SH':'沪A','SZ':'深A','HK':'港股','NASDAQ':'美股','NYSE':'美股','AMEX':'美股','LONDON':'英股'};
+      const mkt=mktMap[it.MktNum]||it.MktNum||'';
+      return `<div class="qt-suggest-item" data-code="${it.Code}" data-secid="${it.SecurityTypeName==='股票'?it.QuoteID:it.QuoteID}" data-name="${it.Name}" onclick="qtSelectStock(this)"><span><span class="code">${it.Code}</span> ${it.Name}</span><span class="mkt">${mkt}</span></div>`;
+    }).join('');
+    box.classList.add('show');
+  }catch(e){box.classList.remove('show');}
+}
+
+let _qtSelectedSecid=null;
+function qtSelectStock(el){
+  const code=el.dataset.code, name=el.dataset.name, secid=el.dataset.secid;
+  document.getElementById('qtInput').value=code+' '+name;
+  document.getElementById('qtSuggest').classList.remove('show');
+  _qtSelectedSecid=secid;
+  qtAnalyze();
+}
+
+async function qtAnalyze(){
+  const inp=document.getElementById('qtInput').value.trim();
+  const resultEl=document.getElementById('qtResult');
+  if(!inp&&!_qtSelectedSecid){return;}
+  resultEl.style.display='block';
+  resultEl.innerHTML='<div class="data-loading"><span class="spin"></span> 正在获取K线数据并运行量化模型…</div>';
+  document.getElementById('qtSuggest').classList.remove('show');
+  
+  try{
+    // 如果没选过, 先搜索确定secid
+    let secid=_qtSelectedSecid;
+    let stockName=inp;
+    if(!secid){
+      const url=`https://searchapi.eastmoney.com/api/suggest/get?input=${encodeURIComponent(inp)}&type=14&token=D43BF722C8E33BDC906FB84D85E326E8&count=1&_=${Date.now()}`;
+      const r=await fetch(url);const j=await r.json();
+      if(j.QuotationCodeTable&&j.QuotationCodeTable.Data&&j.QuotationCodeTable.Data.length){
+        const it=j.QuotationCodeTable.Data[0];
+        secid=it.QuoteID;stockName=it.Name;
+      }else{
+        resultEl.innerHTML='<div style="color:var(--red);padding:20px">未找到匹配的股票，请检查输入</div>';return;
+      }
+    }
+    // 获取K线(250日用于策略计算)
+    const kdata=await fetchKline(secid,250);
+    if(!kdata||kdata.length<60){
+      resultEl.innerHTML='<div style="color:var(--red);padding:20px">K线数据不足(需至少60个交易日)，无法运行量化模型</div>';return;
+    }
+    // 获取实时行情
+    const fundData=await fetchFundamentals(secid);
+    // 获取周K线用于周维度
+    const weekKdata=await _qtFetchWeekKline(secid);
+    
+    // 运行量化引擎
+    const analysis=qtRunEngine(kdata,weekKdata,fundData,secid);
+    // 渲染结果
+    qtRenderResult(analysis,stockName,secid,kdata,fundData);
+    _qtSelectedSecid=null;
+  }catch(e){
+    console.error('量化分析失败',e);
+    resultEl.innerHTML='<div style="color:var(--red);padding:20px">分析失败: '+e.message+'</div>';
+  }
+}
+
+// 获取周K线
+async function _qtFetchWeekKline(secid){
+  const url=`https://push2his.eastmoney.com/api/qt/stock/kline/get?secid=${secid}&fields1=f1,f2,f3,f4,f5,f6&fields2=f51,f52,f53,f54,f55,f56,f57&klt=102&fqt=1&end=20500101&lmt=60&_=${Date.now()}`;
+  try{
+    const j=await _emFetchRace(url);
+    const klines=j.data&&j.data.klines;
+    if(klines&&klines.length)return klines.map(k=>{const p=k.split(',');return{date:p[0],open:+p[1],close:+p[2],high:+p[3],low:+p[4],vol:+p[5],amt:+p[6]};});
+  }catch(e){}
+  return[];
+}
+
+// ===== 量化引擎核心 =====
+function qtRunEngine(kdata,weekKdata,fund,secid){
+  const closes=kdata.map(k=>k.close);
+  const highs=kdata.map(k=>k.high);
+  const lows=kdata.map(k=>k.low);
+  const n=closes.length;
+  
+  // === 策略1: Parabolic SAR ===
+  const sar=_qtParabolicSAR(highs,lows,closes);
+  
+  // === 策略2: MACD ===
+  const macd=_qtMACD(closes);
+  
+  // === 策略3: RSI ===
+  const rsi=_qtRSI(closes,14);
+  
+  // === 策略4: 布林带 ===
+  const bb=_qtBollinger(closes,20,2);
+  
+  // === 策略5: 均线多头排列 ===
+  const trend=_qtTrend(closes);
+  
+  // === 策略6: KDJ ===
+  const kdj=_qtKDJ(highs,lows,closes);
+  
+  // === 策略7: ATR波动率 ===
+  const atr=_qtATR(highs,lows,closes,14);
+  
+  // 当日各策略信号
+  const dailySignals={
+    sar: sar.signal, // 1=多, -1=空
+    macd: macd.signal,
+    rsi: rsi.signal,
+    bb: bb.signal,
+    trend: trend.signal,
+    kdj: kdj.signal,
+    atr_risk: atr.riskLevel // 'low','medium','high'
+  };
+  
+  // 多策略加权投票(当日)
+  const weights={sar:0.25,macd:0.20,rsi:0.15,bb:0.15,trend:0.15,kdj:0.10};
+  let dailyScore=0;
+  for(const[k,w]of Object.entries(weights)){
+    dailyScore+=dailySignals[k]*w;
+  }
+  // ATR风险惩罚
+  if(atr.riskLevel==='high')dailyScore*=0.6;
+  else if(atr.riskLevel==='medium')dailyScore*=0.85;
+  
+  // 当周信号(用周K线)
+  let weeklyScore=0;
+  if(weekKdata&&weekKdata.length>=20){
+    const wCloses=weekKdata.map(k=>k.close);
+    const wHighs=weekKdata.map(k=>k.high);
+    const wLows=weekKdata.map(k=>k.low);
+    const wSar=_qtParabolicSAR(wHighs,wLows,wCloses);
+    const wMacd=_qtMACD(wCloses);
+    const wRsi=_qtRSI(wCloses,14);
+    weeklyScore=wSar.signal*0.35+wMacd.signal*0.35+wRsi.signal*0.30;
+  }else{
+    weeklyScore=dailyScore*0.8;
+  }
+  
+  // 当月信号(用日K最近20天趋势+60天均线)
+  const ma20=closes.slice(-20).reduce((a,b)=>a+b,0)/20;
+  const ma60=closes.slice(-60).reduce((a,b)=>a+b,0)/60;
+  const curPrice=closes[n-1];
+  const monthlyTrend=curPrice>ma20&&ma20>ma60?1:curPrice<ma20&&ma20<ma60?-1:0;
+  const monthlyMomentum=(curPrice-closes[n-20])/closes[n-20];
+  let monthlyScore=monthlyTrend*0.5+(monthlyMomentum>0.05?0.3:monthlyMomentum<-0.05?-0.3:0)+dailyScore*0.2;
+  
+  // 信号判定阈值
+  function toSignal(score){
+    if(score>=0.3)return 'buy';
+    if(score<=-0.3)return 'sell';
+    return 'hold';
+  }
+  function confidence(score){return Math.min(95,Math.round(Math.abs(score)*100+40));}
+  
+  const dailySig=toSignal(dailyScore);
+  const weeklySig=toSignal(weeklyScore);
+  const monthlySig=toSignal(monthlyScore);
+  
+  // === 卖出信号预测 ===
+  let sellPlan=null;
+  if(dailySig==='buy'||dailySig==='hold'){
+    sellPlan=_qtPredictSell(kdata,sar,macd,rsi,bb,closes);
+  }
+  
+  return {
+    dailySignals,dailyScore,weeklySig,weeklyScore,monthlySig,monthlyScore,
+    dailySig,sellPlan,
+    confidence:{daily:confidence(dailyScore),weekly:confidence(weeklyScore),monthly:confidence(monthlyScore)},
+    indicators:{
+      rsi:rsi.value,macd_hist:macd.histogram,bb_position:bb.position,
+      sar_trend:sar.trend,atr_pct:atr.pct,kdj_k:kdj.k,kdj_d:kdj.d,
+      ma5:closes.slice(-5).reduce((a,b)=>a+b,0)/5,
+      ma20,ma60,
+      curPrice,
+      support:bb.lower,resistance:bb.upper
+    }
+  };
+}
+
+// --- Parabolic SAR ---
+function _qtParabolicSAR(highs,lows,closes){
+  const n=highs.length;
+  let sar=lows[0],trend=1,af=0.02,ep=highs[0];
+  for(let i=1;i<n;i++){
+    if(trend===1){
+      sar=sar+af*(ep-sar);
+      sar=Math.min(sar,lows[i-1],i>=2?lows[i-2]:lows[i-1]);
+      if(lows[i]<sar){trend=-1;sar=ep;af=0.02;ep=lows[i];}
+      else{if(highs[i]>ep){ep=highs[i];af=Math.min(af+0.02,0.2);}}
+    }else{
+      sar=sar+af*(ep-sar);
+      sar=Math.max(sar,highs[i-1],i>=2?highs[i-2]:highs[i-1]);
+      if(highs[i]>sar){trend=1;sar=ep;af=0.02;ep=highs[i];}
+      else{if(lows[i]<ep){ep=lows[i];af=Math.min(af+0.02,0.2);}}
+    }
+  }
+  return{signal:trend,trend:trend===1?'上升':'下降',sar};
+}
+
+// --- MACD ---
+function _qtMACD(closes){
+  const ema12=_ema(closes,12),ema26=_ema(closes,26);
+  const n=closes.length;
+  const macdLine=ema12[n-1]-ema26[n-1];
+  const macdPrev=ema12[n-2]-ema26[n-2];
+  // 简化signal line: 9日EMA of MACD line
+  const macdArr=[];for(let i=0;i<n;i++)macdArr.push(ema12[i]-ema26[i]);
+  const signalLine=_ema(macdArr,9);
+  const histogram=macdLine-signalLine[n-1];
+  const signal=macdLine>signalLine[n-1]?1:-1;
+  return{signal,histogram:+histogram.toFixed(4),macdLine:+macdLine.toFixed(4)};
+}
+function _ema(data,period){
+  const k=2/(period+1);const result=[data[0]];
+  for(let i=1;i<data.length;i++)result.push(data[i]*k+result[i-1]*(1-k));
+  return result;
+}
+
+// --- RSI ---
+function _qtRSI(closes,period){
+  const n=closes.length;
+  let gains=0,losses=0;
+  for(let i=1;i<=period;i++){
+    const d=closes[i]-closes[i-1];
+    if(d>0)gains+=d;else losses-=d;
+  }
+  let avgGain=gains/period,avgLoss=losses/period;
+  for(let i=period+1;i<n;i++){
+    const d=closes[i]-closes[i-1];
+    avgGain=(avgGain*(period-1)+(d>0?d:0))/period;
+    avgLoss=(avgLoss*(period-1)+(d<0?-d:0))/period;
+  }
+  const rs=avgLoss===0?100:avgGain/avgLoss;
+  const value=100-100/(1+rs);
+  const signal=value<30?1:value>70?-1:0;
+  return{value:+value.toFixed(1),signal};
+}
+
+// --- Bollinger Bands ---
+function _qtBollinger(closes,period,mult){
+  const n=closes.length;
+  const slice=closes.slice(n-period);
+  const ma=slice.reduce((a,b)=>a+b,0)/period;
+  const std=Math.sqrt(slice.reduce((s,v)=>s+(v-ma)**2,0)/period);
+  const upper=ma+mult*std, lower=ma-mult*std;
+  const cur=closes[n-1];
+  const position=(cur-lower)/(upper-lower); // 0~1
+  const signal=cur<lower?1:cur>upper?-1:position<0.3?0.5:position>0.7?-0.5:0;
+  return{signal,position:+position.toFixed(2),upper:+upper.toFixed(2),lower:+lower.toFixed(2),ma:+ma.toFixed(2)};
+}
+
+// --- 趋势(均线多头) ---
+function _qtTrend(closes){
+  const n=closes.length;
+  const ma5=closes.slice(n-5).reduce((a,b)=>a+b,0)/5;
+  const ma20=closes.slice(n-20).reduce((a,b)=>a+b,0)/20;
+  const ma60=n>=60?closes.slice(n-60).reduce((a,b)=>a+b,0)/60:ma20;
+  if(ma5>ma20&&ma20>ma60)return{signal:1};
+  if(ma5<ma20&&ma20<ma60)return{signal:-1};
+  return{signal:0};
+}
+
+// --- KDJ ---
+function _qtKDJ(highs,lows,closes){
+  const n=closes.length;const per=9;
+  const hh=Math.max(...highs.slice(n-per));
+  const ll=Math.min(...lows.slice(n-per));
+  const rsv=hh===ll?50:(closes[n-1]-ll)/(hh-ll)*100;
+  // 简化: 取最近几日的K/D
+  let k=50,d=50;
+  for(let i=Math.max(0,n-per);i<n;i++){
+    const h9=Math.max(...highs.slice(Math.max(0,i-per+1),i+1));
+    const l9=Math.min(...lows.slice(Math.max(0,i-per+1),i+1));
+    const rv=h9===l9?50:(closes[i]-l9)/(h9-l9)*100;
+    k=(2/3)*k+(1/3)*rv;
+    d=(2/3)*d+(1/3)*k;
+  }
+  const j=3*k-2*d;
+  const signal=k>d&&j<100?1:k<d&&j>0?-1:0;
+  return{k:+k.toFixed(1),d:+d.toFixed(1),j:+j.toFixed(1),signal};
+}
+
+// --- ATR ---
+function _qtATR(highs,lows,closes,period){
+  const n=closes.length;let sum=0;
+  for(let i=Math.max(1,n-period);i<n;i++){
+    const tr=Math.max(highs[i]-lows[i],Math.abs(highs[i]-closes[i-1]),Math.abs(lows[i]-closes[i-1]));
+    sum+=tr;
+  }
+  const atr=sum/period;
+  const pct=atr/closes[n-1]*100;
+  const riskLevel=pct>4?'high':pct>2.5?'medium':'low';
+  return{atr:+atr.toFixed(2),pct:+pct.toFixed(2),riskLevel};
+}
+
+// --- 卖出时点预测 ---
+function _qtPredictSell(kdata,sar,macd,rsi,bb,closes){
+  const n=closes.length;
+  const curPrice=closes[n-1];
+  const signals=[];
+  
+  // 1. SAR反转信号
+  if(sar.trend==='上升'){
+    // 预估SAR何时追上价格 (基于当前加速因子趋势)
+    const recentVol=Math.abs(closes[n-1]-closes[n-5])/closes[n-5]*100;
+    const estDays=recentVol<2?'15-20个交易日':recentVol<5?'8-12个交易日':'3-7个交易日';
+    signals.push({name:'SAR趋势反转',condition:'SAR指标翻转至价格上方',est_time:estDays,priority:'高'});
+  }
+  
+  // 2. RSI超买
+  if(rsi.value<70){
+    const rsiGap=70-rsi.value;
+    const days=rsiGap>20?'10-15个交易日':rsiGap>10?'5-8个交易日':'2-4个交易日';
+    signals.push({name:'RSI超买警告',condition:`RSI突破70 (当前${rsi.value})`,est_time:days,priority:'中'});
+  }
+  
+  // 3. 布林带上轨触及
+  if(bb.position<0.8){
+    const gap=(bb.upper-curPrice)/curPrice*100;
+    const days=gap>5?'7-12个交易日':gap>2?'3-6个交易日':'1-3个交易日';
+    signals.push({name:'布林带上轨压力',condition:`价格触及$${bb.upper.toFixed(2)} (+${gap.toFixed(1)}%)`,est_time:days,priority:'中'});
+  }
+  
+  // 4. MACD死叉
+  if(macd.histogram>0){
+    const weakening=macd.histogram<0.5;
+    signals.push({name:'MACD死叉',condition:'MACD柱状图转负(快线下穿慢线)',est_time:weakening?'3-5个交易日':'7-14个交易日',priority:'高'});
+  }
+  
+  // 5. 止盈目标
+  const fib618=curPrice*1.0618;
+  const fib100=curPrice*1.10;
+  signals.push({name:'斐波那契止盈',condition:`61.8%位 $${fib618.toFixed(2)} 或 整数位 $${fib100.toFixed(2)}`,est_time:'视涨速',priority:'参考'});
+  
+  return signals;
+}
+
+// === 渲染结果 ===
+function qtRenderResult(analysis,stockName,secid,kdata,fund){
+  const el=document.getElementById('qtResult');
+  const cur=analysis.indicators.curPrice;
+  const prevClose=kdata.length>=2?kdata[kdata.length-2].close:cur;
+  const chg=((cur-prevClose)/prevClose*100).toFixed(2);
+  const chgClass=chg>=0?'up':'dn';
+  const code=secid.split('.')[1]||secid;
+  
+  const sigIcon={buy:'BUY',sell:'SELL',hold:'HOLD'};
+  const sigClass={buy:'buy',sell:'sell',hold:'hold'};
+  const sigTextClass={buy:'buy-text',sell:'sell-text',hold:'hold-text'};
+  const sigCN={buy:'买入',sell:'卖出',hold:'持有等待'};
+  
+  let html=`
+<div class="qt-stock-header">
+  <h2>${fund&&fund.name?fund.name:stockName}</h2>
+  <span class="ticker">${code}</span>
+  <span class="price">$${cur.toFixed(2)}</span>
+  <span class="chg ${chgClass}">${chg>=0?'+':''}${chg}%</span>
+</div>
+<div class="qt-strategy-bar">
+  <span class="qt-strat-tag ${analysis.dailySignals.sar>0?'active':''}">SAR ${analysis.indicators.sar_trend}</span>
+  <span class="qt-strat-tag ${analysis.dailySignals.macd>0?'active':''}">MACD ${analysis.dailySignals.macd>0?'金叉':'死叉'}</span>
+  <span class="qt-strat-tag ${analysis.dailySignals.rsi>0?'active':''}">RSI ${analysis.indicators.rsi}</span>
+  <span class="qt-strat-tag ${analysis.dailySignals.bb>0?'active':''}">BB位置 ${(analysis.indicators.bb_position*100).toFixed(0)}%</span>
+  <span class="qt-strat-tag ${analysis.dailySignals.trend>0?'active':''}">均线${analysis.dailySignals.trend>0?'多头':'空头'}</span>
+  <span class="qt-strat-tag ${analysis.dailySignals.kdj>0?'active':''}">KDJ ${analysis.dailySignals.kdj>0?'金叉':'死叉'}</span>
+  <span class="qt-strat-tag">ATR风险:${analysis.indicators.atr_pct}%</span>
+</div>
+
+<div class="qt-signal-grid">
+  <div class="qt-signal-card ${sigClass[analysis.dailySig]}">
+    <div class="dim">当日信号 Daily</div>
+    <div class="sig ${sigTextClass[analysis.dailySig]}">${sigIcon[analysis.dailySig]}</div>
+    <div class="conf">${sigCN[analysis.dailySig]} · 置信度 ${analysis.confidence.daily}%</div>
+  </div>
+  <div class="qt-signal-card ${sigClass[analysis.weeklySig]}">
+    <div class="dim">当周信号 Weekly</div>
+    <div class="sig ${sigTextClass[analysis.weeklySig]}">${sigIcon[analysis.weeklySig]}</div>
+    <div class="conf">${sigCN[analysis.weeklySig]} · 置信度 ${analysis.confidence.weekly}%</div>
+  </div>
+  <div class="qt-signal-card ${sigClass[analysis.monthlySig]}">
+    <div class="dim">当月信号 Monthly</div>
+    <div class="sig ${sigTextClass[analysis.monthlySig]}">${sigIcon[analysis.monthlySig]}</div>
+    <div class="conf">${sigCN[analysis.monthlySig]} · 置信度 ${analysis.confidence.monthly}%</div>
+  </div>
+</div>
+
+<div class="qt-detail-grid">
+  <div class="qt-detail-card">
+    <h4>技术指标概览</h4>
+    <div class="qt-row"><span class="lab">RSI(14)</span><span class="val ${analysis.indicators.rsi>70?'dn':analysis.indicators.rsi<30?'up':''}">${analysis.indicators.rsi}</span></div>
+    <div class="qt-row"><span class="lab">MACD柱状图</span><span class="val ${analysis.indicators.macd_hist>0?'up':'dn'}">${analysis.indicators.macd_hist}</span></div>
+    <div class="qt-row"><span class="lab">布林带位置</span><span class="val">${(analysis.indicators.bb_position*100).toFixed(0)}%</span></div>
+    <div class="qt-row"><span class="lab">KDJ (K/D)</span><span class="val">${analysis.indicators.kdj_k}/${analysis.indicators.kdj_d}</span></div>
+    <div class="qt-row"><span class="lab">ATR波动率</span><span class="val ${analysis.indicators.atr_pct>4?'dn':''}">${analysis.indicators.atr_pct}%</span></div>
+    <div class="qt-row"><span class="lab">SAR趋势</span><span class="val ${analysis.indicators.sar_trend==='上升'?'up':'dn'}">${analysis.indicators.sar_trend}</span></div>
+  </div>
+  <div class="qt-detail-card">
+    <h4>关键价位</h4>
+    <div class="qt-row"><span class="lab">MA5</span><span class="val">$${analysis.indicators.ma5.toFixed(2)}</span></div>
+    <div class="qt-row"><span class="lab">MA20</span><span class="val">$${analysis.indicators.ma20.toFixed(2)}</span></div>
+    <div class="qt-row"><span class="lab">MA60</span><span class="val">$${analysis.indicators.ma60.toFixed(2)}</span></div>
+    <div class="qt-row"><span class="lab">布林上轨(阻力)</span><span class="val gold">$${analysis.indicators.resistance.toFixed(2)}</span></div>
+    <div class="qt-row"><span class="lab">布林下轨(支撑)</span><span class="val gold">$${analysis.indicators.support.toFixed(2)}</span></div>
+    <div class="qt-row"><span class="lab">综合评分</span><span class="val ${analysis.dailyScore>0?'up':'dn'}">${(analysis.dailyScore*100).toFixed(0)}/100</span></div>
+  </div>
+</div>`;
+  
+  // 卖出观察计划
+  if(analysis.sellPlan&&analysis.sellPlan.length){
+    html+=`<div class="qt-sell-plan"><h4>卖出观察信号 / 预计时间节点</h4>`;
+    for(const s of analysis.sellPlan){
+      const prioColor=s.priority==='高'?'var(--red)':s.priority==='中'?'var(--orange)':'var(--text-3)';
+      html+=`<div class="signal-row">
+        <span style="color:${prioColor}">[${s.priority}] ${s.name}</span>
+        <span style="color:var(--text-2)">${s.condition}</span>
+        <span style="color:var(--gold)">${s.est_time}</span>
+      </div>`;
+    }
+    html+=`</div>`;
+  }
+  
+  // 基本面(如有)
+  if(fund&&fund.pe){
+    html+=`<div class="qt-detail-card" style="margin-top:16px;grid-column:1/-1">
+      <h4>基本面参考</h4>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px">
+        ${fund.pe?`<div class="qt-row"><span class="lab">PE(TTM)</span><span class="val">${fund.pe}</span></div>`:''}
+        ${fund.pb?`<div class="qt-row"><span class="lab">PB</span><span class="val">${fund.pb}</span></div>`:''}
+        ${fund.roe?`<div class="qt-row"><span class="lab">ROE(年化)</span><span class="val">${fund.roe}%</span></div>`:''}
+        ${fund.eps?`<div class="qt-row"><span class="lab">EPS</span><span class="val">${fund.eps}</span></div>`:''}
+        ${fund.industry?`<div class="qt-row"><span class="lab">行业</span><span class="val">${fund.industry}</span></div>`:''}
+      </div>
+    </div>`;
+  }
+  
+  el.innerHTML=html;
+}
 </script>
 </body>
 </html>
