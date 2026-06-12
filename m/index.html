@@ -328,6 +328,7 @@ body{font-family:'Noto Sans SC',system-ui,-apple-system,sans-serif;background:va
 </div>
 
 <div class="view active" id="v-dash"></div>
+<div class="view" id="v-quant"><div id="quantContent"></div></div>
 <div class="view" id="v-crisis"></div>
 <div class="view" id="v-cycle"></div>
 <div class="view" id="v-masters"></div>
@@ -335,10 +336,10 @@ body{font-family:'Noto Sans SC',system-ui,-apple-system,sans-serif;background:va
 <div class="view" id="v-camps"></div>
 <div class="view" id="v-stocks"></div>
 <div class="view" id="v-hedgefund"><div id="hfContent"></div></div>
-<div class="view" id="v-quant"><div id="quantContent"></div></div>
 
 <nav class="tabs">
   <div class="tab active" data-v="dash"><div class="ic">📊</div>首页</div>
+  <div class="tab" data-v="quant"><div class="ic">⚡</div>量化</div>
   <div class="tab" data-v="crisis"><div class="ic">⚠️</div>危机</div>
   <div class="tab" data-v="cycle"><div class="ic">🔄</div>周期</div>
   <div class="tab" data-v="masters"><div class="ic">♔</div>大师</div>
@@ -346,7 +347,6 @@ body{font-family:'Noto Sans SC',system-ui,-apple-system,sans-serif;background:va
   <div class="tab" data-v="camps"><div class="ic">🌐</div>G2</div>
   <div class="tab" data-v="stocks"><div class="ic">📈</div>个股</div>
   <div class="tab" data-v="hedgefund"><div class="ic">♜</div>对冲</div>
-  <div class="tab" data-v="quant"><div class="ic">⚡</div>量化</div>
 </nav>
 
 <script>
@@ -2389,6 +2389,42 @@ function crisisCheckStock(kdata, fund, info){
   const volRatio=vol20avg>0?vol5avg/vol20avg:1;
   if(volRatio>2&&ret5<-5) warns.push({level:'danger',msg:'放量暴跌(量比'+volRatio.toFixed(1)+'x, 5日'+ret5.toFixed(1)+'%)，恐慌抛售'});
   else if(volRatio>1.5&&ret5<-3) warns.push({level:'warn',msg:'放量下跌(量比'+volRatio.toFixed(1)+'x)，卖压加重'});
+
+  // ===== 量化技术面信号 (增强危机预警) =====
+  if(n>=60){
+    const closes=kdata.map(d=>d.close),highs=kdata.map(d=>d.high),lows=kdata.map(d=>d.low);
+    // 13) SAR趋势反转
+    let sar=lows[0],trend=1,af=0.02,ep=highs[0],prevTrend=1;
+    for(let i=1;i<n;i++){prevTrend=trend;if(trend===1){sar+=af*(ep-sar);sar=Math.min(sar,lows[i-1],i>=2?lows[i-2]:lows[i-1]);if(lows[i]<sar){trend=-1;sar=ep;af=0.02;ep=lows[i];}else if(highs[i]>ep){ep=highs[i];af=Math.min(af+0.02,0.2);}}else{sar+=af*(ep-sar);sar=Math.max(sar,highs[i-1],i>=2?highs[i-2]:highs[i-1]);if(highs[i]>sar){trend=1;sar=ep;af=0.02;ep=highs[i];}else if(lows[i]<ep){ep=lows[i];af=Math.min(af+0.02,0.2);}}}
+    if(trend===-1&&prevTrend===1) warns.push({level:'danger',msg:'SAR刚转下降趋势(抛物线反转)，趋势性下跌可能开始'});
+    else if(trend===-1) warns.push({level:'warn',msg:'SAR维持下降趋势，下行趋势未结束'});
+    // 14) MACD死叉+恶化
+    const ema12=_ema(closes,12),ema26=_ema(closes,26);
+    const macdArr=closes.map((_,i)=>ema12[i]-ema26[i]);
+    const sigLine=_ema(macdArr,9);
+    const histNow=macdArr[n-1]-sigLine[n-1],histPrev=macdArr[n-2]-sigLine[n-2];
+    const macdCross=macdArr[n-1]<sigLine[n-1]&&macdArr[n-2]>=sigLine[n-2];
+    if(macdCross) warns.push({level:'danger',msg:'MACD刚形成死叉，动量由正转负'});
+    else if(histNow<0&&histNow<histPrev) warns.push({level:'warn',msg:'MACD柱状图持续恶化(空头加速)'});
+    // 15) RSI极端
+    let gains=0,losses=0;for(let i=n-14;i<n;i++){const d=closes[i]-closes[i-1];if(d>0)gains+=d;else losses-=d;}
+    const avgG=gains/14,avgL=losses/14,rsi=avgL===0?100:+(100-100/(1+avgG/avgL)).toFixed(1);
+    if(rsi<25) warns.push({level:'danger',msg:'RSI '+rsi+' 极度超卖，市场恐慌'});
+    else if(rsi<35) warns.push({level:'warn',msg:'RSI '+rsi+' 超卖区域，卖压沉重'});
+    else if(rsi>80) warns.push({level:'warn',msg:'RSI '+rsi+' 极端超买，回调风险极高'});
+    // 16) 布林带下轨突破
+    const sl20=closes.slice(n-20),ma20=sl20.reduce((a,b)=>a+b,0)/20;
+    const std20bb=Math.sqrt(sl20.reduce((s,v)=>s+(v-ma20)**2,0)/20);
+    if(closes[n-1]<ma20-2*std20bb) warns.push({level:'warn',msg:'价格跌破布林带下轨，恐慌性下探'});
+    // 17) 多信号共振
+    let sellSignals=0;
+    if(trend===-1) sellSignals++;
+    if(macdArr[n-1]<sigLine[n-1]) sellSignals++;
+    if(rsi<40) sellSignals++;
+    if(closes[n-1]<ma20) sellSignals++;
+    if(sellSignals>=3) warns.push({level:'danger',msg:'量化多信号共振('+sellSignals+'/5): 高概率持续下行'});
+    else if(sellSignals>=2) warns.push({level:'warn',msg:'量化双信号看空('+sellSignals+'/5)，技术面偏空'});
+  }
 
   const dangerCount=warns.filter(w=>w.level==='danger').length;
   const warnCount=warns.filter(w=>w.level==='warn').length;

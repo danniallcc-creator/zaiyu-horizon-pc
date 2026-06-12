@@ -759,6 +759,7 @@ a{color:inherit;text-decoration:none}
       <div class="nav-label">总览 Overview</div>
       <div class="nav-item active" data-view="dashboard"><span class="ic">◈</span>全球仪表盘</div>
       <div class="nav-label">深度模块 Modules</div>
+      <div class="nav-item" data-view="quant"><span class="ic">⚡</span>量化交易</div>
       <div class="nav-item" data-view="crisis"><span class="ic">⚠</span>危机预警</div>
       <div class="nav-item" data-view="cycle"><span class="ic">◷</span>周期分析</div>
       <div class="nav-item" data-view="masters"><span class="ic">♔</span>大师框架</div>
@@ -766,7 +767,6 @@ a{color:inherit;text-decoration:none}
       <div class="nav-item" data-view="camps"><span class="ic">⊕</span>G2阵营</div>
       <div class="nav-item" data-view="stocks"><span class="ic">⊞</span>个股分析</div>
       <div class="nav-item" data-view="hedgefund"><span class="ic">♜</span>AI对冲建议</div>
-      <div class="nav-item" data-view="quant"><span class="ic">⚡</span>量化交易</div>
     </nav>
     <div class="sidebar-foot">
       数据仅供参考 · 不构成投资建议<br>
@@ -792,6 +792,16 @@ a{color:inherit;text-decoration:none}
         <p class="page-sub">实时市场数据 · 投资日历 · 汇率 · 央行追踪 · 数据驱动摘要</p>
       </div>
       <div id="dashContent"><div class="loader"><div class="spin"></div>正在获取全球市场数据…</div></div>
+    </section>
+
+    <!-- ===== Quant Trading ===== -->
+    <section class="view" id="view-quant">
+      <div class="page-head">
+        <div class="page-kicker">Quantitative Trading · Multi-Strategy Signal Engine</div>
+        <h1 class="page-title">量化<span class="gold">交易系统</span></h1>
+        <p class="page-sub">Parabolic SAR + MACD + RSI + 布林带 + 多Agent投票 · 三维度信号 · 买卖时点预测</p>
+      </div>
+      <div id="quantContent"><div class="data-loading"><span class="spin"></span> 量化交易系统就绪，请输入股票代码…</div></div>
     </section>
 
     <!-- ===== Crisis ===== -->
@@ -871,16 +881,6 @@ a{color:inherit;text-decoration:none}
         <p class="page-sub">19位AI Agent并行分析 · 5类量化策略 + 10位投资大师 · 波动率风控 · 组合决策引擎</p>
       </div>
       <div id="hfContent"><div class="data-loading"><span class="spin"></span> 正在初始化AI对冲基金分析引擎…</div></div>
-    </section>
-
-    <!-- ===== Quant Trading ===== -->
-    <section class="view" id="view-quant">
-      <div class="page-head">
-        <div class="page-kicker">Quantitative Trading · Multi-Strategy Signal Engine</div>
-        <h1 class="page-title">量化<span class="gold">交易系统</span></h1>
-        <p class="page-sub">Parabolic SAR + MACD + RSI + 布林带 + 多Agent投票 · 三维度信号 · 买卖时点预测</p>
-      </div>
-      <div id="quantContent"><div class="data-loading"><span class="spin"></span> 量化交易系统就绪，请输入股票代码…</div></div>
     </section>
 
     <div class="view-foot"></div>
@@ -4481,6 +4481,51 @@ function crisisCheckStock(kdata, fund, info){
   const volRatio=vol20avg>0?vol5avg/vol20avg:1;
   if(volRatio>2&&ret5<-5) warns.push({level:'danger',msg:'放量暴跌(量比'+volRatio.toFixed(1)+'x, 5日'+ret5.toFixed(1)+'%)，恐慌抛售'});
   else if(volRatio>1.5&&ret5<-3) warns.push({level:'warn',msg:'放量下跌(量比'+volRatio.toFixed(1)+'x)，卖压加重'});
+
+  // ===== 量化技术面信号 (增强危机预警) =====
+  if(n>=60){
+    const closes=kdata.map(d=>d.close),highs=kdata.map(d=>d.high),lows=kdata.map(d=>d.low);
+    // 13) SAR趋势反转 — 上升趋势转下降=趋势性下跌开始(参考2000/2008)
+    let sar=lows[0],trend=1,af=0.02,ep=highs[0];
+    let prevTrend=1;
+    for(let i=1;i<n;i++){
+      prevTrend=trend;
+      if(trend===1){sar+=af*(ep-sar);sar=Math.min(sar,lows[i-1],i>=2?lows[i-2]:lows[i-1]);if(lows[i]<sar){trend=-1;sar=ep;af=0.02;ep=lows[i];}else if(highs[i]>ep){ep=highs[i];af=Math.min(af+0.02,0.2);}}
+      else{sar+=af*(ep-sar);sar=Math.max(sar,highs[i-1],i>=2?highs[i-2]:highs[i-1]);if(highs[i]>sar){trend=1;sar=ep;af=0.02;ep=highs[i];}else if(lows[i]<ep){ep=lows[i];af=Math.min(af+0.02,0.2);}}
+    }
+    if(trend===-1&&prevTrend===1) warns.push({level:'danger',msg:'SAR刚转为下降趋势(抛物线反转)，趋势性下跌可能开始'});
+    else if(trend===-1) warns.push({level:'warn',msg:'SAR维持下降趋势，下行趋势未结束'});
+    // 14) MACD死叉+柱状图持续恶化 — 动量崩溃
+    const ema12=_ema(closes,12),ema26=_ema(closes,26);
+    const macdArr=closes.map((_,i)=>ema12[i]-ema26[i]);
+    const sigLine=_ema(macdArr,9);
+    const histNow=macdArr[n-1]-sigLine[n-1];
+    const histPrev=macdArr[n-2]-sigLine[n-2];
+    const macdCross=macdArr[n-1]<sigLine[n-1]&&macdArr[n-2]>=sigLine[n-2];
+    if(macdCross) warns.push({level:'danger',msg:'MACD刚形成死叉，动量由正转负(历史危机前常见信号)'});
+    else if(histNow<0&&histNow<histPrev) warns.push({level:'warn',msg:'MACD柱状图持续恶化(空头加速)，动量持续衰减'});
+    // 15) RSI极端 — RSI<30=超卖(恐慌抛售), RSI>80=极端超买(泡沫见顶)
+    let gains=0,losses=0;
+    for(let i=n-14;i<n;i++){const d=closes[i]-closes[i-1];if(d>0)gains+=d;else losses-=d;}
+    const avgG=gains/14,avgL=losses/14;
+    const rsi=avgL===0?100:+(100-100/(1+avgG/avgL)).toFixed(1);
+    if(rsi<25) warns.push({level:'danger',msg:'RSI '+rsi+' 极度超卖，市场恐慌(2008/2020底部特征)'});
+    else if(rsi<35) warns.push({level:'warn',msg:'RSI '+rsi+' 超卖区域，卖压沉重'});
+    else if(rsi>80) warns.push({level:'warn',msg:'RSI '+rsi+' 极端超买，回调风险极高(2000年泡沫特征)'});
+    // 16) 布林带突破下轨 — 恐慌性抛售(2008/2020)
+    const sl20=closes.slice(n-20),ma20=sl20.reduce((a,b)=>a+b,0)/20;
+    const std20bb=Math.sqrt(sl20.reduce((s,v)=>s+(v-ma20)**2,0)/20);
+    const bbLow=ma20-2*std20bb;
+    if(closes[n-1]<bbLow) warns.push({level:'warn',msg:'价格跌破布林带下轨($'+bbLow.toFixed(2)+')，恐慌性下探'});
+    // 17) 多信号共振卖出 — SAR下降+MACD死叉+RSI<40 = 高概率下行
+    let sellSignals=0;
+    if(trend===-1) sellSignals++;
+    if(macdArr[n-1]<sigLine[n-1]) sellSignals++;
+    if(rsi<40) sellSignals++;
+    if(closes[n-1]<ma20) sellSignals++;
+    if(sellSignals>=3) warns.push({level:'danger',msg:'量化多信号共振卖出('+sellSignals+'/5): SAR↓+MACD死叉+RSI低迷+低于MA20，高概率持续下行'});
+    else if(sellSignals>=2) warns.push({level:'warn',msg:'量化双信号看空('+sellSignals+'/5)，技术面偏空需警惕'});
+  }
 
   const dangerCount=warns.filter(w=>w.level==='danger').length;
   const warnCount=warns.filter(w=>w.level==='warn').length;
