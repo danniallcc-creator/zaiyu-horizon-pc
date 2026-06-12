@@ -4890,7 +4890,7 @@ async function qtSearch(kw){
   if(!kw||kw.length<1){box.classList.remove('show');return;}
   try{
     const url=`https://searchapi.eastmoney.com/api/suggest/get?input=${encodeURIComponent(kw)}&type=14&token=D43BF722C8E33BDC906FB84D85E326E8&count=8&_=${Date.now()}`;
-    const r=await fetch(url);const j=await r.json();
+    const j=await _emJSONP(url);
     if(!j.QuotationCodeTable||!j.QuotationCodeTable.Data||!j.QuotationCodeTable.Data.length){box.classList.remove('show');return;}
     const items=j.QuotationCodeTable.Data;
     box.innerHTML=items.map(it=>{
@@ -4925,7 +4925,7 @@ async function qtAnalyze(){
     let stockName=inp;
     if(!secid){
       const url=`https://searchapi.eastmoney.com/api/suggest/get?input=${encodeURIComponent(inp)}&type=14&token=D43BF722C8E33BDC906FB84D85E326E8&count=1&_=${Date.now()}`;
-      const r=await fetch(url);const j=await r.json();
+      const j=await _emJSONP(url);
       if(j.QuotationCodeTable&&j.QuotationCodeTable.Data&&j.QuotationCodeTable.Data.length){
         const it=j.QuotationCodeTable.Data[0];
         secid=it.QuoteID;stockName=it.Name;
@@ -4947,6 +4947,9 @@ async function qtAnalyze(){
     const analysis=qtRunEngine(kdata,weekKdata,fundData,secid);
     // 渲染结果
     qtRenderResult(analysis,stockName,secid,kdata,fundData);
+    // 运行回测
+    const btResults=qtRunBacktest(secid,stockName,kdata);
+    qtRenderBacktest(resultEl,btResults,stockName,kdata);
     _qtSelectedSecid=null;
   }catch(e){
     console.error('量化分析失败',e);
@@ -5326,6 +5329,158 @@ function qtRenderResult(analysis,stockName,secid,kdata,fund){
   }
   
   el.innerHTML=html;
+}
+
+// ====================== 回测引擎 ======================
+function qtBacktest(kdata,strategyName){
+  const n=kdata.length;
+  if(n<60)return null;
+  const closes=kdata.map(k=>k.close),highs=kdata.map(k=>k.high),lows=kdata.map(k=>k.low);
+  let positions=[]; // {entryIdx,entryPrice,exitIdx,exitPrice}
+  let inPosition=false,entryIdx=0,entryPrice=0;
+  
+  // 生成每日信号
+  const signals=new Array(n).fill(0); // 1=buy, -1=sell, 0=hold
+  if(strategyName==='SAR'){
+    let sar=lows[0],trend=1,af=0.02,ep=highs[0];
+    for(let i=1;i<n;i++){
+      const prevTrend=trend;
+      if(trend===1){sar+=af*(ep-sar);sar=Math.min(sar,lows[i-1],i>=2?lows[i-2]:lows[i-1]);if(lows[i]<sar){trend=-1;sar=ep;af=0.02;ep=lows[i];}else if(highs[i]>ep){ep=highs[i];af=Math.min(af+0.02,0.2);}}
+      else{sar+=af*(ep-sar);sar=Math.max(sar,highs[i-1],i>=2?highs[i-2]:highs[i-1]);if(highs[i]>sar){trend=1;sar=ep;af=0.02;ep=highs[i];}else if(lows[i]<ep){ep=lows[i];af=Math.min(af+0.02,0.2);}}
+      if(trend===1&&prevTrend===-1)signals[i]=1;
+      if(trend===-1&&prevTrend===1)signals[i]=-1;
+    }
+  }else if(strategyName==='MACD'){
+    const ema12=_ema(closes,12),ema26=_ema(closes,26);
+    const macd=[];for(let i=0;i<n;i++)macd.push(ema12[i]-ema26[i]);
+    const sig=_ema(macd,9);
+    for(let i=1;i<n;i++){
+      if(macd[i]>sig[i]&&macd[i-1]<=sig[i-1])signals[i]=1;
+      if(macd[i]<sig[i]&&macd[i-1]>=sig[i-1])signals[i]=-1;
+    }
+  }else if(strategyName==='RSI'){
+    const rsis=[];
+    let gains=0,losses=0;
+    for(let i=1;i<=14&&i<n;i++){const d=closes[i]-closes[i-1];if(d>0)gains+=d;else losses-=d;}
+    let avgG=gains/14,avgL=losses/14;
+    for(let i=0;i<15&&i<n;i++)rsis.push(50);
+    for(let i=15;i<n;i++){const d=closes[i]-closes[i-1];avgG=(avgG*13+(d>0?d:0))/14;avgL=(avgL*13+(d<0?-d:0))/14;rsis.push(avgL===0?100:100-100/(1+avgG/avgL));}
+    for(let i=1;i<n;i++){
+      if(rsis[i]<30&&rsis[i-1]>=30)signals[i]=1;
+      if(rsis[i]>70&&rsis[i-1]<=70)signals[i]=-1;
+    }
+  }else if(strategyName==='BB'){
+    for(let i=20;i<n;i++){
+      const slice=closes.slice(i-20,i);
+      const ma=slice.reduce((a,b)=>a+b,0)/20;
+      const std=Math.sqrt(slice.reduce((s,v)=>s+(v-ma)**2,0)/20);
+      const up=ma+2*std,low=ma-2*std;
+      if(closes[i]<low&&closes[i-1]>=low-2*std)signals[i]=1;
+      if(closes[i]>up&&closes[i-1]<=up+2*std)signals[i]=-1;
+    }
+  }else if(strategyName==='MULTI'){
+    // 多因子综合(与qtRunEngine一致)
+    for(let i=60;i<n;i++){
+      const subC=closes.slice(0,i+1),subH=highs.slice(0,i+1),subL=lows.slice(0,i+1);
+      const sn=subC.length;
+      // mini SAR
+      let s=subL[0],t=1,a=0.02,e=subH[0];
+      for(let j=1;j<sn;j++){if(t===1){s+=a*(e-s);s=Math.min(s,subL[j-1],j>=2?subL[j-2]:subL[j-1]);if(subL[j]<s){t=-1;s=e;a=0.02;e=subL[j];}else if(subH[j]>e){e=subH[j];a=Math.min(a+0.02,0.2);}}else{s+=a*(e-s);s=Math.max(s,subH[j-1],j>=2?subH[j-2]:subH[j-1]);if(subH[j]>s){t=1;s=e;a=0.02;e=subH[j];}else if(subL[j]<e){e=subL[j];a=Math.min(a+0.02,0.2);}}}
+      const sarSig=t;
+      // mini MACD
+      const e12=_ema(subC,12),e26=_ema(subC,26);const mArr=e12.map((v,j)=>v-e26[j]);const s9=_ema(mArr,9);
+      const macdSig=mArr[sn-1]>s9[sn-1]?1:-1;
+      // mini RSI
+      let g=0,l=0;for(let j=sn-14;j<sn;j++){const d=subC[j]-subC[j-1];if(d>0)g+=d;else l-=d;}
+      const rsi=l===0?100:100-100/(1+g/l*14/14);
+      const rsiSig=rsi<30?1:rsi>70?-1:0;
+      // score
+      const score=sarSig*0.35+macdSig*0.30+rsiSig*0.20+(subC[sn-1]>subC[sn-6]?0.15:-0.15);
+      if(score>=0.5&&!inPosition)signals[i]=1;
+      if(score<=-0.3&&inPosition)signals[i]=-1;
+    }
+  }
+  
+  // 执行交易
+  const startIdx=strategyName==='MULTI'?60:strategyName==='BB'?20:15;
+  let cash=100000,shares=0,equity=[],maxEquity=100000,maxDD=0;
+  for(let i=0;i<n;i++){
+    if(i>=startIdx){
+      if(signals[i]===1&&!inPosition){inPosition=true;entryPrice=closes[i];shares=Math.floor(cash/closes[i]);cash-=shares*closes[i];entryIdx=i;positions.push({entryIdx:i,entryPrice:closes[i],exitIdx:-1,exitPrice:0});}
+      if(signals[i]===-1&&inPosition){inPosition=false;cash+=shares*closes[i];const pos=positions[positions.length-1];pos.exitIdx=i;pos.exitPrice=closes[i];shares=0;}
+    }
+    const eq=cash+shares*closes[i];
+    equity.push(eq);
+    if(eq>maxEquity)maxEquity=eq;
+    const dd=(maxEquity-eq)/maxEquity;
+    if(dd>maxDD)maxDD=dd;
+  }
+  // 如果最终仍持仓,以最后收盘价平仓计算
+  const finalEq=cash+shares*closes[n-1];
+  const totalReturn=(finalEq-100000)/100000*100;
+  const buyHold=(closes[n-1]-closes[startIdx])/closes[startIdx]*100;
+  // Sharpe (简化年化)
+  const dailyReturns=[];for(let i=1;i<equity.length;i++)dailyReturns.push((equity[i]-equity[i-1])/equity[i-1]);
+  const avgR=dailyReturns.reduce((a,b)=>a+b,0)/dailyReturns.length;
+  const stdR=Math.sqrt(dailyReturns.reduce((s,v)=>s+(v-avgR)**2,0)/dailyReturns.length);
+  const sharpe=stdR===0?0:(avgR/stdR*Math.sqrt(252));
+  // 胜率
+  const wins=positions.filter(p=>p.exitPrice>p.entryPrice).length;
+  const winRate=positions.length>0?(wins/positions.length*100):0;
+  
+  return{strategy:strategyName,totalReturn:+totalReturn.toFixed(2),buyHold:+buyHold.toFixed(2),maxDrawdown:+(maxDD*100).toFixed(2),sharpe:+sharpe.toFixed(2),trades:positions.length,winRate:+winRate.toFixed(1),equity,positions,alpha:+(totalReturn-buyHold).toFixed(2)};
+}
+
+function qtRunBacktest(secid,stockName,kdata){
+  const strategies=['SAR','MACD','RSI','BB','MULTI'];
+  const results=strategies.map(s=>qtBacktest(kdata,s)).filter(r=>r!==null);
+  results.sort((a,b)=>b.totalReturn-a.totalReturn);
+  return results;
+}
+
+function qtRenderBacktest(el,results,stockName,kdata){
+  const best=results[0];
+  let html=`<div class="qt-detail-card" style="margin-top:20px;grid-column:1/-1;border:1px solid var(--gold-deep)">
+    <h4 style="margin-bottom:12px">策略回测 · ${stockName} · 近${kdata.length}个交易日</h4>
+    <div style="font-size:11px;color:var(--text-3);margin-bottom:14px">初始资金 $100,000 · 满仓进出 · 无手续费 · 含信号延迟</div>
+    <table style="width:100%;border-collapse:collapse;font-size:12px">
+      <tr style="border-bottom:1px solid var(--gold-deep);color:var(--gold)">
+        <th style="text-align:left;padding:6px 4px">策略</th>
+        <th style="text-align:right;padding:6px 4px">收益率</th>
+        <th style="text-align:right;padding:6px 4px">超额α</th>
+        <th style="text-align:right;padding:6px 4px">最大回撤</th>
+        <th style="text-align:right;padding:6px 4px">Sharpe</th>
+        <th style="text-align:right;padding:6px 4px">交易次数</th>
+        <th style="text-align:right;padding:6px 4px">胜率</th>
+      </tr>`;
+  const nameMap={SAR:'抛物线SAR',MACD:'MACD交叉',RSI:'RSI超买超卖',BB:'布林带',MULTI:'多因子综合'};
+  for(const r of results){
+    const isTop=r===best;
+    const retColor=r.totalReturn>=0?'var(--green,#4caf50)':'var(--red,#f44336)';
+    const alphaColor=r.alpha>=0?'var(--green,#4caf50)':'var(--red,#f44336)';
+    html+=`<tr style="border-bottom:1px solid rgba(255,255,255,0.05);${isTop?'background:rgba(212,175,55,0.08)':''}">
+      <td style="padding:8px 4px;font-weight:${isTop?'700':'400'}">${isTop?'👑 ':''}${nameMap[r.strategy]||r.strategy}</td>
+      <td style="text-align:right;padding:8px 4px;color:${retColor};font-weight:600">${r.totalReturn>=0?'+':''}${r.totalReturn}%</td>
+      <td style="text-align:right;padding:8px 4px;color:${alphaColor}">${r.alpha>=0?'+':''}${r.alpha}%</td>
+      <td style="text-align:right;padding:8px 4px;color:var(--red,#f44336)">-${r.maxDrawdown}%</td>
+      <td style="text-align:right;padding:8px 4px;color:${r.sharpe>=1?'var(--gold)':'var(--text-2)'}">${r.sharpe}</td>
+      <td style="text-align:right;padding:8px 4px">${r.trades}</td>
+      <td style="text-align:right;padding:8px 4px">${r.winRate}%</td>
+    </tr>`;
+  }
+  html+=`<tr style="border-top:1px solid var(--gold-deep);color:var(--text-3)">
+    <td style="padding:8px 4px">Buy & Hold</td>
+    <td style="text-align:right;padding:8px 4px;color:${results[0].buyHold>=0?'var(--green,#4caf50)':'var(--red,#f44336)'}">${results[0].buyHold>=0?'+':''}${results[0].buyHold}%</td>
+    <td colspan="5" style="text-align:right;padding:8px 4px;font-size:11px">基准(买入持有)</td>
+  </tr>`;
+  html+=`</table>`;
+  // 最优策略总结
+  html+=`<div style="margin-top:14px;padding:12px;background:rgba(212,175,55,0.06);border:1px solid var(--gold-deep);border-radius:8px;font-size:12px">
+    <b style="color:var(--gold)">最优策略: ${nameMap[best.strategy]}</b><br>
+    <span style="color:var(--text-2)">收益率 ${best.totalReturn>=0?'+':''}${best.totalReturn}% · 超额收益 ${best.alpha>=0?'+':''}${best.alpha}% · Sharpe ${best.sharpe} · 胜率 ${best.winRate}% · ${best.trades}笔交易</span>
+  </div>`;
+  html+=`</div>`;
+  el.innerHTML+=html;
 }
 </script>
 </body>

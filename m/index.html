@@ -2659,7 +2659,7 @@ async function qtSearchM(kw){
   if(!kw||kw.length<1){box.style.display='none';return;}
   try{
     const url=`https://searchapi.eastmoney.com/api/suggest/get?input=${encodeURIComponent(kw)}&type=14&token=D43BF722C8E33BDC906FB84D85E326E8&count=6&_=${Date.now()}`;
-    const r=await fetch(url);const j=await r.json();
+    const j=await _emJSONP(url);
     if(!j.QuotationCodeTable||!j.QuotationCodeTable.Data||!j.QuotationCodeTable.Data.length){box.style.display='none';return;}
     box.innerHTML=j.QuotationCodeTable.Data.map(it=>`<div style="padding:10px 12px;border-bottom:1px solid var(--line);font-size:13px;display:flex;justify-content:space-between" data-secid="${it.QuoteID}" data-name="${it.Name}" onclick="qtSelectM(this)"><span style="color:var(--gold);font-family:JetBrains Mono">${it.Code}</span><span>${it.Name}</span></div>`).join('');
     box.style.display='block';
@@ -2682,7 +2682,7 @@ async function qtAnalyze(){
     let secid=_qtSecid;
     if(!secid){
       const url=`https://searchapi.eastmoney.com/api/suggest/get?input=${encodeURIComponent(inp)}&type=14&token=D43BF722C8E33BDC906FB84D85E326E8&count=1&_=${Date.now()}`;
-      const r=await fetch(url);const j=await r.json();
+      const j=await _emJSONP(url);
       if(j.QuotationCodeTable&&j.QuotationCodeTable.Data&&j.QuotationCodeTable.Data.length){secid=j.QuotationCodeTable.Data[0].QuoteID;}
       else{res.innerHTML='<div class="card" style="color:var(--red);padding:16px">未找到匹配股票</div>';return;}
     }
@@ -2697,6 +2697,9 @@ async function qtAnalyze(){
     }catch(e){}
     const analysis=_qtEngine(kdata,weekK);
     _qtRenderM(res,analysis,fund,kdata,secid);
+    // 回测
+    const btResults=_qtRunBacktestM(kdata);
+    _qtRenderBtM(res,btResults,kdata);
     _qtSecid=null;
   }catch(e){res.innerHTML='<div class="card" style="color:var(--red);padding:16px">分析失败: '+e.message+'</div>';}
 }
@@ -2795,6 +2798,73 @@ function _qtRenderM(el,a,fund,kdata,secid){
     html+=`</div>`;
   }
   el.innerHTML=html;
+}
+// ====================== 回测引擎(手机版) ======================
+function _qtBacktestM(kdata,stratName){
+  const n=kdata.length;if(n<60)return null;
+  const closes=kdata.map(k=>k.close),highs=kdata.map(k=>k.high),lows=kdata.map(k=>k.low);
+  const signals=new Array(n).fill(0);
+  if(stratName==='SAR'){
+    let sar=lows[0],trend=1,af=0.02,ep=highs[0];
+    for(let i=1;i<n;i++){const pt=trend;if(trend===1){sar+=af*(ep-sar);sar=Math.min(sar,lows[i-1],i>=2?lows[i-2]:lows[i-1]);if(lows[i]<sar){trend=-1;sar=ep;af=0.02;ep=lows[i];}else if(highs[i]>ep){ep=highs[i];af=Math.min(af+0.02,0.2);}}else{sar+=af*(ep-sar);sar=Math.max(sar,highs[i-1],i>=2?highs[i-2]:highs[i-1]);if(highs[i]>sar){trend=1;sar=ep;af=0.02;ep=highs[i];}else if(lows[i]<ep){ep=lows[i];af=Math.min(af+0.02,0.2);}}if(trend===1&&pt===-1)signals[i]=1;if(trend===-1&&pt===1)signals[i]=-1;}
+  }else if(stratName==='MACD'){
+    const e12=_ema(closes,12),e26=_ema(closes,26),macd=e12.map((v,i)=>v-e26[i]),sig=_ema(macd,9);
+    for(let i=1;i<n;i++){if(macd[i]>sig[i]&&macd[i-1]<=sig[i-1])signals[i]=1;if(macd[i]<sig[i]&&macd[i-1]>=sig[i-1])signals[i]=-1;}
+  }else if(stratName==='RSI'){
+    const rsis=[];let g=0,l=0;
+    for(let i=1;i<=14&&i<n;i++){const d=closes[i]-closes[i-1];if(d>0)g+=d;else l-=d;}
+    let avgG=g/14,avgL=l/14;for(let i=0;i<15;i++)rsis.push(50);
+    for(let i=15;i<n;i++){const d=closes[i]-closes[i-1];avgG=(avgG*13+(d>0?d:0))/14;avgL=(avgL*13+(d<0?-d:0))/14;rsis.push(avgL===0?100:100-100/(1+avgG/avgL));}
+    for(let i=1;i<n;i++){if(rsis[i]<30&&rsis[i-1]>=30)signals[i]=1;if(rsis[i]>70&&rsis[i-1]<=70)signals[i]=-1;}
+  }else if(stratName==='BB'){
+    for(let i=20;i<n;i++){const sl=closes.slice(i-20,i),ma=sl.reduce((a,b)=>a+b,0)/20,std=Math.sqrt(sl.reduce((s,v)=>s+(v-ma)**2,0)/20);if(closes[i]<ma-2*std)signals[i]=1;if(closes[i]>ma+2*std)signals[i]=-1;}
+  }else if(stratName==='MULTI'){
+    let inP=false;
+    for(let i=60;i<n;i++){
+      const sc=closes.slice(0,i+1),sh=highs.slice(0,i+1),sl=lows.slice(0,i+1),sn=sc.length;
+      let s=sl[0],t=1,a=0.02,e=sh[0];for(let j=1;j<sn;j++){if(t===1){s+=a*(e-s);s=Math.min(s,sl[j-1],j>=2?sl[j-2]:sl[j-1]);if(sl[j]<s){t=-1;s=e;a=0.02;e=sl[j];}else if(sh[j]>e){e=sh[j];a=Math.min(a+0.02,0.2);}}else{s+=a*(e-s);s=Math.max(s,sh[j-1],j>=2?sh[j-2]:sh[j-1]);if(sh[j]>s){t=1;s=e;a=0.02;e=sh[j];}else if(sl[j]<e){e=sl[j];a=Math.min(a+0.02,0.2);}}}
+      const e12=_ema(sc,12),e26=_ema(sc,26),mA=e12.map((v,j)=>v-e26[j]),s9=_ema(mA,9);
+      let g2=0,l2=0;for(let j=sn-14;j<sn;j++){const d=sc[j]-sc[j-1];if(d>0)g2+=d;else l2-=d;}const rsi=l2===0?100:100-100/(1+g2/l2);
+      const score=t*0.35+(mA[sn-1]>s9[sn-1]?1:-1)*0.30+(rsi<30?1:rsi>70?-1:0)*0.20+(sc[sn-1]>sc[sn-6]?0.15:-0.15);
+      if(score>=0.5&&!inP)signals[i]=1;if(score<=-0.3&&inP)signals[i]=-1;
+      if(signals[i]===1)inP=true;if(signals[i]===-1)inP=false;
+    }
+  }
+  // 执行交易
+  const startIdx=stratName==='MULTI'?60:stratName==='BB'?20:15;
+  let cash=100000,shares=0,inPos=false,maxEq=100000,maxDD=0,positions=[];
+  for(let i=startIdx;i<n;i++){
+    if(signals[i]===1&&!inPos){inPos=true;shares=Math.floor(cash/closes[i]);cash-=shares*closes[i];positions.push({ep:closes[i],xp:0});}
+    if(signals[i]===-1&&inPos){inPos=false;cash+=shares*closes[i];positions[positions.length-1].xp=closes[i];shares=0;}
+    const eq=cash+shares*closes[i];if(eq>maxEq)maxEq=eq;const dd=(maxEq-eq)/maxEq;if(dd>maxDD)maxDD=dd;
+  }
+  const finalEq=cash+shares*closes[n-1];
+  const ret=(finalEq-100000)/100000*100;
+  const bh=(closes[n-1]-closes[startIdx])/closes[startIdx]*100;
+  const wins=positions.filter(p=>p.xp>p.ep).length;
+  return{s:stratName,ret:+ret.toFixed(2),bh:+bh.toFixed(2),dd:+(maxDD*100).toFixed(2),trades:positions.length,win:positions.length>0?+(wins/positions.length*100).toFixed(0):0,alpha:+(ret-bh).toFixed(2)};
+}
+function _qtRunBacktestM(kdata){
+  return['SAR','MACD','RSI','BB','MULTI'].map(s=>_qtBacktestM(kdata,s)).filter(r=>r).sort((a,b)=>b.ret-a.ret);
+}
+function _qtRenderBtM(el,results,kdata){
+  const nm={SAR:'SAR',MACD:'MACD',RSI:'RSI',BB:'布林带',MULTI:'多因子'};
+  let html=`<div class="card gold-edge" style="margin-top:12px"><div style="font-size:14px;font-weight:700;color:var(--gold);margin-bottom:10px">策略回测 · 近${kdata.length}日</div>`;
+  html+=`<div style="font-size:10px;color:var(--text-3);margin-bottom:8px">$100,000初始资金 · 满仓进出</div>`;
+  for(const r of results){
+    const isTop=r===results[0];
+    const rc=r.ret>=0?'var(--green)':'var(--red)';
+    const ac=r.alpha>=0?'var(--green)':'var(--red)';
+    html+=`<div style="display:grid;grid-template-columns:60px 1fr 1fr 1fr;gap:4px;padding:8px 4px;border-bottom:1px solid var(--line);font-size:11px;${isTop?'background:rgba(212,175,55,0.08);border-radius:6px':''}">`;
+    html+=`<span style="font-weight:600;color:${isTop?'var(--gold)':'var(--text)'}">${isTop?'👑':''}${nm[r.s]}</span>`;
+    html+=`<span style="text-align:center;color:${rc};font-weight:600">${r.ret>=0?'+':''}${r.ret}%</span>`;
+    html+=`<span style="text-align:center;color:${ac};font-size:10px">α${r.alpha>=0?'+':''}${r.alpha}%</span>`;
+    html+=`<span style="text-align:right;color:var(--text-3)">${r.trades}笔/${r.win}%胜</span></div>`;
+  }
+  html+=`<div style="display:grid;grid-template-columns:60px 1fr 1fr 1fr;gap:4px;padding:8px 4px;font-size:11px;color:var(--text-3)"><span>Buy&Hold</span><span style="text-align:center">${results[0].bh>=0?'+':''}${results[0].bh}%</span><span style="text-align:center">基准</span><span style="text-align:right">—</span></div>`;
+  html+=`<div style="margin-top:8px;padding:8px;background:var(--card2);border-radius:6px;font-size:10px;color:var(--text-2)">最优: <b style="color:var(--gold)">${nm[results[0].s]}</b> · 超额${results[0].alpha>=0?'+':''}${results[0].alpha}% · 最大回撤-${results[0].dd}%</div>`;
+  html+=`</div>`;
+  el.innerHTML+=html;
 }
 </script>
 </body>
