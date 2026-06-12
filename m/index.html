@@ -2784,7 +2784,7 @@ function _qtRenderM(el,a,fund,kdata,secid){
   const cur=a.curPrice,prev=kdata.length>=2?kdata[kdata.length-2].close:cur;
   const chg=((cur-prev)/prev*100).toFixed(2);
   const code=secid.split('.')[1]||secid;
-  const sigCN={buy:'买入',sell:'卖出',hold:'持有等待'};
+  const sigCN={buy:'买入 BUY',sell:'卖出 SELL',hold:'持有 HOLD'};
   const sigColor={buy:'var(--green)',sell:'var(--red)',hold:'var(--gold)'};
   let html=`<div class="card gold-edge"><div style="display:flex;align-items:baseline;gap:8px;margin-bottom:8px"><span style="font-size:17px;font-weight:700">${fund&&fund.name?fund.name:code}</span><span style="font-family:JetBrains Mono;color:var(--gold);font-size:12px">${code}</span><span style="margin-left:auto;font-size:16px;font-weight:600">$${cur.toFixed(2)}</span><span style="font-size:12px;color:${chg>=0?'var(--green)':'var(--red)'}">${chg>=0?'+':''}${chg}%</span></div>`;
   html+=`<div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:12px;font-size:10px">`;

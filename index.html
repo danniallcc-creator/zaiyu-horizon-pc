@@ -5256,10 +5256,10 @@ function qtRenderResult(analysis,stockName,secid,kdata,fund){
   const chgClass=chg>=0?'up':'dn';
   const code=secid.split('.')[1]||secid;
   
-  const sigIcon={buy:'BUY',sell:'SELL',hold:'HOLD'};
+  const sigIcon={buy:'买入 BUY',sell:'卖出 SELL',hold:'持有 HOLD'};
   const sigClass={buy:'buy',sell:'sell',hold:'hold'};
   const sigTextClass={buy:'buy-text',sell:'sell-text',hold:'hold-text'};
-  const sigCN={buy:'买入',sell:'卖出',hold:'持有等待'};
+  const sigCN={buy:'买入',sell:'卖出',hold:'持有'};
   
   let html=`
 <div class="qt-stock-header">
