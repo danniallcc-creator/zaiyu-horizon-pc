@@ -1644,8 +1644,8 @@ async function fetchCrypto(){
   // 竞速: OKX + Binance Vision 同时请求, 取最快
   const okxP=(async()=>{
     const [b,e]=await Promise.all([
-      fetchJSONq('https://www.okx.com/api/v5/market/ticker?instId=BTC-USDT',4000),
-      fetchJSONq('https://www.okx.com/api/v5/market/ticker?instId=ETH-USDT',4000),
+      fetchJSONq('https://www.okx.com/api/v5/market/ticker?instId=BTC-USDT',2000),
+      fetchJSONq('https://www.okx.com/api/v5/market/ticker?instId=ETH-USDT',2000),
     ]);
     const pb=b.data&&b.data[0], pe=e.data&&e.data[0];
     if(!pb||!pe)throw new Error('OKX empty');
@@ -1841,11 +1841,20 @@ async function fetchFundamentals(secid){
   try{
     const j=await _emFetchRace(url);
     const d=j.data;if(!d||!d.f57)return null;
+    // ROE年化: US股票f173=TTM(正确), CN/HK股票f173=当期累计(需年化)
+    // 年化因子: Q1报告期(4-7月可见)×4, H1(8-10月)×2, Q3(11-次年3月)×4/3, 年报(次年3-4月)×1
+    let roeRaw=d.f173!=null&&d.f173!=='-'?+(+d.f173):null;
+    const isCNHK=secid.startsWith('0.')||secid.startsWith('1.')||secid.startsWith('116.');
+    if(roeRaw!=null&&isCNHK&&Math.abs(roeRaw)<50){
+      const mo=new Date().getMonth()+1; // 1-12
+      const annFactor=mo>=4&&mo<=7?4:mo>=8&&mo<=10?2:mo>=11||mo<=3?4/3:1;
+      roeRaw=+(roeRaw*annFactor).toFixed(2);
+    }
     const result={
       code:d.f57, name:d.f58, industry:d.f127||'—',
       pe:d.f163!=null&&d.f163!=='-'?+(+d.f163/100).toFixed(2):null,
       pb:d.f167!=null&&d.f167!=='-'?+(+d.f167/100).toFixed(2):null,
-      roe:d.f173!=null&&d.f173!=='-'?+(+d.f173).toFixed(2):null,
+      roe:roeRaw!=null?+roeRaw.toFixed(2):null,
       mktCap:d.f116!=null&&d.f116!=='-'?d.f116:null,
       revenue:d.f183!=null&&d.f183!=='-'?d.f183:null,
       eps:d.f186!=null&&d.f186!=='-'?+(+d.f186).toFixed(2):null,
@@ -4714,6 +4723,7 @@ function setStatus(state,detail){
 let refreshing=false;
 async function loadAll(){
   if(refreshing)return; refreshing=true;
+  try{
   setStatus('loading','数据加载中…');
   if(!rendered.dashboard){
     document.getElementById('dashContent').innerHTML='<div class="data-loading"><span class="spin"></span> 正在获取全球实时市场数据…</div>';
@@ -4739,7 +4749,7 @@ async function loadAll(){
       document.getElementById('dashContent').innerHTML='<div class="data-loading" style="text-align:center;padding:40px;color:#e0a23c"><div style="font-size:18px;margin-bottom:12px">⚠ 实时数据加载失败</div><div style="font-size:13px;line-height:1.7;color:#76726c">可能原因:<br>① 网络异常 — 请刷新页面或检查代理<br>② 浏览器CORS拦截 — 请按 F12 查看控制台<br>③ 东方财富接口暂时不可达 — 系统将自动重试</div></div>';
     }
   }
-  refreshing=false;
+  }finally{ refreshing=false; }
 }
 document.getElementById('refreshBtn').addEventListener('click',loadAll);
 

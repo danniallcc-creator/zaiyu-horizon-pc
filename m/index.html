@@ -1082,8 +1082,8 @@ async function fetchCrypto(){
   // 竞速: OKX + Binance Vision 同时请求, 取最快
   const okxP=(async()=>{
     const [b,e]=await Promise.all([
-      fetchJSONq('https://www.okx.com/api/v5/market/ticker?instId=BTC-USDT',4000),
-      fetchJSONq('https://www.okx.com/api/v5/market/ticker?instId=ETH-USDT',4000),
+      fetchJSONq('https://www.okx.com/api/v5/market/ticker?instId=BTC-USDT',2000),
+      fetchJSONq('https://www.okx.com/api/v5/market/ticker?instId=ETH-USDT',2000),
     ]);
     const pb=b.data&&b.data[0], pe=e.data&&e.data[0];
     if(!pb||!pe)throw new Error('OKX empty');
@@ -1299,11 +1299,19 @@ async function fetchFundamentals(secid){
         if(attempt===0){await new Promise(r=>setTimeout(r,1000));continue;}
         return null;
       }
+      // ROE年化: US股票f173=TTM(正确), CN/HK股票f173=当期累计(需年化)
+      let roeRaw=d.f173!=null&&d.f173!=='-'?+(+d.f173):null;
+      const isCNHK=secid.startsWith('0.')||secid.startsWith('1.')||secid.startsWith('116.');
+      if(roeRaw!=null&&isCNHK&&Math.abs(roeRaw)<50){
+        const mo=new Date().getMonth()+1;
+        const annFactor=mo>=4&&mo<=7?4:mo>=8&&mo<=10?2:mo>=11||mo<=3?4/3:1;
+        roeRaw=+(roeRaw*annFactor).toFixed(2);
+      }
       const result={
         code:d.f57, name:d.f58, industry:d.f127||'—',
         pe:d.f163!=null&&d.f163!=='-'?+(+d.f163/100).toFixed(2):null,
         pb:d.f167!=null&&d.f167!=='-'?+(+d.f167/100).toFixed(2):null,
-        roe:d.f173!=null&&d.f173!=='-'?+(+d.f173).toFixed(2):null,
+        roe:roeRaw!=null?+roeRaw.toFixed(2):null,
         mktCap:d.f116!=null&&d.f116!=='-'?d.f116:null,
         revenue:d.f183!=null&&d.f183!=='-'?d.f183:null,
         eps:d.f186!=null&&d.f186!=='-'?+(+d.f186).toFixed(2):null,
@@ -2595,7 +2603,10 @@ function setStatus(state,txt){
 }
 
 let cache=null;
+let refreshing=false;
 async function loadAll(){
+  if(refreshing)return; refreshing=true;
+  try{
   setStatus('loading','加载中…');
   const md=Object.assign({},CURATED);
   try{
@@ -2614,6 +2625,7 @@ async function loadAll(){
     viewRendered.dash=true;
     setStatus('','离线');
   }
+  }finally{ refreshing=false; }
 }
 loadAll();
 setInterval(loadAll,300000);
