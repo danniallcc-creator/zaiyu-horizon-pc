@@ -1018,6 +1018,7 @@ async function _emFetchOnce(url){
 }
 
 // Cloudflare代理通道
+const _PROXY_AVAIL=(location.hostname.includes('pages.dev')||location.hostname.includes('workers.dev'));
 async function _emProxyFetch(url){
   const proxyBase=location.origin+'/proxy';
   const ctrl=new AbortController(); const t=setTimeout(()=>ctrl.abort(),FETCH_TIMEOUT);
@@ -1028,17 +1029,20 @@ async function _emProxyFetch(url){
   } finally { clearTimeout(t); }
 }
 
-// 三通道竞速: JSONP + fetch直连 + Cloudflare代理
+// 三通道竞速: 代理优先(pages.dev环境) + JSONP + fetch直连
 async function _emFetchRace(directUrl){
+  const channels=[];
+  if(_PROXY_AVAIL) channels.push(_emProxyFetch(directUrl));
+  channels.push(new Promise(r=>setTimeout(r,_PROXY_AVAIL?300:0)).then(()=>_emJSONP(directUrl)));
+  channels.push(new Promise(r=>setTimeout(r,_PROXY_AVAIL?600:300)).then(()=>_emFetchOnce(directUrl)));
   try{
-    return await Promise.any([
-      _emJSONP(directUrl),
-      new Promise(r=>setTimeout(r,300)).then(()=>_emFetchOnce(directUrl)),
-      new Promise(r=>setTimeout(r,600)).then(()=>_emProxyFetch(directUrl)),
-    ]);
+    return await Promise.any(channels);
   }catch(e1){
-    await new Promise(r=>setTimeout(r,1000));
-    return await _emProxyFetch(directUrl).catch(e2=>{throw e1.errors?e1.errors[0]:e1;});
+    if(_PROXY_AVAIL){
+      await new Promise(r=>setTimeout(r,1000));
+      return await _emProxyFetch(directUrl).catch(e2=>{throw e1.errors?e1.errors[0]:e1;});
+    }
+    throw e1.errors?e1.errors[0]:e1;
   }
 }
 async function emQuote(secids){

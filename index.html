@@ -1590,7 +1590,8 @@ async function _emFetchOnce(url){
   } finally { clearTimeout(t); }
 }
 
-// ===== Cloudflare代理通道: 当JSONP+fetch直连均失败时(DNS污染/防火墙) =====
+// ===== Cloudflare代理通道: 绕过DNS/防火墙对eastmoney的拦截 =====
+const _PROXY_AVAIL=(location.hostname.includes('pages.dev')||location.hostname.includes('workers.dev'));
 async function _emProxyFetch(url){
   const proxyBase=location.origin+'/proxy';
   const ctrl=new AbortController(); const t=setTimeout(()=>ctrl.abort(),FETCH_TIMEOUT);
@@ -1601,18 +1602,22 @@ async function _emProxyFetch(url){
   } finally { clearTimeout(t); }
 }
 
-// 三通道竞速: JSONP(最快) + fetch直连 + Cloudflare代理(兜底)
+// 三通道竞速: 代理(最快,pages.dev环境) + JSONP + fetch直连
+// 在Cloudflare Pages环境下代理零延迟启动(最可靠通道)
 async function _emFetchRace(directUrl){
+  const channels=[];
+  if(_PROXY_AVAIL) channels.push(_emProxyFetch(directUrl)); // 代理优先(0ms)
+  channels.push(new Promise(r=>setTimeout(r,_PROXY_AVAIL?300:0)).then(()=>_emJSONP(directUrl)));
+  channels.push(new Promise(r=>setTimeout(r,_PROXY_AVAIL?600:300)).then(()=>_emFetchOnce(directUrl)));
   try{
-    return await Promise.any([
-      _emJSONP(directUrl),
-      new Promise(r=>setTimeout(r,300)).then(()=>_emFetchOnce(directUrl)),
-      new Promise(r=>setTimeout(r,600)).then(()=>_emProxyFetch(directUrl)),
-    ]);
+    return await Promise.any(channels);
   }catch(e1){
-    // 三通道全失败,等1s后仅用代理重试(直连大概率环境问题)
-    await new Promise(r=>setTimeout(r,1000));
-    return await _emProxyFetch(directUrl).catch(e2=>{throw e1.errors?e1.errors[0]:e1;});
+    // 全部失败: 如有代理则再试一次
+    if(_PROXY_AVAIL){
+      await new Promise(r=>setTimeout(r,1000));
+      return await _emProxyFetch(directUrl).catch(e2=>{throw e1.errors?e1.errors[0]:e1;});
+    }
+    throw e1.errors?e1.errors[0]:e1;
   }
 }
 async function emQuote(secids){

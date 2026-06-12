@@ -1,7 +1,6 @@
 /**
- * Cloudflare Pages Function: 东方财富 API 代理
- * 路径: /proxy?url=<encoded_eastmoney_url>
- * 浏览器请求同域 /proxy 端点，Worker代为请求东方财富数据并返回
+ * Cloudflare Pages Advanced Mode (_worker.js)
+ * 拦截 /proxy 请求做API代理, 其他请求直接返回静态资源
  */
 
 const ALLOWED_HOSTS = [
@@ -12,8 +11,21 @@ const ALLOWED_HOSTS = [
   'www.okx.com',
 ];
 
-export async function onRequest(context) {
-  const { request } = context;
+export default {
+  async fetch(request, env) {
+    const url = new URL(request.url);
+    
+    // 只拦截 /proxy 路径, 其他请求交给静态资产
+    if (url.pathname === '/proxy') {
+      return handleProxy(request, url);
+    }
+    
+    // 非 /proxy 路径: 交给 Pages 的静态资产处理
+    return env.ASSETS.fetch(request);
+  }
+};
+
+async function handleProxy(request, url) {
   const corsHeaders = {
     'Access-Control-Allow-Origin': '*',
     'Access-Control-Allow-Methods': 'GET, OPTIONS',
@@ -24,11 +36,10 @@ export async function onRequest(context) {
     return new Response(null, { headers: corsHeaders });
   }
 
-  const url = new URL(request.url);
   const targetUrl = url.searchParams.get('url');
 
   if (!targetUrl) {
-    return new Response(JSON.stringify({ status: 'ok', ts: Date.now(), msg: 'em-proxy ready. Use ?url=<encoded_url>' }), {
+    return new Response(JSON.stringify({ status: 'ok', ts: Date.now(), msg: 'em-proxy ready' }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' }
     });
   }
@@ -38,15 +49,13 @@ export async function onRequest(context) {
     parsedTarget = new URL(targetUrl);
   } catch (e) {
     return new Response(JSON.stringify({ error: 'Invalid url' }), {
-      status: 400,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
     });
   }
 
   if (!ALLOWED_HOSTS.includes(parsedTarget.hostname)) {
     return new Response(JSON.stringify({ error: 'Host not allowed' }), {
-      status: 403,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
     });
   }
 
@@ -60,7 +69,7 @@ export async function onRequest(context) {
 
     let body = await resp.text();
 
-    // Strip JSONP callback wrapper if present → return pure JSON
+    // Strip JSONP wrapper → pure JSON
     const cbMatch = body.match(/^[a-zA-Z_][a-zA-Z0-9_]*\(([\s\S]*)\);?\s*$/);
     if (cbMatch) {
       body = cbMatch[1];
@@ -75,9 +84,8 @@ export async function onRequest(context) {
       }
     });
   } catch (e) {
-    return new Response(JSON.stringify({ error: 'Upstream fetch failed: ' + e.message }), {
-      status: 502,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+    return new Response(JSON.stringify({ error: 'Upstream failed: ' + e.message }), {
+      status: 502, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
     });
   }
 }
