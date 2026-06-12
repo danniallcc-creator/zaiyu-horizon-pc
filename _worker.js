@@ -8,7 +8,9 @@ const ALLOWED_HOSTS = [
   'push2his.eastmoney.com',
   'searchapi.eastmoney.com',
   'api.binance.com',
+  'data-api.binance.vision',
   'www.okx.com',
+  'api.coingecko.com',
 ];
 
 export default {

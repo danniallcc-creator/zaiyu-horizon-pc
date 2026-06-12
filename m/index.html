@@ -1096,10 +1096,10 @@ function fetchJSONq(url,ms){
 }
 async function fetchCrypto(){
   const ck='crypto';
-  const cached=cacheGet(ck,30000); // 30s缓存
+  const cached=cacheGet(ck,30000);
   if(cached)return cached;
   const o={};
-  // 竞速: OKX + Binance Vision 同时请求, 取最快
+  // 三通道竞速: OKX + Binance Vision + CoinGecko
   const okxP=(async()=>{
     const [b,e]=await Promise.all([
       fetchJSONq('https://www.okx.com/api/v5/market/ticker?instId=BTC-USDT',2000),
@@ -1107,12 +1107,12 @@ async function fetchCrypto(){
     ]);
     const pb=b.data&&b.data[0], pe=e.data&&e.data[0];
     if(!pb||!pe)throw new Error('OKX empty');
-    return {btcPrice:nf(+pb.last,0),btcChange:pct(+pb.last,+pb.open24h),eth:nf(+pe.last,0),ethChange:pct(+pe.last,+pe.open24h)};
+    return {btcPrice:nf(+pb.last,0),btcChange:pct(+pb.last,+pb.open24h),eth:nf(+pe.last,0),ethChange:pct(+pe.last,+pe.open24h),cryptoSource:'OKX'};
   })();
   const binP=(async()=>{
-    await new Promise(r=>setTimeout(r,300)); // 给OKX 300ms优先窗口
+    await new Promise(r=>setTimeout(r,300));
     const arr=await fetchJSONq('https://data-api.binance.vision/api/v3/ticker/24hr?symbols=%5B%22BTCUSDT%22%2C%22ETHUSDT%22%5D',5000);
-    const r={};
+    const r={cryptoSource:'Binance'};
     arr.forEach(x=>{
       if(x.symbol==='BTCUSDT'){r.btcPrice=nf(+x.lastPrice,0);r.btcChange=Number(x.priceChangePercent);}
       if(x.symbol==='ETHUSDT'){r.eth=nf(+x.lastPrice,0);r.ethChange=Number(x.priceChangePercent);}
@@ -1120,8 +1120,14 @@ async function fetchCrypto(){
     if(!r.btcPrice)throw new Error('Binance empty');
     return r;
   })();
+  const cgP=(async()=>{
+    await new Promise(r=>setTimeout(r,500));
+    const j=await fetchJSONq('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum&vs_currencies=usd&include_24hr_change=true',5000);
+    if(!j.bitcoin||!j.ethereum)throw new Error('CoinGecko empty');
+    return {btcPrice:nf(j.bitcoin.usd,0),btcChange:+(j.bitcoin.usd_24h_change||0).toFixed(2),eth:nf(j.ethereum.usd,0),ethChange:+(j.ethereum.usd_24h_change||0).toFixed(2),cryptoSource:'CoinGecko'};
+  })();
   try{
-    const result=await Promise.any([okxP,binP]);
+    const result=await Promise.any([okxP,binP,cgP]);
     Object.assign(o,result);
     cacheSet(ck,o);
   }catch(e){}
@@ -1146,43 +1152,34 @@ async function fetchMarket(){
   return o;
 }
 
-/* ==================== MACRO INDICATORS (宏观指标: 真实VIX + 国债收益率) ==================== */
-// 数据来源: 东方财富push2 API (浏览器直连CORS, 与股票行情同源)
-// VIX: 使用VIXY(VIX短期期货ETF)和VXX(iPath VIX ETN)作为CBOE VIX实时代理
-// 国债: 直接获取美国2Y/10Y/30Y国债收益率(171.US2Y/US10Y/US30Y)
+/* ==================== MACRO INDICATORS (宏观指标: VIX代理 + 国债收益率) ==================== */
+// VIX代理: VIXY+VXX+UVXY 三源融合估算 (CBOE VIX现指无免费实时源)
 async function fetchMacro(){
-  const ids='107.VIXY,107.VXX,171.US2Y,171.US10Y,171.US30Y';
+  const ids='107.VIXY,107.VXX,107.UVXY,171.US2Y,171.US10Y,171.US30Y';
   const m=await emQuote(ids);
   const o={};
-  // --- VIX代理 ---
-  const vixy=m['107.VIXY'], vxx=m['107.VXX'];
-  if(vixy&&vixy.price!=null){
-    // VIXY是VIX短期期货ETF, 价格≈VIX futures水平
-    // 历史统计: VIX≈VIXY×1.2 (contango调整系数), 仅供趋势参考
-    const vixEst=Math.round(vixy.price*1.2*10)/10;
-    o.vixIndex=vixEst;
-    o.vixChange=vixy.chg;
-    o.vixSource='VIXY×1.2';
-    o.vixyPrice=vixy.price;
-    o.vixyChangePct=vixy.chg;
-  }
-  if(vxx&&vxx.price!=null){
-    o.vxxPrice=vxx.price;
-    o.vxxChangePct=vxx.chg;
-    // VXX作为VIX第二代理交叉验证
-    if(!o.vixIndex){
-      const vixEst2=Math.round(vxx.price*1.1*10)/10;
-      o.vixIndex=vixEst2;
-      o.vixChange=vxx.chg;
-      o.vixSource='VXX×1.1';
-    }
+  const vixy=m['107.VIXY'], vxx=m['107.VXX'], uvxy=m['107.UVXY'];
+  const ests=[];
+  if(vixy&&vixy.price!=null){ ests.push(vixy.price*1.2); o.vixyPrice=vixy.price; o.vixyChangePct=vixy.chg; }
+  if(vxx&&vxx.price!=null){ ests.push(vxx.price*1.1); o.vxxPrice=vxx.price; o.vxxChangePct=vxx.chg; }
+  if(uvxy&&uvxy.price!=null){ ests.push(Math.sqrt(uvxy.price)*4.5); o.uvxyPrice=uvxy.price; o.uvxyChangePct=uvxy.chg; }
+  if(ests.length){
+    ests.sort((a,b)=>a-b);
+    const median=ests.length===3?ests[1]:(ests.reduce((s,v)=>s+v,0)/ests.length);
+    o.vixIndex=Math.round(median*10)/10;
+    const chgs=[];
+    if(vixy&&vixy.chg!=null)chgs.push(vixy.chg);
+    if(vxx&&vxx.chg!=null)chgs.push(vxx.chg);
+    if(uvxy&&uvxy.chg!=null)chgs.push(uvxy.chg/1.5);
+    o.vixChange=chgs.length?+(chgs.reduce((s,v)=>s+v,0)/chgs.length).toFixed(2):0;
+    o.vixSource=ests.length+'源融合(代理)';
+    o.vixIsProxy=true;
   }
   // --- 美国国债收益率 ---
   const us2y=m['171.US2Y'], us10y=m['171.US10Y'], us30y=m['171.US30Y'];
   if(us2y&&us2y.price!=null){ o.t2y=+us2y.price; o.t2yChange=us2y.chg; }
   if(us10y&&us10y.price!=null){ o.t10y=+us10y.price; o.t10yChange=us10y.chg; }
   if(us30y&&us30y.price!=null){ o.t30y=+us30y.price; o.t30yChange=us30y.chg; }
-  // --- 计算10Y-2Y利差 ---
   if(o.t2y!=null&&o.t10y!=null){
     o.yieldSpread=+(o.t10y-o.t2y).toFixed(3);
   }
@@ -2674,7 +2671,7 @@ async function loadAll(){
     cache=md;
     renderDash(md);
     viewRendered.dash=true;
-    setStatus('live','实时 · '+new Date().toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit'}));
+    setStatus('live','实时·美股商品~15min延迟·'+new Date().toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit'}));
     if(viewRendered.hedgefund) loadHedgeFund(true);
   }catch(e){
     cache=md;
@@ -2685,7 +2682,18 @@ async function loadAll(){
   }finally{ refreshing=false; }
 }
 loadAll();
-setInterval(loadAll,300000);
+// 智能刷新: 仪表盘Tab可见时60s高频, 否则5min
+let _refreshTimer=null;
+function _scheduleRefresh(){
+  if(_refreshTimer){clearInterval(_refreshTimer);_refreshTimer=null;}
+  const onDash=document.querySelector('.tab.active[data-v="dash"]');
+  const visible=document.visibilityState==='visible';
+  const interval=(onDash&&visible)?60000:300000;
+  _refreshTimer=setInterval(loadAll,interval);
+}
+_scheduleRefresh();
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')loadAll();_scheduleRefresh();});
+document.querySelectorAll('.tab').forEach(t=>t.addEventListener('click',()=>setTimeout(_scheduleRefresh,100)));
 
 // ====================== 量化交易模块(手机版) ======================
 function renderQuantTrading(){

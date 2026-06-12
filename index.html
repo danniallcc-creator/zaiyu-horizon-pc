@@ -1674,7 +1674,7 @@ async function fetchCrypto(){
   const cached=cacheGet(ck,30000); // 30s缓存
   if(cached)return cached;
   const o={};
-  // 竞速: OKX + Binance Vision 同时请求, 取最快
+  // 三通道竞速: OKX(国内)+ Binance Vision(全球)+ CoinGecko(全球, 开放CORS)
   const okxP=(async()=>{
     const [b,e]=await Promise.all([
       fetchJSONq('https://www.okx.com/api/v5/market/ticker?instId=BTC-USDT',2000),
@@ -1682,12 +1682,12 @@ async function fetchCrypto(){
     ]);
     const pb=b.data&&b.data[0], pe=e.data&&e.data[0];
     if(!pb||!pe)throw new Error('OKX empty');
-    return {btcPrice:nf(+pb.last,0),btcChange:pct(+pb.last,+pb.open24h),eth:nf(+pe.last,0),ethChange:pct(+pe.last,+pe.open24h)};
+    return {btcPrice:nf(+pb.last,0),btcChange:pct(+pb.last,+pb.open24h),eth:nf(+pe.last,0),ethChange:pct(+pe.last,+pe.open24h),cryptoSource:'OKX'};
   })();
   const binP=(async()=>{
     await new Promise(r=>setTimeout(r,300)); // 给OKX 300ms优先窗口
     const arr=await fetchJSONq('https://data-api.binance.vision/api/v3/ticker/24hr?symbols=%5B%22BTCUSDT%22%2C%22ETHUSDT%22%5D',5000);
-    const r={};
+    const r={cryptoSource:'Binance'};
     arr.forEach(x=>{
       if(x.symbol==='BTCUSDT'){r.btcPrice=nf(+x.lastPrice,0);r.btcChange=Number(x.priceChangePercent);}
       if(x.symbol==='ETHUSDT'){r.eth=nf(+x.lastPrice,0);r.ethChange=Number(x.priceChangePercent);}
@@ -1695,8 +1695,20 @@ async function fetchCrypto(){
     if(!r.btcPrice)throw new Error('Binance empty');
     return r;
   })();
+  const cgP=(async()=>{
+    await new Promise(r=>setTimeout(r,500)); // 给前两个500ms优先窗口
+    const j=await fetchJSONq('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum&vs_currencies=usd&include_24hr_change=true',5000);
+    if(!j.bitcoin||!j.ethereum)throw new Error('CoinGecko empty');
+    return {
+      btcPrice:nf(j.bitcoin.usd,0),
+      btcChange:+(j.bitcoin.usd_24h_change||0).toFixed(2),
+      eth:nf(j.ethereum.usd,0),
+      ethChange:+(j.ethereum.usd_24h_change||0).toFixed(2),
+      cryptoSource:'CoinGecko'
+    };
+  })();
   try{
-    const result=await Promise.any([okxP,binP]);
+    const result=await Promise.any([okxP,binP,cgP]);
     Object.assign(o,result);
     cacheSet(ck,o);
   }catch(e){}
@@ -1721,33 +1733,33 @@ async function fetchMarket(){
   return o;
 }
 
-/* ==================== MACRO INDICATORS (宏观指标: 真实VIX + 国债收益率) ==================== */
+/* ==================== MACRO INDICATORS (宏观指标: VIX代理 + 国债收益率) ==================== */
 // 数据来源: 东方财富push2 API (浏览器直连CORS, 与股票行情同源)
-// VIX: 使用VIXY(VIX短期期货ETF)和VXX(iPath VIX ETN)作为CBOE VIX实时代理
-// 国债: 直接获取美国2Y/10Y/30Y国债收益率(171.US2Y/US10Y/US30Y)
+// VIX代理: 因CBOE VIX现指无免费实时源, 使用VIXY+VXX+UVXY三个VIX期货衍生品融合估算
+// 注意: 代理估算与真实VIX指数有±10-20%偏差(主要源于期货contango), UI已标注"代理估算"
 async function fetchMacro(){
-  const ids='107.VIXY,107.VXX,171.US2Y,171.US10Y,171.US30Y';
+  const ids='107.VIXY,107.VXX,107.UVXY,171.US2Y,171.US10Y,171.US30Y';
   const m=await emQuote(ids);
   const o={};
-  // --- VIX代理 ---
-  const vixy=m['107.VIXY'], vxx=m['107.VXX'];
-  if(vixy&&vixy.price!=null){
-    const vixEst=Math.round(vixy.price*1.2*10)/10;
-    o.vixIndex=vixEst;
-    o.vixChange=vixy.chg;
-    o.vixSource='VIXY×1.2';
-    o.vixyPrice=vixy.price;
-    o.vixyChangePct=vixy.chg;
-  }
-  if(vxx&&vxx.price!=null){
-    o.vxxPrice=vxx.price;
-    o.vxxChangePct=vxx.chg;
-    if(!o.vixIndex){
-      const vixEst2=Math.round(vxx.price*1.1*10)/10;
-      o.vixIndex=vixEst2;
-      o.vixChange=vxx.chg;
-      o.vixSource='VXX×1.1';
-    }
+  // --- VIX代理 (三源融合估算) ---
+  const vixy=m['107.VIXY'], vxx=m['107.VXX'], uvxy=m['107.UVXY'];
+  const ests=[]; // 收集多个估算值取中位数
+  if(vixy&&vixy.price!=null){ ests.push(vixy.price*1.2); o.vixyPrice=vixy.price; o.vixyChangePct=vixy.chg; }
+  if(vxx&&vxx.price!=null){ ests.push(vxx.price*1.1); o.vxxPrice=vxx.price; o.vxxChangePct=vxx.chg; }
+  if(uvxy&&uvxy.price!=null){ ests.push(Math.sqrt(uvxy.price)*4.5); /* UVXY=1.5x leveraged, 用sqrt衰减 */ o.uvxyPrice=uvxy.price; o.uvxyChangePct=uvxy.chg; }
+  if(ests.length){
+    ests.sort((a,b)=>a-b);
+    // 中位数(三源时取中间值, 双源取均值)
+    const median=ests.length===3?ests[1]:(ests.reduce((s,v)=>s+v,0)/ests.length);
+    o.vixIndex=Math.round(median*10)/10;
+    // 平均日变化率(VIXY/VXX为主, UVXY为1.5x杠杆)
+    const chgs=[];
+    if(vixy&&vixy.chg!=null)chgs.push(vixy.chg);
+    if(vxx&&vxx.chg!=null)chgs.push(vxx.chg);
+    if(uvxy&&uvxy.chg!=null)chgs.push(uvxy.chg/1.5);
+    o.vixChange=chgs.length?+(chgs.reduce((s,v)=>s+v,0)/chgs.length).toFixed(2):0;
+    o.vixSource=ests.length+'源融合(代理)';
+    o.vixIsProxy=true; // UI显示"代理估算"标记
   }
   // --- 美国国债收益率 ---
   const us2y=m['171.US2Y'], us10y=m['171.US10Y'], us30y=m['171.US30Y'];
@@ -2721,7 +2733,7 @@ function renderDashboard(md){
     <div class="card hero-side gold-edge" style="animation-delay:.12s">
       <div class="mini-stat"><span class="k">🏛️ 美联储利率</span><div class="vwrap"><span class="v" style="color:var(--gold-bright)">${dv(md.fedRate)}</span></div></div>
       <div class="mini-stat"><span class="k">🇨🇳 中国 LPR</span><div class="vwrap"><span class="v" style="color:var(--gold-bright)">${dv(md.chinaLPR)}%</span></div></div>
-      <div class="mini-stat"><span class="k">📊 VIX 恐慌指数</span><div class="vwrap"><span class="v">${dv(md.vixIndex)}</span></div></div>
+      <div class="mini-stat"><span class="k">📊 VIX 恐慌(代理)</span><div class="vwrap"><span class="v">${dv(md.vixIndex)}</span></div></div>
       <div class="mini-stat"><span class="k">💵 美元指数 DXY</span><div class="vwrap"><span class="v">${dv(md.dxyIndex)}</span><span class="c ${md.dxyChange>=0?'up':'down'}">${chgStr(md.dxyChange)}</span></div></div>
     </div>
   </div>
@@ -2742,7 +2754,7 @@ function renderDashboard(md){
     ${dcard('📈','标普500',md.sp500,md.sp500Change,1)}
     ${dcard('💻','纳斯达克',md.nasdaq,md.nasdaqChange,1)}
     ${dcard('🏭','道琼斯',md.dow,md.dowChange,1)}
-    ${dcard('📊','VIX 恐慌',md.vixIndex,undefined)}
+    ${dcard('📊','VIX 恐慌(代理)',md.vixIndex,undefined)}
   </div>
 
   <div class="sec-title">🪙 商品 &amp; 加密</div>
@@ -4822,7 +4834,7 @@ async function loadAll(){
   if(rendered.stocks&&!document.querySelector('.stk-detail')) loadStocks(true);
   if(rendered.hedgefund) loadHedgeFund(true);
   const ts=new Date().toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit'});
-  if(ok>=2){setStatus('live','实时数据 · 东方财富行情 · '+ts);_loadRetryCount=0;}
+  if(ok>=2){setStatus('live','实时·外汇/国债同步·美股商品延迟约15min · '+ts);_loadRetryCount=0;}
   else if(ok===1){setStatus('offline','部分数据源不可用('+failed.join('、')+') · 下次自动重试');_loadRetryCount=0;}
   else {
     // 全部失败: 自动重试(最多3次,间隔递增)
@@ -4852,7 +4864,21 @@ function tick(){
 }
 setInterval(tick,1000);tick();
 loadAll();
-setInterval(loadAll,300000); // 5min auto refresh market data
+// 智能刷新: 用户停留在仪表盘且页面可见时60秒高频刷新; 否则5分钟低频
+let _refreshTimer=null;
+function _scheduleRefresh(){
+  if(_refreshTimer){clearInterval(_refreshTimer);_refreshTimer=null;}
+  const onDash=rendered.dashboard&&document.querySelector('.nav-item.active[data-view="dashboard"]');
+  const visible=document.visibilityState==='visible';
+  const interval=(onDash&&visible)?60000:300000; // 60s/300s
+  _refreshTimer=setInterval(loadAll,interval);
+}
+_scheduleRefresh();
+document.addEventListener('visibilitychange',()=>{
+  if(document.visibilityState==='visible'){loadAll();}_scheduleRefresh();
+});
+// nav切换时重排刷新频率
+document.querySelectorAll('.nav-item').forEach(it=>it.addEventListener('click',()=>setTimeout(_scheduleRefresh,100)));
 // 跨日/凌晨5点刷新日历: 每分钟检查, 若本地时间跨入新日期(≥05:00)则重载全部
 // 使"今日投资日历"与"央行下次决议日期"切换到新的一天
 let __lastDay=new Date().getDate();
