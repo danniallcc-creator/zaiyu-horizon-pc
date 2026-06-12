@@ -1017,15 +1017,29 @@ async function _emFetchOnce(url){
   } finally { clearTimeout(t); }
 }
 
-// 双通道竞速: JSONP 优先(无CORS限制) + fetch 兜底
+// Cloudflare代理通道
+async function _emProxyFetch(url){
+  const proxyBase=location.origin+'/proxy';
+  const ctrl=new AbortController(); const t=setTimeout(()=>ctrl.abort(),FETCH_TIMEOUT);
+  try{
+    const r=await fetch(proxyBase+'?url='+encodeURIComponent(url),{signal:ctrl.signal});
+    if(!r.ok) throw new Error('Proxy HTTP '+r.status);
+    return await r.json();
+  } finally { clearTimeout(t); }
+}
+
+// 三通道竞速: JSONP + fetch直连 + Cloudflare代理
 async function _emFetchRace(directUrl){
-  return await Promise.any([
-    _emJSONP(directUrl),
-    new Promise(r=>setTimeout(r,300)).then(()=>_emFetchOnce(directUrl)),
-  ]).catch(agg=>{
-    // 全部失败, 抛第一个错误
-    throw agg.errors?agg.errors[0]:agg;
-  });
+  try{
+    return await Promise.any([
+      _emJSONP(directUrl),
+      new Promise(r=>setTimeout(r,300)).then(()=>_emFetchOnce(directUrl)),
+      new Promise(r=>setTimeout(r,600)).then(()=>_emProxyFetch(directUrl)),
+    ]);
+  }catch(e1){
+    await new Promise(r=>setTimeout(r,1000));
+    return await _emProxyFetch(directUrl).catch(e2=>{throw e1.errors?e1.errors[0]:e1;});
+  }
 }
 async function emQuote(secids){
   const ck='eq_'+secids.slice(0,60);

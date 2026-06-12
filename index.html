@@ -1588,20 +1588,29 @@ async function _emFetchOnce(url){
   } finally { clearTimeout(t); }
 }
 
-// 双通道竞速: JSONP 优先(无CORS限制) + fetch 兜底 + 1次重试
+// ===== Cloudflare代理通道: 当JSONP+fetch直连均失败时(DNS污染/防火墙) =====
+async function _emProxyFetch(url){
+  const proxyBase=location.origin+'/proxy';
+  const ctrl=new AbortController(); const t=setTimeout(()=>ctrl.abort(),FETCH_TIMEOUT);
+  try{
+    const r=await fetch(proxyBase+'?url='+encodeURIComponent(url),{signal:ctrl.signal});
+    if(!r.ok) throw new Error('Proxy HTTP '+r.status);
+    return await r.json();
+  } finally { clearTimeout(t); }
+}
+
+// 三通道竞速: JSONP(最快) + fetch直连 + Cloudflare代理(兜底)
 async function _emFetchRace(directUrl){
   try{
     return await Promise.any([
       _emJSONP(directUrl),
       new Promise(r=>setTimeout(r,300)).then(()=>_emFetchOnce(directUrl)),
+      new Promise(r=>setTimeout(r,600)).then(()=>_emProxyFetch(directUrl)),
     ]);
   }catch(e1){
-    // 第一次全部失败,等1s后重试一次(应对DNS刷新/网络切换瞬断)
+    // 三通道全失败,等1s后仅用代理重试(直连大概率环境问题)
     await new Promise(r=>setTimeout(r,1000));
-    return await Promise.any([
-      _emJSONP(directUrl),
-      _emFetchOnce(directUrl),
-    ]).catch(agg=>{throw agg.errors?agg.errors[0]:agg;});
+    return await _emProxyFetch(directUrl).catch(e2=>{throw e1.errors?e1.errors[0]:e1;});
   }
 }
 async function emQuote(secids){
