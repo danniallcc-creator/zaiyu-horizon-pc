@@ -894,7 +894,7 @@ a{color:inherit;text-decoration:none}
 //   加密货币 BTC/ETH → OKX(国内可访问) → Binance 公共数据(备用)
 // 无需任何后端代理, 彻底解决跨域与海外服务器被墙问题
 const EM_BASE = "https://push2.eastmoney.com/api/qt/ulist.np/get";
-const FETCH_TIMEOUT = 8000; // 中国→东方财富应在3s内响应, 8s超时足够
+const FETCH_TIMEOUT = 12000; // 加长超时到12s，应对热点/弱网环境
 
 /* 宏观数据分两类:
    ① 实时类(VIX/国债/股指/商品/BTC/DXY) — 由fetchMarket+fetchMacro每5分钟自动拉取覆盖
@@ -1588,15 +1588,21 @@ async function _emFetchOnce(url){
   } finally { clearTimeout(t); }
 }
 
-// 双通道竞速: JSONP 优先(无CORS限制) + fetch 兜底
+// 双通道竞速: JSONP 优先(无CORS限制) + fetch 兜底 + 1次重试
 async function _emFetchRace(directUrl){
-  return await Promise.any([
-    _emJSONP(directUrl),
-    new Promise(r=>setTimeout(r,300)).then(()=>_emFetchOnce(directUrl)),
-  ]).catch(agg=>{
-    // 全部失败, 抛第一个错误
-    throw agg.errors?agg.errors[0]:agg;
-  });
+  try{
+    return await Promise.any([
+      _emJSONP(directUrl),
+      new Promise(r=>setTimeout(r,300)).then(()=>_emFetchOnce(directUrl)),
+    ]);
+  }catch(e1){
+    // 第一次全部失败,等1s后重试一次(应对DNS刷新/网络切换瞬断)
+    await new Promise(r=>setTimeout(r,1000));
+    return await Promise.any([
+      _emJSONP(directUrl),
+      _emFetchOnce(directUrl),
+    ]).catch(agg=>{throw agg.errors?agg.errors[0]:agg;});
+  }
 }
 async function emQuote(secids){
   const ck='eq_'+secids.slice(0,60);
@@ -4733,6 +4739,7 @@ function setStatus(state,detail){
   txt.textContent=detail;
 }
 let refreshing=false;
+let _loadRetryCount=0;
 async function loadAll(){
   if(refreshing)return; refreshing=true;
   try{
@@ -4749,21 +4756,32 @@ async function loadAll(){
   cache=md;
   renderDashboard(md);
   rendered.dashboard=true;
-  if(rendered.crisis) renderCrisis();      // 危机看板随实时行情更新
-  if(rendered.stocks&&!document.querySelector('.stk-detail')) loadStocks(true); // 个股已打开过则静默刷新(详情页打开时不覆盖)
-  if(rendered.hedgefund) loadHedgeFund(true); // 对冲基金已打开过则静默刷新
+  if(rendered.crisis) renderCrisis();
+  if(rendered.stocks&&!document.querySelector('.stk-detail')) loadStocks(true);
+  if(rendered.hedgefund) loadHedgeFund(true);
   const ts=new Date().toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit'});
-  if(ok>=2)       setStatus('live','实时数据 · 东方财富行情 · '+ts);
-  else if(ok===1)   setStatus('offline','部分数据源不可用('+failed.join('、')+')· 下次自动重试');
+  if(ok>=2){setStatus('live','实时数据 · 东方财富行情 · '+ts);_loadRetryCount=0;}
+  else if(ok===1){setStatus('offline','部分数据源不可用('+failed.join('、')+') · 下次自动重试');_loadRetryCount=0;}
   else {
-    setStatus('offline','实时数据获取失败 · 请按 F12 查看控制台错误 · 点击右上角刷新重试');
+    // 全部失败: 自动重试(最多3次,间隔递增)
+    _loadRetryCount++;
+    if(_loadRetryCount<=3){
+      const delay=_loadRetryCount*5000;
+      setStatus('loading','数据源暂时不可达 · 第'+_loadRetryCount+'次重试('+Math.round(delay/1000)+'s后)…');
+      if(!rendered.dashboard){
+        document.getElementById('dashContent').innerHTML='<div class="data-loading"><span class="spin"></span> 网络连接中… 第'+_loadRetryCount+'次尝试(共3次)</div>';
+      }
+      setTimeout(()=>{refreshing=false;loadAll();},delay);
+      return; // 不执行finally中的refreshing=false
+    }
+    setStatus('offline','数据获取失败 · 请检查网络后点击 ↻ 重试');
     if(!rendered.dashboard){
-      document.getElementById('dashContent').innerHTML='<div class="data-loading" style="text-align:center;padding:40px;color:#e0a23c"><div style="font-size:18px;margin-bottom:12px">⚠ 实时数据加载失败</div><div style="font-size:13px;line-height:1.7;color:#76726c">可能原因:<br>① 网络异常 — 请刷新页面或检查代理<br>② 浏览器CORS拦截 — 请按 F12 查看控制台<br>③ 东方财富接口暂时不可达 — 系统将自动重试</div></div>';
+      document.getElementById('dashContent').innerHTML='<div class="data-loading" style="text-align:center;padding:40px;color:#e0a23c"><div style="font-size:18px;margin-bottom:12px">数据加载失败</div><div style="font-size:13px;line-height:1.7;color:#76726c">已重试3次仍无法连接东方财富数据源<br><br>可能原因:<br>1. 当前网络环境屏蔽了 push2.eastmoney.com<br>&nbsp;&nbsp;&nbsp;(公司内网/校园网/部分运营商可能拦截)<br>2. DNS 缓存未刷新 — 请尝试:<br>&nbsp;&nbsp;&nbsp;Chrome地址栏输入 chrome://net-internals/#dns → Clear host cache<br>3. 浏览器扩展拦截 — 关闭广告拦截器后刷新<br><br><b style="color:var(--gold)">快速验证: 开隐身窗口(Cmd+Shift+N)访问本页面</b></div><div style="margin-top:16px"><button onclick="_loadRetryCount=0;loadAll()" style="background:linear-gradient(135deg,var(--gold-deep),var(--gold));color:#000;border:none;padding:10px 24px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer">手动重试</button></div></div>';
     }
   }
   }finally{ refreshing=false; }
 }
-document.getElementById('refreshBtn').addEventListener('click',loadAll);
+document.getElementById('refreshBtn').addEventListener('click',()=>{_loadRetryCount=0;loadAll();});
 
 function tick(){
   const d=new Date();

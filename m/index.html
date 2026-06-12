@@ -335,6 +335,7 @@ body{font-family:'Noto Sans SC',system-ui,-apple-system,sans-serif;background:va
 <div class="view" id="v-camps"></div>
 <div class="view" id="v-stocks"></div>
 <div class="view" id="v-hedgefund"><div id="hfContent"></div></div>
+<div class="view" id="v-quant"><div id="quantContent"></div></div>
 
 <nav class="tabs">
   <div class="tab active" data-v="dash"><div class="ic">📊</div>首页</div>
@@ -345,6 +346,7 @@ body{font-family:'Noto Sans SC',system-ui,-apple-system,sans-serif;background:va
   <div class="tab" data-v="camps"><div class="ic">🌐</div>G2</div>
   <div class="tab" data-v="stocks"><div class="ic">📈</div>个股</div>
   <div class="tab" data-v="hedgefund"><div class="ic">♜</div>对冲</div>
+  <div class="tab" data-v="quant"><div class="ic">⚡</div>量化</div>
 </nav>
 
 <script>
@@ -2581,7 +2583,7 @@ function renderHedgeFundResults(el,results){
 function renderHedgeFund(){loadHedgeFund(false);}
 
 /* ========== APP CONTROL ========== */
-const viewRendered={dash:false,crisis:false,cycle:false,masters:false,scenario:false,camps:false,stocks:false,hedgefund:false};
+const viewRendered={dash:false,crisis:false,cycle:false,masters:false,scenario:false,camps:false,stocks:false,hedgefund:false,quant:false};
 document.querySelectorAll('.tab').forEach(t=>t.addEventListener('click',()=>{
   const v=t.dataset.v;
   document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));t.classList.add('active');
@@ -2594,6 +2596,7 @@ document.querySelectorAll('.tab').forEach(t=>t.addEventListener('click',()=>{
   if(v==='camps'&&!viewRendered.camps){renderCamps();viewRendered.camps=true;}
   if(v==='stocks'&&!viewRendered.stocks){reloadStocks();viewRendered.stocks=true;}
   if(v==='hedgefund'&&!viewRendered.hedgefund){renderHedgeFund();viewRendered.hedgefund=true;}
+  if(v==='quant'&&!viewRendered.quant){renderQuantTrading();viewRendered.quant=true;}
   window.scrollTo({top:0,behavior:'smooth'});
 }));
 
@@ -2629,6 +2632,170 @@ async function loadAll(){
 }
 loadAll();
 setInterval(loadAll,300000);
+
+// ====================== 量化交易模块(手机版) ======================
+function renderQuantTrading(){
+  const el=document.getElementById('quantContent');
+  el.innerHTML=`
+<div class="sec-t">量化交易信号</div>
+<div class="card" style="padding:14px">
+  <div style="display:flex;gap:8px;margin-bottom:12px">
+    <input type="text" id="qtInput" placeholder="输入代码或名称(TSLA/贵州茅台/600519)" style="flex:1;background:var(--card2);border:1px solid var(--line);border-radius:8px;padding:10px 12px;color:var(--text);font-size:14px;outline:none">
+    <button onclick="qtAnalyze()" style="background:linear-gradient(135deg,var(--gold-deep),var(--gold));color:#000;border:none;border-radius:8px;padding:0 16px;font-weight:600;font-size:13px">分析</button>
+  </div>
+  <div id="qtSuggestM" style="display:none;max-height:200px;overflow-y:auto;border:1px solid var(--line);border-radius:8px;margin-bottom:10px"></div>
+</div>
+<div id="qtResultM"></div>
+<div style="font-size:10px;color:var(--text-3);margin-top:12px;padding:8px;background:var(--card);border-radius:8px;border-left:2px solid var(--gold-deep)">
+  策略引擎: SAR+MACD+RSI+布林带+KDJ多因子投票 · 三维度信号(日/周/月) · 数据源:东方财富
+</div>`;
+  const inp=document.getElementById('qtInput');
+  let debounce=null;
+  inp.addEventListener('input',()=>{clearTimeout(debounce);debounce=setTimeout(()=>qtSearchM(inp.value.trim()),350);});
+  inp.addEventListener('keydown',e=>{if(e.key==='Enter')qtAnalyze()});
+}
+async function qtSearchM(kw){
+  const box=document.getElementById('qtSuggestM');
+  if(!kw||kw.length<1){box.style.display='none';return;}
+  try{
+    const url=`https://searchapi.eastmoney.com/api/suggest/get?input=${encodeURIComponent(kw)}&type=14&token=D43BF722C8E33BDC906FB84D85E326E8&count=6&_=${Date.now()}`;
+    const r=await fetch(url);const j=await r.json();
+    if(!j.QuotationCodeTable||!j.QuotationCodeTable.Data||!j.QuotationCodeTable.Data.length){box.style.display='none';return;}
+    box.innerHTML=j.QuotationCodeTable.Data.map(it=>`<div style="padding:10px 12px;border-bottom:1px solid var(--line);font-size:13px;display:flex;justify-content:space-between" data-secid="${it.QuoteID}" data-name="${it.Name}" onclick="qtSelectM(this)"><span style="color:var(--gold);font-family:JetBrains Mono">${it.Code}</span><span>${it.Name}</span></div>`).join('');
+    box.style.display='block';
+  }catch(e){box.style.display='none';}
+}
+let _qtSecid=null;
+function qtSelectM(el){
+  document.getElementById('qtInput').value=el.dataset.name;
+  document.getElementById('qtSuggestM').style.display='none';
+  _qtSecid=el.dataset.secid;
+  qtAnalyze();
+}
+async function qtAnalyze(){
+  const inp=document.getElementById('qtInput').value.trim();
+  const res=document.getElementById('qtResultM');
+  if(!inp&&!_qtSecid)return;
+  res.innerHTML='<div class="card" style="text-align:center;padding:20px"><span class="spin" style="display:inline-block;width:16px;height:16px;border:2px solid var(--gold);border-top-color:transparent;border-radius:50%;animation:pulse .8s linear infinite"></span> 运行量化模型…</div>';
+  document.getElementById('qtSuggestM').style.display='none';
+  try{
+    let secid=_qtSecid;
+    if(!secid){
+      const url=`https://searchapi.eastmoney.com/api/suggest/get?input=${encodeURIComponent(inp)}&type=14&token=D43BF722C8E33BDC906FB84D85E326E8&count=1&_=${Date.now()}`;
+      const r=await fetch(url);const j=await r.json();
+      if(j.QuotationCodeTable&&j.QuotationCodeTable.Data&&j.QuotationCodeTable.Data.length){secid=j.QuotationCodeTable.Data[0].QuoteID;}
+      else{res.innerHTML='<div class="card" style="color:var(--red);padding:16px">未找到匹配股票</div>';return;}
+    }
+    const [kdata,fund]=await Promise.allSettled([fetchKline(secid,250),fetchFundamentals(secid)]).then(r=>[r[0].status==='fulfilled'?r[0].value:[],r[1].status==='fulfilled'?r[1].value:null]);
+    if(!kdata||kdata.length<60){res.innerHTML='<div class="card" style="color:var(--red);padding:16px">K线数据不足(需60日)</div>';return;}
+    // 获取周K
+    let weekK=[];
+    try{
+      const wUrl=`https://push2his.eastmoney.com/api/qt/stock/kline/get?secid=${secid}&fields1=f1,f2,f3,f4,f5,f6&fields2=f51,f52,f53,f54,f55,f56,f57&klt=102&fqt=1&end=20500101&lmt=60&_=${Date.now()}`;
+      const wj=await _emFetchRace(wUrl);
+      if(wj.data&&wj.data.klines)weekK=wj.data.klines.map(k=>{const p=k.split(',');return{date:p[0],open:+p[1],close:+p[2],high:+p[3],low:+p[4]};});
+    }catch(e){}
+    const analysis=_qtEngine(kdata,weekK);
+    _qtRenderM(res,analysis,fund,kdata,secid);
+    _qtSecid=null;
+  }catch(e){res.innerHTML='<div class="card" style="color:var(--red);padding:16px">分析失败: '+e.message+'</div>';}
+}
+function _qtEngine(kdata,weekK){
+  const closes=kdata.map(k=>k.close),highs=kdata.map(k=>k.high),lows=kdata.map(k=>k.low),n=closes.length;
+  // SAR
+  let sar=lows[0],trend=1,af=0.02,ep=highs[0];
+  for(let i=1;i<n;i++){if(trend===1){sar+=af*(ep-sar);sar=Math.min(sar,lows[i-1],i>=2?lows[i-2]:lows[i-1]);if(lows[i]<sar){trend=-1;sar=ep;af=0.02;ep=lows[i];}else if(highs[i]>ep){ep=highs[i];af=Math.min(af+0.02,0.2);}}else{sar+=af*(ep-sar);sar=Math.max(sar,highs[i-1],i>=2?highs[i-2]:highs[i-1]);if(highs[i]>sar){trend=1;sar=ep;af=0.02;ep=highs[i];}else if(lows[i]<ep){ep=lows[i];af=Math.min(af+0.02,0.2);}}}
+  const sarSig=trend;
+  // MACD
+  const ema12=_ema(closes,12),ema26=_ema(closes,26);
+  const macdArr=[];for(let i=0;i<n;i++)macdArr.push(ema12[i]-ema26[i]);
+  const sigLine=_ema(macdArr,9);
+  const macdSig=macdArr[n-1]>sigLine[n-1]?1:-1;
+  const macdHist=+(macdArr[n-1]-sigLine[n-1]).toFixed(4);
+  // RSI
+  let gains=0,losses=0;for(let i=1;i<=14;i++){const d=closes[i]-closes[i-1];if(d>0)gains+=d;else losses-=d;}
+  let avgG=gains/14,avgL=losses/14;for(let i=15;i<n;i++){const d=closes[i]-closes[i-1];avgG=(avgG*13+(d>0?d:0))/14;avgL=(avgL*13+(d<0?-d:0))/14;}
+  const rsiVal=avgL===0?100:+(100-100/(1+avgG/avgL)).toFixed(1);
+  const rsiSig=rsiVal<30?1:rsiVal>70?-1:0;
+  // 布林带
+  const slice20=closes.slice(n-20),ma20=slice20.reduce((a,b)=>a+b,0)/20;
+  const std20=Math.sqrt(slice20.reduce((s,v)=>s+(v-ma20)**2,0)/20);
+  const bbUp=ma20+2*std20,bbLow=ma20-2*std20;
+  const bbPos=(closes[n-1]-bbLow)/(bbUp-bbLow);
+  const bbSig=closes[n-1]<bbLow?1:closes[n-1]>bbUp?-1:bbPos<0.3?0.5:bbPos>0.7?-0.5:0;
+  // 趋势
+  const ma5=closes.slice(n-5).reduce((a,b)=>a+b,0)/5;
+  const ma60=n>=60?closes.slice(n-60).reduce((a,b)=>a+b,0)/60:ma20;
+  const trendSig=ma5>ma20&&ma20>ma60?1:ma5<ma20&&ma20<ma60?-1:0;
+  // KDJ
+  const hh9=Math.max(...highs.slice(n-9)),ll9=Math.min(...lows.slice(n-9));
+  let k=50,d=50;for(let i=Math.max(0,n-9);i<n;i++){const h=Math.max(...highs.slice(Math.max(0,i-8),i+1));const l=Math.min(...lows.slice(Math.max(0,i-8),i+1));const rv=h===l?50:(closes[i]-l)/(h-l)*100;k=(2/3)*k+(1/3)*rv;d=(2/3)*d+(1/3)*k;}
+  const kdjSig=k>d&&3*k-2*d<100?1:k<d?-1:0;
+  // 加权投票
+  const dailyScore=sarSig*0.25+macdSig*0.20+rsiSig*0.15+bbSig*0.15+trendSig*0.15+kdjSig*0.10;
+  // 周信号
+  let weeklyScore=dailyScore*0.8;
+  if(weekK&&weekK.length>=20){
+    const wc=weekK.map(k=>k.close),wh=weekK.map(k=>k.high),wl=weekK.map(k=>k.low),wn=wc.length;
+    let ws=wl[0],wt=1,waf=0.02,wep=wh[0];
+    for(let i=1;i<wn;i++){if(wt===1){ws+=waf*(wep-ws);ws=Math.min(ws,wl[i-1],i>=2?wl[i-2]:wl[i-1]);if(wl[i]<ws){wt=-1;ws=wep;waf=0.02;wep=wl[i];}else if(wh[i]>wep){wep=wh[i];waf=Math.min(waf+0.02,0.2);}}else{ws+=waf*(wep-ws);ws=Math.max(ws,wh[i-1],i>=2?wh[i-2]:wh[i-1]);if(wh[i]>ws){wt=1;ws=wep;waf=0.02;wep=wh[i];}else if(wl[i]<wep){wep=wl[i];waf=Math.min(waf+0.02,0.2);}}}
+    const we12=_ema(wc,12),we26=_ema(wc,26);const wMacd=we12[wn-1]-we26[wn-1];const wSig9=_ema(wc.map((_,i)=>we12[i]-we26[i]),9);
+    weeklyScore=wt*0.35+(wMacd>wSig9[wn-1]?1:-1)*0.35+(rsiSig)*0.30;
+  }
+  // 月信号
+  const monthMom=(closes[n-1]-closes[n-20])/closes[n-20];
+  const monthTrend=closes[n-1]>ma20&&ma20>ma60?1:closes[n-1]<ma20&&ma20<ma60?-1:0;
+  const monthlyScore=monthTrend*0.5+(monthMom>0.05?0.3:monthMom<-0.05?-0.3:0)+dailyScore*0.2;
+  function toSig(s){return s>=0.3?'buy':s<=-0.3?'sell':'hold';}
+  function conf(s){return Math.min(95,Math.round(Math.abs(s)*100+40));}
+  // 卖出预测
+  let sellPlan=[];
+  if(toSig(dailyScore)!=='sell'){
+    if(trend===1)sellPlan.push({n:'SAR反转',t:Math.abs(closes[n-1]-closes[n-5])/closes[n-5]<0.02?'15-20日':'5-10日'});
+    if(rsiVal<70)sellPlan.push({n:'RSI超买(>70)',t:70-rsiVal>20?'10-15日':'3-7日'});
+    if(macdHist>0)sellPlan.push({n:'MACD死叉',t:macdHist<0.5?'3-5日':'7-14日'});
+    sellPlan.push({n:'布林上轨',t:'$'+bbUp.toFixed(2)});
+  }
+  return{daily:toSig(dailyScore),weekly:toSig(weeklyScore),monthly:toSig(monthlyScore),confD:conf(dailyScore),confW:conf(weeklyScore),confM:conf(monthlyScore),rsi:rsiVal,macdH:macdHist,bbPos:+(bbPos*100).toFixed(0),sarT:trend===1?'上升':'下降',ma5:+ma5.toFixed(2),ma20:+ma20.toFixed(2),ma60:+ma60.toFixed(2),bbUp:+bbUp.toFixed(2),bbLow:+bbLow.toFixed(2),curPrice:closes[n-1],sellPlan,score:+(dailyScore*100).toFixed(0)};
+}
+function _ema(data,p){const k=2/(p+1);const r=[data[0]];for(let i=1;i<data.length;i++)r.push(data[i]*k+r[i-1]*(1-k));return r;}
+function _qtRenderM(el,a,fund,kdata,secid){
+  const cur=a.curPrice,prev=kdata.length>=2?kdata[kdata.length-2].close:cur;
+  const chg=((cur-prev)/prev*100).toFixed(2);
+  const code=secid.split('.')[1]||secid;
+  const sigCN={buy:'买入',sell:'卖出',hold:'持有等待'};
+  const sigColor={buy:'var(--green)',sell:'var(--red)',hold:'var(--gold)'};
+  let html=`<div class="card gold-edge"><div style="display:flex;align-items:baseline;gap:8px;margin-bottom:8px"><span style="font-size:17px;font-weight:700">${fund&&fund.name?fund.name:code}</span><span style="font-family:JetBrains Mono;color:var(--gold);font-size:12px">${code}</span><span style="margin-left:auto;font-size:16px;font-weight:600">$${cur.toFixed(2)}</span><span style="font-size:12px;color:${chg>=0?'var(--green)':'var(--red)'}">${chg>=0?'+':''}${chg}%</span></div>`;
+  html+=`<div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:12px;font-size:10px">`;
+  html+=`<span style="padding:2px 6px;border-radius:10px;border:1px solid ${a.sarT==='上升'?'var(--green)':'var(--line)'};color:${a.sarT==='上升'?'var(--green)':'var(--text-3)'}">SAR ${a.sarT}</span>`;
+  html+=`<span style="padding:2px 6px;border-radius:10px;border:1px solid ${a.macdH>0?'var(--green)':'var(--line)'};color:${a.macdH>0?'var(--green)':'var(--text-3)'}">MACD ${a.macdH>0?'金叉':'死叉'}</span>`;
+  html+=`<span style="padding:2px 6px;border-radius:10px;border:1px solid var(--line);color:var(--text-3)">RSI ${a.rsi}</span>`;
+  html+=`<span style="padding:2px 6px;border-radius:10px;border:1px solid var(--line);color:var(--text-3)">BB ${a.bbPos}%</span>`;
+  html+=`<span style="padding:2px 6px;border-radius:10px;border:1px solid var(--line);color:var(--text-2)">评分${a.score}/100</span></div>`;
+  // 三维度信号
+  html+=`<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px">`;
+  for(const[dim,sig,conf] of [['当日',a.daily,a.confD],['当周',a.weekly,a.confW],['当月',a.monthly,a.confM]]){
+    html+=`<div style="text-align:center;padding:12px 6px;background:var(--card2);border-radius:8px;border:1px solid ${sigColor[sig]}30"><div style="font-size:10px;color:var(--text-3);margin-bottom:4px">${dim}</div><div style="font-size:18px;font-weight:700;color:${sigColor[sig]}">${sigCN[sig]}</div><div style="font-size:10px;color:var(--text-3);margin-top:3px">置信${conf}%</div></div>`;
+  }
+  html+=`</div>`;
+  // 关键价位
+  html+=`<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;font-size:12px;margin-bottom:10px">`;
+  html+=`<div style="padding:6px 8px;background:var(--card2);border-radius:6px"><span style="color:var(--text-3)">MA5</span> <span style="float:right">$${a.ma5}</span></div>`;
+  html+=`<div style="padding:6px 8px;background:var(--card2);border-radius:6px"><span style="color:var(--text-3)">MA20</span> <span style="float:right">$${a.ma20}</span></div>`;
+  html+=`<div style="padding:6px 8px;background:var(--card2);border-radius:6px"><span style="color:var(--text-3)">阻力</span> <span style="float:right;color:var(--gold)">$${a.bbUp}</span></div>`;
+  html+=`<div style="padding:6px 8px;background:var(--card2);border-radius:6px"><span style="color:var(--text-3)">支撑</span> <span style="float:right;color:var(--gold)">$${a.bbLow}</span></div>`;
+  html+=`</div>`;
+  html+=`</div>`; // close card
+  // 卖出计划
+  if(a.sellPlan&&a.sellPlan.length){
+    html+=`<div class="card" style="border-color:var(--line-gold)"><div style="font-size:13px;font-weight:600;color:var(--gold);margin-bottom:8px">卖出观察信号</div>`;
+    for(const s of a.sellPlan){
+      html+=`<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--line);font-size:12px"><span style="color:var(--text-2)">${s.n}</span><span style="color:var(--gold)">${s.t}</span></div>`;
+    }
+    html+=`</div>`;
+  }
+  el.innerHTML=html;
+}
 </script>
 </body>
 </html>
