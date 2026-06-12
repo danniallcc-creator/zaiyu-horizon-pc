@@ -1187,7 +1187,9 @@ function _bDim(b){return {
   btc:{chg:b.btc_chg},oil:{chg:b.oil_chg},
   infl:{cpi:b.cpi,pce:b.pce},
   corp:{profit_g:b.corp_profit_growth_00,conc:b.market_concentration,debt:b.corp_debt_gdp||b.corp_debt_gdt||65},
-};}
+ };}
+// [FIX] 提前声明 cache, 避免顶层 cwCalcScore() 在 TDZ 中访问 cache 报错导致脚本崩溃
+let cache=null;
 // 动态取BUBBLE_2026维度(利率从cache实时覆盖)
 function getBubble2026Dims(){
   const md=cache||{};
@@ -4700,7 +4702,8 @@ function hfAgentCard(name,id,agent){
 function renderHedgeFund(){loadHedgeFund(false);}
 
 /* ==================== APP CONTROL ==================== */
-let cache=null;
+// [FIX] cache 已在脚本前部声明, 此处仅重置赋值, 避免 let 重复声明报错
+cache=null;
 const rendered={dashboard:false,crisis:false,cycle:false,masters:false,scenario:false,camps:false,stocks:false,hedgefund:false,quant:false};
 function renderView(v){
   if(v==='crisis'&&!rendered.crisis){renderCrisis();rendered.crisis=true}
