@@ -885,8 +885,21 @@ a{color:inherit;text-decoration:none}
 const EM_BASE = "https://push2.eastmoney.com/api/qt/ulist.np/get";
 const FETCH_TIMEOUT = 8000; // 中国→东方财富应在3s内响应, 8s超时足够
 
-/* 仅政策利率与波动率指数无免费实时CORS源, 保留最新公布值(非市场tick数据) */
-const CURATED = { vixIndex:'14.2', fedRate:'4.25-4.50%', chinaLPR:'3.00' };
+/* 宏观数据分两类:
+   ① 实时类(VIX/国债/股指/商品/BTC/DXY) — 由fetchMarket+fetchMacro每5分钟自动拉取覆盖
+   ② 非实时类(CPI/失业率/高收益债利差等) — 政府统计局月度发布,无免费CORS源,保留最新公布值
+   loadAll会将CURATED合入cache, 然后实时数据覆盖同名字段 → cache始终是最新融合结果 */
+const CURATED = {
+  fedRate:'4.25-4.50%', chinaLPR:'3.00',
+  // ↓ 非实时宏观指标: 手动更新(每月BLS/FRED发布后), 标注数据截至日期
+  cpi: 3.8,            cpiDate:'2026-04',    // BLS CPI同比% (Monthly, ~15th)
+  unemployment: 4.1,   unemploymentDate:'2026-05', // BLS U-3 失业率% (1st Friday)
+  hySpread: 3.5,       hySpreadDate:'2026-06',  // ICE BofA HY OAS利差% (Daily via FRED)
+  consumerSentiment:72,csentDate:'2026-05',  // UMich消费者信心指数 (Monthly)
+  ccDelinquency: 3.2,  ccDelDate:'2026-Q1',  // FRED DCCLACBS 信用卡拖欠率% (Quarterly)
+  caseShiller: 3.5,    csDate:'2026-03',     // S&P Case-Shiller房价同比% (Monthly, 2m lag)
+  sp500YoY: 14.1,      sp500YoYDate:'2026-06', // 标普500近12月涨幅% (来自BUBBLE_2026)
+};
 
 /* Chart.js defaults for cycle charts */
 if(typeof Chart!=='undefined'){
@@ -940,7 +953,22 @@ const CRISIS_INDICATORS=[
   {id:'BAMLH0A0HYM2',name:'高收益债利差',en:'HY Spread',weight:.15,dir:'higher',min:2,max:12},
   {id:'SP500',name:'标普500(年涨跌%)',en:'S&P 500 YoY',weight:.13,dir:'lower',min:-40,max:40},
 ];
-const CURRENT_INDICATORS={T10Y2Y:.20,VIXCLS:14,UNRATE:4.1,UMCSENT:72,DCCLACBS:3.2,CSUSHPINSA:3.5,BAMLH0A0HYM2:3.5,SP500:8};
+/* getCurrentIndicators(): 动态构建8维风险指标
+   实时源(VIX/利差) → 从cache读取; 非实时源(失业率/信心等) → 从CURATED读取
+   每次renderCrisis时调用, 确保系统性风险指数随市场行情自动更新 */
+function getCurrentIndicators(){
+  const md=cache||{};
+  return {
+    T10Y2Y: md.yieldSpread!=null? md.yieldSpread : (md.t10y!=null&&md.t2y!=null? +(md.t10y-md.t2y).toFixed(2) : 0.40),
+    VIXCLS: md.vixIndex||14,
+    UNRATE: md.unemployment||4.1,
+    UMCSENT: md.consumerSentiment||72,
+    DCCLACBS: md.ccDelinquency||3.2,
+    CSUSHPINSA: md.caseShiller||3.5,
+    BAMLH0A0HYM2: md.hySpread||3.5,
+    SP500: md.sp500YoY||14.1
+  };
+}
 const CRISIS_PERIODS=[
   {yr:'2008',nm:'全球金融危机',range:'2008.07–2009.03',desc:'雷曼倒闭引发全球金融海啸，股市暴跌，信用市场冻结',vals:{T10Y2Y:-.2,VIXCLS:55,UNRATE:7.3,UMCSENT:56,DCCLACBS:5.6,CSUSHPINSA:-15,BAMLH0A0HYM2:10.5,SP500:-38}},
   {yr:'2000',nm:'互联网泡沫',range:'2000.01–2002.10',desc:'科技股泡沫破裂，纳斯达克暴跌78%，大量互联网公司倒闭',vals:{T10Y2Y:-.6,VIXCLS:35,UNRATE:4.2,UMCSENT:88,DCCLACBS:4.1,CSUSHPINSA:8.5,BAMLH0A0HYM2:5.5,SP500:-18}},
@@ -1149,7 +1177,16 @@ function _bDim(b){return {
   infl:{cpi:b.cpi,pce:b.pce},
   corp:{profit_g:b.corp_profit_growth_00,conc:b.market_concentration,debt:b.corp_debt_gdp||b.corp_debt_gdt||65},
 };}
-const BUBBLE_2026_dims=_bDim(BUBBLE_2026);
+// 动态取BUBBLE_2026维度(利率从cache实时覆盖)
+function getBubble2026Dims(){
+  const md=cache||{};
+  const b={...BUBBLE_2026};
+  if(md.t2y!=null) b.t2y=md.t2y;
+  if(md.t10y!=null) b.t10y=md.t10y;
+  if(md.t30y!=null) b.t30y=md.t30y;
+  return _bDim(b);
+}
+const BUBBLE_2026_dims=_bDim(BUBBLE_2026); // 初始静态值(cache未加载前)
 
 // 2008 全球金融危机基准(雷曼倒闭前后: 2007.10 顶部 → 2008.10 底部)
 const BUBBLE_2008={
@@ -1233,7 +1270,16 @@ function _calcScoreForBenchmark(bubble){
 }
 function cwCalcScore(){
   // 主维度: 用 2000 基准, IQR 剔除后写入 d.score 供 renderCrisisWarning 渲染
-  CW_DIMENSIONS.forEach(d=>{d.score=d.calc(BUBBLE_2000);});
+  // 动态: 利率维度使用cache实时国债收益率(通过getBubble2026Dims)
+  const liveDims=getBubble2026Dims();
+  CW_DIMENSIONS.forEach(d=>{
+    // 动态替换rates维度的BUBBLE_2026_dims为实时值
+    if(d.dim==='利率环境'){
+      d.score=_calcFns.rates(_bDim(BUBBLE_2000).rates,liveDims.rates);
+    } else {
+      d.score=d.calc(BUBBLE_2000);
+    }
+  });
   // 4 个基准各自的 trimmed 相似度
   const perBench=CRISIS_BENCHMARKS.map(b=>{
     const r=_calcScoreForBenchmark(b.bubble);
@@ -1250,7 +1296,8 @@ function cwCalcScore(){
   cwCalcScore._raw=main.raw;
   return Math.round(totalScore);
 }
-const CW_SCORE=cwCalcScore();
+// 初始计算(cache为空时用CURATED静态值, 后续renderCrisisWarning时会重新调用)
+let CW_SCORE=cwCalcScore();
 
 // 异常检测: 当前市场哪些表现不符合经济规律
 const CW_ANOMALIES=[
@@ -2293,7 +2340,7 @@ function renderStockDetail(secid,stockInfo){
     const kLen=kdata.length;
     const kClose=kLen?kdata[kLen-1].close:null;
     const kPrev=kLen>1?kdata[kLen-2].close:null;
-    const kChg=(kClose!=null&&kPrev)?((kClose-kPrev)/kPrev*100):null;
+    const kChg=(kClose!=null&&kPrev&&kPrev!==0)?((kClose-kPrev)/kPrev*100):null;
     let displayPrice=null, displayChg=null, displayPrev=null;
     if(rtQuote&&kClose){
       const inSession=Math.abs(rtQuote.price-kClose)/kClose<0.03;
@@ -2772,9 +2819,10 @@ function renderCrisis(){
     <div class="adv-act">${m.act}</div>
     <div class="adv-foot"><div class="adv-port"><span class="l">建议组合</span>${m.port}</div><div class="adv-ret">${m.ret}</div></div>
   </div>`).join('');
-  // 系统性风险指数(沿用历史危机相似度)
-  const riskScore=Math.round(crisisScore(CURRENT_INDICATORS)*100);
-  const hist=CRISIS_PERIODS.map(p=>{const sim=similarity(CURRENT_INDICATORS,p.vals);return `<div class="card hist-card gold-edge"><div class="hist-yr">${p.yr}</div><div class="hist-nm">${p.nm}</div><div class="hist-range">${p.range}</div><div class="hist-desc">${p.desc}</div><div class="hist-sim"><span class="l">当前相似度</span><span class="v">${sim}%</span></div></div>`}).join('');
+  // 系统性风险指数(动态: 从cache读取实时VIX/利差, CURATED读取非实时项)
+  const curInd=getCurrentIndicators();
+  const riskScore=Math.round(crisisScore(curInd)*100);
+  const hist=CRISIS_PERIODS.map(p=>{const sim=similarity(curInd,p.vals);return `<div class="card hist-card gold-edge"><div class="hist-yr">${p.yr}</div><div class="hist-nm">${p.nm}</div><div class="hist-range">${p.range}</div><div class="hist-desc">${p.desc}</div><div class="hist-sim"><span class="l">当前相似度</span><span class="v">${sim}%</span></div></div>`}).join('');
 
   document.getElementById('crisisContent').innerHTML=`
   <div class="crisis-hd">
@@ -2821,7 +2869,7 @@ function renderCrisis(){
   <div class="crisis-hd">
     <div class="card gauge-card gold-edge">
       <div class="gauge-wrap">${gaugeSVG(riskScore)}<div class="gauge-score"><div class="n" style="color:${riskScore<35?'#4caf72':riskScore<55?'#e0a23c':'#e05c5c'}">${riskScore}</div><div class="l">RISK INDEX</div></div></div>
-      <div class="gauge-note">基于利差/VIX/失业/信用/房价/高收益债等 8 项加权指标的综合系统性风险评分</div>
+      <div class="gauge-note">基于利差/VIX/失业/信用/房价/高收益债等 8 项加权指标的综合系统性风险评分<br><span style="font-size:10px;color:#76726c">实时: VIX·利差 | 手动更新: 失业率·信心·信用卡·房价·HY利差·SP500</span></div>
     </div>
     <div class="card gold-edge" style="padding:0"><div class="crisis-hist" style="padding:14px">${hist}</div></div>
   </div>
@@ -2900,6 +2948,8 @@ function cwBarChart(title,v2000,v2026,unit,color2k,color26){
   </svg>`;
 }
 function renderCrisisWarning(){
+  // 每次渲染时重新计算(利率等实时数据可能已更新)
+  CW_SCORE=cwCalcScore();
   // 对比表格行
   const rows=[
     {dim:'📈 美股走势',k:[`S&P 1,527 (+19% 1Y)`,`Nasdaq 5,048 (+86% 1Y)`],c:[`S&P 7,610 (+14% 1Y)`,`Nasdaq 27,094 (+19% 1Y)`],signal:'warn',note:'涨幅低于2000但基数效应显著'},
@@ -4336,18 +4386,21 @@ function crisisCheckStock(kdata, fund, info){
     if(t30y>5.0) warns.push({level:'danger',msg:'30Y国债'+t30y+'%突破5%，长端利率飙升 (参考2000/2007危机前水平)'});
     else if(t30y>4.5) warns.push({level:'warn',msg:'30Y国债'+t30y+'%偏高，无风险利率压制权益估值'});
   }
-  // 5) 高收益债信用利差 (2008:10.5%, 2020:8.5%, 正常:2-4%)
+  // 5) 高收益债信用利差 (2008:10.5%, 2020:8.5%, 正常:2-4%) [来源: CURATED/FRED]
   const hySpread=parseFloat(md.hySpread)||null;
-  if(hySpread&&hySpread>7) warns.push({level:'danger',msg:'高收益债利差'+hySpread+'%，信用市场紧张 (类似2008)'});
-  else if(hySpread&&hySpread>5) warns.push({level:'warn',msg:'高收益债利差'+hySpread+'%，信用风险抬升'});
-  // 6) CPI通胀 (2022:8%+, 2000:3.4%)
+  const hyDate=md.hySpreadDate||'';
+  if(hySpread&&hySpread>7) warns.push({level:'danger',msg:'高收益债利差'+hySpread+'%，信用市场紧张 (类似2008)'+(hyDate?' [截至'+hyDate+']':'')});
+  else if(hySpread&&hySpread>5) warns.push({level:'warn',msg:'高收益债利差'+hySpread+'%，信用风险抬升'+(hyDate?' [截至'+hyDate+']':'')});
+  // 6) CPI通胀 (2022:8%+, 2000:3.4%) [来源: CURATED/BLS]
   const cpi=parseFloat(md.cpi)||null;
-  if(cpi&&cpi>5) warns.push({level:'danger',msg:'CPI '+cpi+'%严重偏高，滞胀风险 (参考2022)'});
-  else if(cpi&&cpi>3.5) warns.push({level:'warn',msg:'CPI '+cpi+'%高于目标，关注联储政策'});
-  // 7) 失业率 (2008:7.3%, 2020:14.7%, 正常:3.5-4.5%)
+  const cpiDate=md.cpiDate||'';
+  if(cpi&&cpi>5) warns.push({level:'danger',msg:'CPI '+cpi+'%严重偏高，滞胀风险 (参考2022)'+(cpiDate?' [截至'+cpiDate+']':'')});
+  else if(cpi&&cpi>3.5) warns.push({level:'warn',msg:'CPI '+cpi+'%高于目标，关注联储政策'+(cpiDate?' [截至'+cpiDate+']':'')});
+  // 7) 失业率 (2008:7.3%, 2020:14.7%, 正常:3.5-4.5%) [来源: CURATED/BLS]
   const unrate=parseFloat(md.unemployment)||null;
-  if(unrate&&unrate>6) warns.push({level:'danger',msg:'失业率'+unrate+'%，经济衰退信号 (2008:7.3%)'});
-  else if(unrate&&unrate>5) warns.push({level:'warn',msg:'失业率'+unrate+'%偏高，经济放缓'});
+  const unrateDate=md.unemploymentDate||'';
+  if(unrate&&unrate>6) warns.push({level:'danger',msg:'失业率'+unrate+'%，经济衰退信号 (2008:7.3%)'+(unrateDate?' [截至'+unrateDate+']':'')});
+  else if(unrate&&unrate>5) warns.push({level:'warn',msg:'失业率'+unrate+'%偏高，经济放缓'+(unrateDate?' [截至'+unrateDate+']':'')});
 
   // ===== 微观信号 (个股层面) =====
   if(!kdata||kdata.length<20) return{level:'unknown',signals:warns};
@@ -4443,8 +4496,9 @@ function hfPortfolioManager(allSignals,risk){
 let hfRunning=false;
 async function loadHedgeFund(silent){
   if(hfRunning)return;hfRunning=true;
+  try{
   const el=document.getElementById('hfContent');
-  if(!el){hfRunning=false;return;}
+  if(!el){return;}
   const total=HF_TRADEABLE.length;
   if(!silent) el.innerHTML=`
     <div class="hf-hero"><h2>AI对冲基金决策引擎</h2>
@@ -4476,7 +4530,7 @@ async function loadHedgeFund(silent){
     // (避免美股盘前/盘后数据污染显示, 例如东财f2/f3在NY凌晨会切到盘前价)
     const kClose=kdata[kdata.length-1].close;
     const kPrev=(kdata.length>1)?kdata[kdata.length-2].close:null;
-    const kChg=(kPrev!=null&&kPrev)?((kClose-kPrev)/kPrev*100):0;
+    const kChg=(kPrev!=null&&kPrev!==0)?((kClose-kPrev)/kPrev*100):0;
     // 显示价: 仅当 emQuote 与 K线收盘"非常接近"(±3%, 表明在正常盘中)时使用实时价, 否则用K线收盘
     const inSession=(rtPrice!=null&&kClose)?(Math.abs(rtPrice-kClose)/kClose<0.03):false;
     const curPrice=inSession?rtPrice:kClose;
@@ -4497,7 +4551,7 @@ async function loadHedgeFund(silent){
   }
   el.dataset.ts=new Date().toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
   renderHedgeFundResults(el,results);
-  hfRunning=false;
+  }finally{ hfRunning=false; }
 }
 
 // ---- 渲染结果 ----
