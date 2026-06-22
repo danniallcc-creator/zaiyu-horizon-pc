@@ -1554,8 +1554,10 @@ const CAMP_STROKE={eastern:'#e05c5c',bridge:'#4caf72',western:'#5b9bd5'};
 // 中国大陆浏览器直连, CORS Access-Control-Allow-Origin: *
 // ===== 缓存层: 减少重复请求 =====
 const _cache=new Map(); // key → {data, ts}
-function cacheGet(key,ttlMs){const e=_cache.get(key);if(e&&Date.now()-e.ts<ttlMs)return e.data;return null;}
+function cacheGet(key,ttlMs){const e=_cache.get(key);if(e&&Date.now()-e.ts<ttlMs)return e.data;if(e)_cache.delete(key);return null;}
 function cacheSet(key,data){_cache.set(key,{data,ts:Date.now()});}
+// 定期清理过期缓存条目(每5分钟), 防止Map无限增长
+setInterval(()=>{const now=Date.now();for(const[k,v]of _cache){if(now-v.ts>600000)_cache.delete(k);}},300000);
 
 // ===== JSONP 加载: 通过<script>标签加载东方财富, 完全绕过CORS限制 =====
 // 东方财富 push2 原生支持 cb=回调函数名 JSONP 模式, 国内浏览器最稳定
@@ -1636,6 +1638,20 @@ async function emQuote(secids){
   cacheSet(ck,m);
   return m;
 }
+// 分批批量行情: 当secids超过BATCH_SIZE时自动拆分, 避免单次请求过大导致push2挂起
+const _EM_BATCH_SIZE=15;
+async function emQuoteBatched(secidArr){
+  if(secidArr.length<=_EM_BATCH_SIZE) return emQuote(secidArr.join(','));
+  const batches=[];
+  for(let i=0;i<secidArr.length;i+=_EM_BATCH_SIZE){
+    batches.push(secidArr.slice(i,i+_EM_BATCH_SIZE));
+  }
+  const results=await Promise.allSettled(batches.map(b=>emQuote(b.join(','))));
+  const merged={};
+  results.forEach(r=>{if(r.status==='fulfilled')Object.assign(merged,r.value);});
+  if(!Object.keys(merged).length) throw new Error('分批行情全部失败');
+  return merged;
+}
 
 // 外汇/人民币/美元指数 → 东方财富
 // 人民币四对: 以实时离岸人民币(133.USDCNH, 7×24实时报价)为锚, 用实时交叉汇率换算,
@@ -1711,7 +1727,7 @@ async function fetchCrypto(){
     const result=await Promise.any([okxP,binP,cgP]);
     Object.assign(o,result);
     cacheSet(ck,o);
-  }catch(e){}
+  }catch(e){console.warn('加密货币三源全部失败',e);o._cryptoError=true;}
   return o;
 }
 
@@ -1815,7 +1831,7 @@ async function fetchUniverse(){
   const cached=cacheGet(ck,25000); // 25s缓存(列表频繁刷新不必要)
   if(cached)return cached;
   const all=[...US_LIST,...HK_LIST,...CN_LIST,...COMMOD_LIST,...BOND_US_LIST,...BOND_CN_LIST,...BOND_JP_LIST];
-  const m=await emQuote(all.map(x=>x[0]).join(','));
+  const m=await emQuoteBatched(all.map(x=>x[0]));
   const conv=list=>list.map(([sid,id,name])=>{
     const x=m[sid];
     return {id, name, price:x?x.price:null, changePct:x?x.chg:null, secid:sid};
@@ -2107,7 +2123,7 @@ function aiScore(data,fund){
   if(lastRSI>65)sentScore+=5;else if(lastRSI<35)sentScore-=5;
   sentScore=Math.min(100,Math.max(0,sentScore));
 
-  // ===== 综合评分 (5维度等权20%各) =====
+  // ===== 综合评分 (技术10%+斐波15%+宏观30%+基本面15%+情绪30%) =====
   const overall=Math.round(techScore*0.10+fibScore*0.15+macroScore*0.30+fundScore*0.15+sentScore*0.30);
   const verdict=overall>=70?{t:'强烈看多',c:'#4caf72'}:overall>=60?{t:'偏多',c:'#5b9bd5'}:overall>=50?{t:'中性偏多',c:'#8bc34a'}:overall>=40?{t:'中性',c:'#e0a23c'}:overall>=30?{t:'偏空',c:'#e05c5c'}:{t:'强烈看空',c:'#d32f2f'};
   return{techScore,fibScore,macroScore,fundScore,sentScore,overall,verdict,fib,lastRSI,lastMACD,ret5:+ret5.toFixed(2),ret20:+ret20.toFixed(2),volatility:+volatility.toFixed(2),lastVWAP,lastBoll};
@@ -3215,238 +3231,6 @@ function renderCycles(){
     try{ initCrisisChart(); }catch(e){ console.warn('Crisis err',e); }
   },120);
 }
-/* ========= CYCLES: KONDRATIEFF WAVE — Bell curve style ========= */
-function initKondratieffPC(){
-  var el = document.getElementById('kondWaveBoxPC');
-  if(!el) return;
-
-  // Wave data exactly matching the reference image
-  var WAVES = [
-    {num:1, tech:'纺织和蒸汽机技术', dur:'63年', lead:'英国', chall:'法国、德国',
-     // Key years defining the wave shape
-     boomStart:1782, peak:1815, recEnd:1825, trough:1836, recoverEnd:1845,
-     boom:'1782-1802年', boomDur:'20年',
-     bust:'1815-1825年', bustDur:'10年',
-     dep:'1825-1836年', depDur:'11年',
-     rec:'1836-1845年', recDur:'9年',
-     war:null, war2:null},
-    {num:2, tech:'钢铁和铁路', dur:'47年', lead:'英国', chall:'美国',
-     boomStart:1845, peak:1866, recEnd:1873, trough:1883, recoverEnd:1892,
-     boom:'1845-1866年', boomDur:'21年',
-     bust:'1866-1873年', bustDur:'7年',
-     dep:'1873-1883年', depDur:'10年',
-     rec:'1883-1892年', recDur:'9年',
-     war:null, war2:null},
-    {num:3, tech:'电气化和重工业', dur:'56年', lead:'美国', chall:'日本',
-     boomStart:1892, peak:1920, recEnd:1929, trough:1937, recoverEnd:1948,
-     boom:'1892-1913年', boomDur:'21年',
-     bust:'1920-1929年', bustDur:'9年',
-     dep:'1929-1937年', depDur:'8年',
-     rec:'1937-1948年', recDur:'11年',
-     war:{lbl:'一战',yr:'1913-1920'}, war2:{lbl:'二战',yr:'1931-1945'}},
-    {num:4, tech:'汽车和电子计算机', dur:'43年', lead:'美国', chall:'日本',
-     boomStart:1948, peak:1966, recEnd:1973, trough:1982, recoverEnd:1991,
-     boom:'1948-1966年', boomDur:'18年',
-     bust:'1966-1973年', bustDur:'7年',
-     dep:'1973-1982年', depDur:'9年',
-     rec:'1982-1991年', recDur:'9年',
-     war:{lbl:'越战',yr:'1955-1975'}, war2:{lbl:'冷战',yr:'1947-1991'}},
-    {num:5, tech:'信息技术', dur:'45年', lead:'美国', chall:'中国',
-     boomStart:1991, peak:2008, recEnd:2020, trough:2027, recoverEnd:2035,
-     boom:'1991-2008年', boomDur:'17年',
-     bust:'2008-2020年', bustDur:'12年',
-     dep:'2020-2027年', depDur:'7年',
-     rec:'2027-?年', recDur:'?年',
-     war:{lbl:'金融\n危机',yr:'2008'}, war2:null,
-     extra:{chatgpt:true, yr2035:true}},
-    {num:6, tech:'AI→AGI·核聚变·量子·机器人', dur:'33年', lead:'美国', chall:'中国',
-     boomStart:2035, peak:2053, recEnd:2057, trough:2060, recoverEnd:2068,
-     boom:'2035-2053年', boomDur:'18年',
-     bust:'2036-2053年', bustDur:'17年',
-     dep:'2053-2060年', depDur:'7年',
-     rec:'2060+年', recDur:'?年',
-     war:null, war2:null, fut:true, yr2035:true}
-  ];
-
-  var TS=1775, TE=2072;
-  var W=1200, H=600, PL=10, PR=10, PT=105, PB=55;
-  var GW=W-PL-PR, GH=H-PT-PB;
-  var MID=PT+GH/2, AMP=GH*0.40;
-  var CY=2026;
-  function xOf(y){return PL+(y-TS)/(TE-TS)*GW;}
-  // Y on the sine wave at a given year within a wave
-  function waveY(w, yr){
-    // Map year to 0..1 within the wave's full cycle
-    var t = (yr - w.boomStart) / (w.recoverEnd - w.boomStart);
-    t = Math.max(0, Math.min(1, t));
-    // Sine: 0→peak at t~0.25, trough at t~0.75
-    return MID - Math.sin(t * Math.PI * 2 - Math.PI/2) * AMP;
-  }
-
-  // Generate wave points
-  function wavePts(w, n){
-    n = n || 120;
-    var pts = [];
-    for(var i=0; i<=n; i++){
-      var t = i/n;
-      var yr = w.boomStart + t * (w.recoverEnd - w.boomStart);
-      var sv = Math.sin(t * Math.PI * 2 - Math.PI/2);
-      pts.push([xOf(yr), MID - sv * AMP]);
-    }
-    return pts;
-  }
-
-  var s='<svg viewBox="0 0 '+W+' '+H+'" style="width:100%;height:auto;display:block" xmlns="http://www.w3.org/2000/svg">';
-  s+='<defs><filter id="kg"><feGaussianBlur stdDeviation="2" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>';
-  s+='<rect width="'+W+'" height="'+H+'" fill="#08080a" rx="12"/>';
-
-  // Midline
-  s+='<line x1="'+PL+'" y1="'+MID+'" x2="'+(W-PR)+'" y2="'+MID+'" stroke="rgba(118,114,106,.12)" stroke-width="1"/>';
-
-  // Top header area
-  // Wave 6 tech line
-  s+='<text x="'+(W/2)+'" y="16" text-anchor="middle" font-size="11" fill="#e8d49b" font-weight="700" font-family="\'Noto Sans SC\',system-ui">第六轮康波周期推动: 大数据、人工智能（从AI→AGI）、可控核聚变、量子计算、基因编辑、人形机器人、空天技术等</text>';
-
-  // Per-wave column headers
-  WAVES.forEach(function(w,i){
-    var x1=xOf(w.boomStart), x2=xOf(w.recoverEnd), mx=(x1+x2)/2;
-    var col=w.fut?'#e8d49b':'#f0f0f0';
-    // Divider
-    if(i>0) s+='<line x1="'+x1.toFixed(1)+'" y1="'+(PT-8)+'" x2="'+x1.toFixed(1)+'" y2="'+(H-PB)+'" stroke="rgba(212,175,55,.22)" stroke-width="1.5" stroke-dasharray="6,5"/>';
-    // Tech name
-    var maxW = x2-x1;
-    var fs = Math.min(13, maxW / (w.tech.length+w.dur.length+3) * 1.6);
-    s+='<text x="'+mx.toFixed(1)+'" y="34" text-anchor="middle" font-size="'+fs.toFixed(1)+'" font-weight="800" fill="'+col+'" font-family="\'Noto Sans SC\',system-ui">'+w.tech+'（'+w.dur+'）</text>';
-    s+='<text x="'+mx.toFixed(1)+'" y="52" text-anchor="middle" font-size="10" fill="#b9b4ab" font-family="\'Noto Sans SC\',system-ui">主导国: '+w.lead+'</text>';
-    s+='<text x="'+mx.toFixed(1)+'" y="66" text-anchor="middle" font-size="10" fill="#b9b4ab" font-family="\'Noto Sans SC\',system-ui">挑战国: '+w.chall+'</text>';
-    // Background tint
-    s+='<rect x="'+x1.toFixed(1)+'" y="'+PT+'" width="'+(x2-x1).toFixed(1)+'" height="'+GH+'" fill="'+(w.fut?'rgba(99,102,241,.05)':'rgba(30,41,59,.25)')+'"/>';
-  });
-
-  // Draw each wave
-  WAVES.forEach(function(w, wi){
-    var pts = wavePts(w);
-    // Fill
-    var fd = 'M '+pts[0][0].toFixed(1)+' '+MID;
-    pts.forEach(function(p){ fd += ' L '+p[0].toFixed(1)+' '+p[1].toFixed(1); });
-    fd += ' L '+pts[pts.length-1][0].toFixed(1)+' '+MID+' Z';
-    s+='<path d="'+fd+'" fill="'+(w.fut?'rgba(129,140,248,.08)':'rgba(96,165,250,.06)')+'"/>';
-    // Line
-    var ld = 'M '+pts[0][0].toFixed(1)+' '+pts[0][1].toFixed(1);
-    for(var i=1;i<pts.length;i++) ld+=' L '+pts[i][0].toFixed(1)+' '+pts[i][1].toFixed(1);
-    s+='<path d="'+ld+'" fill="none" stroke="'+(w.fut?'#d4af37':'#f0f0f0')+'" stroke-width="2.5" '+(w.fut?'stroke-dasharray="8,5" opacity=".85"':'')+' filter="url(#kg)"/>';
-
-    // === Key coordinates ===
-    var peakX = xOf(w.peak), peakY = MID - AMP;     // exact top
-    var troughX = xOf(w.trough), troughY = MID + AMP; // exact bottom
-
-    // Red dots at peak and trough (small, precise)
-    s+='<circle cx="'+peakX.toFixed(1)+'" cy="'+peakY.toFixed(1)+'" r="4.5" fill="'+(w.fut?'#d4af37':'#e05c5c')+'" stroke="#08080a" stroke-width="1.5"/>';
-    s+='<circle cx="'+troughX.toFixed(1)+'" cy="'+troughY.toFixed(1)+'" r="4.5" fill="'+(w.fut?'#d4af37':'#e05c5c')+'" stroke="#08080a" stroke-width="1.5"/>';
-
-    // Peak year label ABOVE the peak dot
-    s+='<text x="'+peakX.toFixed(1)+'" y="'+(peakY-12)+'" text-anchor="middle" font-size="15" font-weight="900" fill="#e05c5c" font-family="system-ui">'+w.peak+'年</text>';
-    // Trough year label BELOW the trough dot
-    s+='<text x="'+troughX.toFixed(1)+'" y="'+(troughY+20)+'" text-anchor="middle" font-size="15" font-weight="900" fill="#e05c5c" font-family="system-ui">'+w.trough+'年</text>';
-
-    // === Phase labels along the wave segments ===
-    // Each label is positioned at the MIDPOINT of its time segment on the curve
-
-    // 1. 繁荣 (orange) — on the RISING segment (boomStart → peak), positioned at midpoint
-    var boomMidYr = (w.boomStart + w.peak) / 2;
-    var boomMidX = xOf(boomMidYr);
-    var boomMidY = waveY(w, boomMidYr);
-    // Place bubble to the left of the rising curve
-    s+='<rect x="'+(boomMidX-30)+'" y="'+(boomMidY-10)+'" width="56" height="20" rx="6" fill="#d97706"/>';
-    s+='<text x="'+(boomMidX-2)+'" y="'+(boomMidY+4)+'" text-anchor="middle" font-size="11" font-weight="800" fill="#fff" font-family="\'Noto Sans SC\',system-ui">繁荣</text>';
-    s+='<text x="'+(boomMidX-2)+'" y="'+(boomMidY+18)+'" text-anchor="middle" font-size="8" fill="#e8d49b" font-family="system-ui">'+w.boom+'</text>';
-    s+='<text x="'+(boomMidX-2)+'" y="'+(boomMidY+28)+'" text-anchor="middle" font-size="8" fill="#e8d49b" font-family="system-ui">('+w.boomDur+')</text>';
-
-    // 2035 中等发达国家 — shown near Wave6 boom segment start
-    if(w.yr2035){
-      var y35X = xOf(2035);
-      var y35Y = boomMidY; // same height as 繁荣 bubble, to the left
-      s+='<circle cx="'+y35X.toFixed(1)+'" cy="'+(MID-AMP*0.3).toFixed(1)+'" r="4" fill="#4caf72" stroke="#08080a" stroke-width="1.5"/>';
-      s+='<text x="'+y35X.toFixed(1)+'" y="'+(MID-AMP*0.3-14).toFixed(1)+'" text-anchor="middle" font-size="12" fill="#4caf72" font-weight="900" font-family="system-ui">2035年</text>';
-      s+='<text x="'+y35X.toFixed(1)+'" y="'+(MID-AMP*0.3-2).toFixed(1)+'" text-anchor="middle" font-size="9" fill="#4caf72" font-family="\'Noto Sans SC\',system-ui">中等发达国家</text>';
-    }
-
-    // 2. 衰退 (cyan) — on the FALLING segment (peak → recEnd), right side of peak
-    var bustMidYr = (w.peak + w.recEnd) / 2;
-    var bustMidX = xOf(bustMidYr);
-    var bustMidY = waveY(w, bustMidYr);
-    s+='<rect x="'+(bustMidX-26)+'" y="'+(bustMidY-10)+'" width="52" height="20" rx="6" fill="#0891b2"/>';
-    s+='<text x="'+bustMidX.toFixed(1)+'" y="'+(bustMidY+4)+'" text-anchor="middle" font-size="11" font-weight="800" fill="#fff" font-family="\'Noto Sans SC\',system-ui">衰退</text>';
-    s+='<text x="'+bustMidX.toFixed(1)+'" y="'+(bustMidY+18)+'" text-anchor="middle" font-size="8" fill="#a5f3fc" font-family="system-ui">'+w.bust+'</text>';
-    s+='<text x="'+bustMidX.toFixed(1)+'" y="'+(bustMidY+28)+'" text-anchor="middle" font-size="8" fill="#a5f3fc" font-family="system-ui">('+w.bustDur+')</text>';
-
-    // 3. 萧条 (gray) — on the BOTTOM segment (recEnd → trough), left of trough
-    var depMidYr = (w.recEnd + w.trough) / 2;
-    var depMidX = xOf(depMidYr);
-    var depMidY = waveY(w, depMidYr);
-    s+='<rect x="'+(depMidX-26)+'" y="'+(depMidY-10)+'" width="52" height="20" rx="6" fill="#76726c"/>';
-    s+='<text x="'+depMidX.toFixed(1)+'" y="'+(depMidY+4)+'" text-anchor="middle" font-size="11" font-weight="800" fill="#fff" font-family="\'Noto Sans SC\',system-ui">萧条</text>';
-    s+='<text x="'+depMidX.toFixed(1)+'" y="'+(depMidY+18)+'" text-anchor="middle" font-size="8" fill="#f0f0f0" font-family="system-ui">'+w.dep+'</text>';
-    s+='<text x="'+depMidX.toFixed(1)+'" y="'+(depMidY+28)+'" text-anchor="middle" font-size="8" fill="#f0f0f0" font-family="system-ui">('+w.depDur+')</text>';
-
-    // 4. 复苏 (yellow) — on the RISING segment from trough (trough → recoverEnd), right of trough
-    var recMidYr = (w.trough + w.recoverEnd) / 2;
-    var recMidX = xOf(recMidYr);
-    var recMidY = waveY(w, recMidYr);
-    s+='<rect x="'+(recMidX-26)+'" y="'+(recMidY-10)+'" width="52" height="20" rx="6" fill="#ca8a04"/>';
-    s+='<text x="'+recMidX.toFixed(1)+'" y="'+(recMidY+4)+'" text-anchor="middle" font-size="11" font-weight="800" fill="#fff" font-family="\'Noto Sans SC\',system-ui">复苏</text>';
-    s+='<text x="'+recMidX.toFixed(1)+'" y="'+(recMidY+18)+'" text-anchor="middle" font-size="8" fill="#fef08a" font-family="system-ui">'+w.rec+'</text>';
-    s+='<text x="'+recMidX.toFixed(1)+'" y="'+(recMidY+28)+'" text-anchor="middle" font-size="8" fill="#fef08a" font-family="system-ui">('+w.recDur+')</text>';
-
-    // === War/crisis events (small dashed circles near peak or trough) ===
-    if(w.war){
-      var wcx = peakX, wcy = peakY - 38;
-      s+='<circle cx="'+wcx.toFixed(1)+'" cy="'+wcy+'" r="14" fill="none" stroke="#e05c5c" stroke-width="1.2" stroke-dasharray="4,3"/>';
-      var warLines = w.war.lbl.split('\n');
-      warLines.forEach(function(line, li){
-        s+='<text x="'+wcx.toFixed(1)+'" y="'+(wcy - 2 + li*12)+'" text-anchor="middle" font-size="9" font-weight="800" fill="#e05c5c" font-family="\'Noto Sans SC\',system-ui">'+line+'</text>';
-      });
-      if(w.war.yr) s+='<text x="'+wcx.toFixed(1)+'" y="'+(wcy+10+warLines.length*2)+'" text-anchor="middle" font-size="7.5" fill="#fca5a5" font-family="system-ui">('+w.war.yr+')</text>';
-    }
-    if(w.war2){
-      var wc2x = troughX, wc2y = troughY + 40;
-      s+='<circle cx="'+wc2x.toFixed(1)+'" cy="'+wc2y+'" r="14" fill="none" stroke="#d4af37" stroke-width="1.2" stroke-dasharray="4,3"/>';
-      s+='<text x="'+wc2x.toFixed(1)+'" y="'+(wc2y+1)+'" text-anchor="middle" font-size="9" font-weight="800" fill="#d4af37" font-family="\'Noto Sans SC\',system-ui">'+w.war2.lbl+'</text>';
-      s+='<text x="'+wc2x.toFixed(1)+'" y="'+(wc2y+12)+'" text-anchor="middle" font-size="7.5" fill="#e8d49b" font-family="system-ui">('+w.war2.yr+')</text>';
-    }
-
-    // Wave 5 extras: ChatGPT label and 2035 — positioned on the curve
-    if(w.extra){
-      if(w.extra.chatgpt){
-        var cgY = waveY(w, 2023);
-        s+='<text x="'+xOf(2023).toFixed(1)+'" y="'+(cgY+20)+'" text-anchor="middle" font-size="9" fill="#d4af37" font-weight="700" font-family="\'Noto Sans SC\',system-ui">ChatGPT</text>';
-      }
-      // 2035 label moved to Wave6 boom segment below
-    }
-  });
-
-  // === 2026 NOW marker ===
-  var nX = xOf(CY);
-  var w5 = WAVES[4];
-  var nY = waveY(w5, CY);
-  s+='<line x1="'+nX.toFixed(1)+'" y1="'+PT+'" x2="'+nX.toFixed(1)+'" y2="'+(H-PB)+'" stroke="#e05c5c" stroke-width="2" stroke-dasharray="7,4"/>';
-  s+='<rect x="'+(nX-26)+'" y="'+(PT+2)+'" width="52" height="20" rx="5" fill="#e05c5c"/>';
-  s+='<text x="'+nX.toFixed(1)+'" y="'+(PT+16)+'" text-anchor="middle" font-size="11" font-weight="900" fill="#fff" font-family="system-ui">2026年▶</text>';
-  s+='<circle cx="'+nX.toFixed(1)+'" cy="'+nY.toFixed(1)+'" r="6" fill="#e05c5c" stroke="#fff" stroke-width="2">';
-  s+='<animate attributeName="r" values="5;10;5" dur="2s" repeatCount="indefinite"/>';
-  s+='<animate attributeName="opacity" values="1;.5;1" dur="2s" repeatCount="indefinite"/>';
-  s+='</circle>';
-
-  // Bottom axis years
-  s+='<line x1="'+PL+'" y1="'+(H-PB)+'" x2="'+(W-PR)+'" y2="'+(H-PB)+'" stroke="rgba(148,163,184,.25)" stroke-width="1"/>';
-
-  s+='</svg>';
-  el.innerHTML=s;
-  el.style.background='#08080a';
-  el.style.borderRadius='12px';
-  el.style.padding='0';
-}
-
 /* ========= CYCLES: YEAR TICKER (auto +1/yr) ========= */
 const CYCLE_BASE_YEAR = 2026;
 const CYCLE_START_TS  = Date.UTC(2026, 3, 10);
@@ -4593,8 +4377,11 @@ function hfPortfolioManager(allSignals,risk){
 
 // ---- 主编排函数 ----
 let hfRunning=false;
+let _hfTimeoutId=null;
 async function loadHedgeFund(silent){
   if(hfRunning)return;hfRunning=true;
+  // 超时保护: 3分钟未完成则强制释放锁, 防止网络挂起导致永久锁死
+  _hfTimeoutId=setTimeout(()=>{if(hfRunning){console.warn('对冲基金引擎超时(3min),强制释放');hfRunning=false;}},180000);
   try{
   const el=document.getElementById('hfContent');
   if(!el){return;}
@@ -4607,7 +4394,7 @@ async function loadHedgeFund(silent){
   const uProg=(i,s)=>{if(progBar)progBar.style.width=((i+1)/total*100)+'%';if(progLbl)progLbl.textContent=`${i+1}/${total} · ${s}`;};
   // 批量获取实时行情
   let quoteMap={};
-  try{quoteMap=await emQuote(HF_TRADEABLE.map(x=>x[0]).join(','));}catch(e){console.warn('对冲实时行情获取失败',e);}
+  try{quoteMap=await emQuoteBatched(HF_TRADEABLE.map(x=>x[0]));}catch(e){console.warn('对冲实时行情获取失败',e);}
   const results=[];
   for(let i=0;i<HF_TRADEABLE.length;i++){
     const [secid,code,name]=HF_TRADEABLE[i];
@@ -4650,7 +4437,7 @@ async function loadHedgeFund(silent){
   }
   el.dataset.ts=new Date().toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
   renderHedgeFundResults(el,results);
-  }finally{ hfRunning=false; }
+  }finally{ clearTimeout(_hfTimeoutId);hfRunning=false; }
 }
 
 // ---- 渲染结果 ----
@@ -4887,7 +4674,7 @@ setInterval(()=>{
   if(d!==__lastDay && h>=5){__lastDay=d;loadAll();}
 },60000);
 // 今日要点(genSummary)+央行动态 每 10 分钟热更新(不重新请求行情, 仅重渲染已有数据)
-setInterval(()=>{if(cache&&rendered.dashboard)renderDashboard(cache);},600000);
+setInterval(()=>{if(cache&&rendered.dashboard&&document.querySelector('.nav-item.active[data-view="dashboard"]')&&document.visibilityState==='visible')renderDashboard(cache);},600000);
 
 // ====================== 量化交易模块 ======================
 // 综合策略引擎: Parabolic SAR(最优) + MACD + RSI + 布林带 + 多Agent投票
