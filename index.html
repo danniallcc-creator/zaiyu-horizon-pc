@@ -737,6 +737,64 @@ a{color:inherit;text-decoration:none}
 .hf-crisis-alert.warn .ca-title{color:#e0a23c}
 .hf-crisis-alert.watch .ca-title{color:#5b9bd5}
 .hf-crisis-alert .ca-item{color:var(--text-2);font-size:11px;padding:2px 0}
+
+/* === 危机预警 v2.0 === */
+.crisis-v2-hero{display:grid;grid-template-columns:1fr 1.6fr;gap:18px;margin-bottom:20px}
+.crisis-v2-hero .cv2-card{padding:22px 24px;border-radius:12px;border:1px solid rgba(212,175,55,.28);background:linear-gradient(135deg,rgba(212,175,55,.07),rgba(8,8,10,.45))}
+.cv2-num{font-family:'JetBrains Mono',monospace;font-size:62px;font-weight:700;line-height:1;letter-spacing:-1px}
+.cv2-num small{font-size:22px;opacity:.7;margin-left:4px}
+.cv2-lbl{font-size:12px;color:var(--text-3);letter-spacing:1.5px;margin-top:6px;text-transform:uppercase}
+.cv2-verdict{font-size:18px;font-weight:700;margin-top:14px}
+.cv2-sub-row{display:flex;gap:18px;margin-top:14px;flex-wrap:wrap}
+.cv2-sub-row .cv2-sub{flex:1;min-width:140px;padding:10px 14px;border-radius:8px;background:rgba(255,255,255,.025);border:1px solid var(--line)}
+.cv2-sub .l{font-size:11px;color:var(--text-3);letter-spacing:.5px}
+.cv2-sub .v{font-family:'JetBrains Mono',monospace;font-size:22px;font-weight:700;margin-top:2px}
+.cv2-formula{font-size:11px;color:var(--text-3);margin-top:12px;padding-top:10px;border-top:1px dashed var(--line);line-height:1.6}
+.cv2-adv{margin-top:10px;padding:10px 14px;border-radius:8px;font-size:12px;line-height:1.6}
+
+/* 触发器矩阵 */
+.trig-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin-bottom:20px}
+.trig-card{padding:16px 18px;border-radius:10px;border:1px solid var(--line);background:linear-gradient(135deg,rgba(212,175,55,.03),rgba(8,8,10,.35));position:relative;overflow:hidden}
+.trig-card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px}
+.trig-card.high::before{background:#e05c5c}.trig-card.med::before{background:#e0a23c}.trig-card.low::before{background:#5b9bd5}
+.trig-head{display:flex;justify-content:space-between;gap:10px;align-items:flex-start;margin-bottom:8px}
+.trig-name{font-size:13px;font-weight:700;color:#f1e6c5;line-height:1.4;flex:1}
+.trig-prob{font-family:'JetBrains Mono',monospace;font-size:20px;font-weight:700;white-space:nowrap}
+.trig-meter{height:6px;background:rgba(255,255,255,.06);border-radius:3px;overflow:hidden;margin:8px 0 10px}
+.trig-meter-fill{height:100%;border-radius:3px;transition:width .8s}
+.trig-impact{display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:11px;margin:8px 0;color:var(--text-2)}
+.trig-impact .imp-l{color:var(--text-3);margin-right:4px}
+.trig-note{font-size:11px;color:var(--text-3);line-height:1.6;padding-top:8px;border-top:1px dashed var(--line)}
+
+/* 时间窗口 */
+.tw-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:20px}
+.tw-card{padding:18px 20px;border-radius:10px;border:1px solid var(--line);background:rgba(8,8,10,.35);position:relative}
+.tw-card.active{border-color:rgba(224,92,92,.55);box-shadow:0 0 0 1px rgba(224,92,92,.2),0 6px 20px rgba(224,92,92,.12)}
+.tw-label{font-family:'JetBrains Mono',monospace;font-size:22px;font-weight:700;letter-spacing:1px;margin-bottom:4px}
+.tw-stage{font-size:13px;font-weight:700;margin-bottom:8px}
+.tw-prob{font-family:'JetBrains Mono',monospace;font-size:34px;font-weight:700;line-height:1;margin:10px 0 4px}
+.tw-drivers{list-style:none;padding:0;margin:10px 0 0;font-size:11px;color:var(--text-2);line-height:1.7}
+.tw-drivers li{padding-left:14px;position:relative}
+.tw-drivers li::before{content:'›';position:absolute;left:0;color:#d4af37;font-weight:700}
+.tw-verdict{font-size:11px;color:var(--text-3);margin-top:10px;padding-top:8px;border-top:1px dashed var(--line)}
+
+/* 三层下跌 */
+.tier-stack{display:flex;flex-direction:column;gap:10px;margin-bottom:20px}
+.tier-row{display:grid;grid-template-columns:240px 140px 1fr;gap:14px;align-items:center;padding:14px 18px;border-radius:10px;border:1px solid var(--line);background:rgba(8,8,10,.35)}
+.tier-name{font-size:13px;font-weight:700;line-height:1.4}
+.tier-drop{font-family:'JetBrains Mono',monospace;font-size:20px;font-weight:700;text-align:center}
+.tier-note{font-size:11px;color:var(--text-2);line-height:1.6}
+
+/* 四层联动 */
+.pol-stack{display:flex;flex-direction:column;gap:12px;margin-bottom:20px}
+.pol-row{display:grid;grid-template-columns:200px 1fr 1fr;gap:14px;align-items:flex-start;padding:14px 18px;border-radius:10px;border:1px solid var(--line);background:rgba(8,8,10,.35)}
+.pol-head .ph-name{font-size:13px;font-weight:700;color:#f1e6c5}
+.pol-head .ph-icon{font-size:24px;line-height:1;margin-bottom:6px}
+.pol-items{font-size:11px;color:var(--text-2);line-height:1.8}
+.pol-items span.pi{display:inline-block;margin:2px 6px 2px 0;padding:2px 8px;border-radius:99px;background:rgba(212,175,55,.08);border:1px solid rgba(212,175,55,.18);color:#e8d49b}
+.pol-tension{font-size:11px;color:var(--text-3);line-height:1.7;padding-left:12px;border-left:2px solid rgba(212,175,55,.35)}
+
+@media(max-width:1180px){.crisis-v2-hero{grid-template-columns:1fr}.trig-grid{grid-template-columns:1fr}.tw-grid{grid-template-columns:1fr}.tier-row{grid-template-columns:1fr;text-align:left}.pol-row{grid-template-columns:1fr}}
 @media(max-width:700px){.hf-summary{grid-template-columns:repeat(2,1fr)}.hf-agent-grid{grid-template-columns:1fr 1fr}.hf-card-top{flex-direction:column;align-items:flex-start}.hf-card-right{align-self:flex-end}}
 </style>
 </head>
@@ -1347,6 +1405,114 @@ const CW_STRATEGIES=[
    alloc:[['中小盘价值(PEG<1)',35,'#4caf72'],['能源板块(受益油价)',20,'#e0a23c'],['消费必需品',20,'#5b9bd5'],['分红增长股',15,'#d4af37'],['现金',10,'#b9b4ab']],
    ret:'12-18% (选股驱动)',risk:'中高'},
 ];
+
+/* ==================== 危机预警 v2.0: 政治-财政-货币-情绪联动 ====================
+   基于用户《强美元+财政主导+AI扩表》四层联动框架重写, 把"单点历史相似度"扩展为
+   "8触发器矩阵 × 三阶段时间窗口 × 三层下跌幅度 × 综合期望概率"四件套。
+=================================================================================== */
+
+// 8 大触发器矩阵: prob=发生概率(0-1), aiImpact=对AI泡沫冲击(0-1), 来自用户表格逐行映射
+//   weight=该触发器在"AI泡沫期望损伤"加权时的权重(总和≈1)
+const AI_TRIGGERS=[
+  {id:'t10y5',  label:'10Y 美债突破 5% 并维持',     prob:0.35, aiImpact:0.95, weight:0.18,
+   us:'Nasdaq -15% ~ -25%', cn:'港股科技重挫, A股成长股承压',
+   note:'估值杀手: AI 是长久期资产, 利率↑ → 远期现金流折现压缩, 这是最直接的引爆器'},
+  {id:'capex',  label:'AI 巨头 capex 回报不及预期', prob:0.45, aiImpact:0.95, weight:0.20,
+   us:'AI 链 -25% ~ -40%', cn:'光模块/算力/半导体先杀估值',
+   note:'核心证伪: 云厂商资本开支继续暴增但 AI 收入增速/利润率不够 → 从"生产力革命"重定价为"军备竞赛"'},
+  {id:'ipo',    label:'大型 AI IPO 破发或上市后暴跌', prob:0.40, aiImpact:0.75, weight:0.14,
+   us:'情绪转熊, IPO 链降温', cn:'港股科技和中概估值被压',
+   note:'供给反噬: OpenAI/Anthropic/SpaceX 等巨型 IPO 后, 被动+主题资金买完 → 边际买盘下降 → 反转'},
+  {id:'credit', label:'数据中心 / 私募信贷项目违约', prob:0.25, aiImpact:0.95, weight:0.14,
+   us:'信用风险扩散, Nasdaq -20%+', cn:'全球风险偏好下降, A股防御占优',
+   note:'隐性杠杆: AI 基建已从企业现金流转向债务/私募信贷/表外融资(BIS), 一旦违约即多链同时收缩'},
+  {id:'oil100', label:'油价突破 100 美元',          prob:0.30, aiImpact:0.55, weight:0.08,
+   us:'通胀交易压估值', cn:'输入性成本上升, 人民币承压',
+   note:'通胀回灌: 战争/地缘供给冲击, 把核心 PCE 推高, 限制 Fed 救市空间'},
+  {id:'fedhike',label:'Fed 被迫重新加息',            prob:0.20, aiImpact:0.95, weight:0.10,
+   us:'全市场估值压缩', cn:'港股最受伤, A股结构性杀跌',
+   note:'政策反转: 沃什 Fed "选择性鹰派"被通胀迫到墙角, 市场相信的"政策不会让 AI 崩"叙事破灭'},
+  {id:'jobs',   label:'美国就业突然恶化',           prob:0.30, aiImpact:0.55, weight:0.08,
+   us:'先跌后盼降息', cn:'出口链受压, 政策宽松预期升温',
+   note:'增长证伪: 失业率快速抬升 → 衰退担忧 → 风险偏好下移; 中期反而开启降息救市预期'},
+  {id:'reg',    label:'AI 监管 / 反垄断 / 安全事故',prob:0.25, aiImpact:0.45, weight:0.08,
+   us:'个股冲击更大', cn:'国产 AI 可能短期受益',
+   note:'外生扰动: 大模型安全事故/反垄断诉讼, 杀个股不杀指数, 但放大整体波动'},
+];
+
+// 三阶段时间窗口(2026 Q3 → 2026 Q4 → 2027 Q1-Q2), 来自用户给出的"最危险窗口在 Q4 2026 ~ Q2 2027"
+const TIME_WINDOWS=[
+  {id:'q3-2026', label:'2026 Q3', stage:'泡沫继续膨胀', cleanupProb:0.175, color:'#4caf72',
+   drivers:['政治需要股市强','AI IPO 叙事升温','指数/被动资金预期买入','强美元吸引全球资金回流','Fed 不愿主动刺破'],
+   verdict:'最后加速段 · 出清概率 15%–20%'},
+  {id:'q4-2026', label:'2026 Q4', stage:'第一次危险窗口', cleanupProb:0.325, color:'#e0a23c',
+   drivers:['Q3 财报验证资本开支回报','市场审视 2027 盈利预期','IPO 锁定期/估值锚反噬','年底流动性与税务卖盘'],
+   verdict:'高危窗口 · 出清概率 30%–35%'},
+  {id:'h1-2027', label:'2027 Q1–Q2', stage:'最大出清窗口', cleanupProb:0.50, color:'#e05c5c',
+   drivers:['市场开始交易 2027 全年盈利兑现','2026 capex 进入折旧/利息/租约压力期','上市潮新供给, 被动资金买完后边际下降','若通胀仍高 Fed 无法明显放水','长债利率高位压制远期现金流估值'],
+   verdict:'最大出清窗 · 出清概率 45%–55% · Q4-26~Q2-27 合计 65%–75%'},
+];
+
+// 三层下跌幅度(伪AI / 基建链 / 真龙头), 来自用户"出清不是一个数字, 而是三层下跌"
+const TIER_IMPACT=[
+  {tier:'第一层 伪AI / 二三线公司',  drop:'40% – 70%', color:'#e05c5c',
+   note:'收入无法兑现, 从"AI 概念"重定价为"普通软件/硬件/外包"; A股科技概念股是重灾区'},
+  {tier:'第二层 AI 基建链',          drop:'25% – 45%', color:'#e0a23c',
+   note:'数据中心/电力设备/液冷/光模块/PCB/服务器/存储等有真实订单, 但订单周期一旦见顶, 估值先杀; 中国 A 股+港股最受冲击'},
+  {tier:'第三层 真正 AI 龙头',       drop:'15% – 30%', color:'#5b9bd5',
+   note:'龙头不一定崩, 但会从"无限增长估值"回归"高成长科技股估值"; 类比互联网泡沫后 Amazon 活下来但股价暴跌'},
+];
+
+// 政治-财政-货币-情绪 四层联动(替代旧的单一宏观叙事)
+const POLITICAL_LAYERS=[
+  {layer:'第一层 · 政治目标', icon:'🏛️', color:'#d4af37',
+   items:['强美元', '美债需求', '股市繁荣', 'AI 领先', '制造业回流', '压制中国'],
+   tension:'白宫六大目标内部并不完全自洽 (强美元↔出口/制造业回流), 短期靠 AI 资本市场叙事承托'},
+  {layer:'第二层 · 财政目标', icon:'💰', color:'#5b9bd5',
+   items:['继续发债', '短债靠稳定币+货币基金+银行流动性', '长债靠美元信用+避险需求', 'GENIUS Act 把稳定币变成"短债容器"'],
+   tension:'短端可管理, 长端 (10Y-30Y) 仍要面对赤字+通胀+期限溢价+海外买家信心 → 真正压力点'},
+  {layer:'第三层 · 货币目标', icon:'🎯', color:'#e0a23c',
+   items:['沃什 Fed 表面盯通胀', '实际在通胀/就业/股市/发债成本之间动态妥协', '"嘴上反通胀, 行动保流动性"', '选择性鹰派'],
+   tension:'独立性被政治挤压但未"接管"; 不会主动刺破泡沫, 因此泡沫顶部会更高'},
+  {layer:'第四层 · 股市情绪', icon:'🎭', color:'#e05c5c',
+   items:['AI 国家战略叙事', '巨头加速 IPO 供给', '指数化 + 被动资金', '散户 FOMO + "这次不一样"'],
+   tension:'泡沫破不是"故事消失", 而是"边际资金不够"; 反身性: 股价↓→融资难→项目放缓→订单下修→信用利差↑→私募估值↓→IPO 破发→踩踏'},
+];
+
+// 计算 8 触发器的加权期望损伤(对 AI 泡沫的"概率×冲击×权重"求和, 转 0-100)
+function aiTriggerExpectation(){
+  let exp=0, totalW=0;
+  AI_TRIGGERS.forEach(t=>{ exp+=t.prob*t.aiImpact*t.weight; totalW+=t.weight; });
+  // 归一化到 0-100; 由于概率多 0.2-0.5, 期望天然偏低, 用 √x 做单调放大让 30% 概率组合落到 ~55
+  const raw=exp/totalW;
+  return {raw:Math.round(raw*100), scaled:Math.round(Math.sqrt(raw)*100)};
+}
+
+// 综合期望出清概率: 把三阶段 cleanupProb 用"互斥近似"合成(累计概率)
+function cumulativeCleanupProb(){
+  // P(至少一次) = 1 - ∏(1-p_i)  (近似独立假设)
+  const p=1-TIME_WINDOWS.reduce((a,w)=>a*(1-w.cleanupProb),1);
+  return Math.round(p*100);
+}
+
+/* 综合危机评分 v2.0
+   旧: 100% 历史相似度
+   新: 50% 历史相似度(2000+2008+2020+2022 加权) + 50% AI 触发器期望
+   触发期望放大后已是 0-100, 与相似度同尺度
+*/
+function compositeCrisisScoreV2(){
+  const sim=CW_SCORE||0;                       // 历史相似度(由 cwCalcScore 计算)
+  const trig=aiTriggerExpectation().scaled;     // 触发器期望
+  const score=Math.round(sim*0.5+trig*0.5);
+  // 5档判定, 对齐用户语义: 极低/低/中等偏高/高/极高
+  const verdict=score<35?{t:'综合风险偏低',c:'#4caf72',adv:'仓位可保持中性偏多'}
+    : score<50?{t:'结构性警惕',c:'#5b9bd5',adv:'减小高估值科技敞口, 提升黄金/短债'}
+    : score<65?{t:'高危泡沫后段',c:'#e0a23c',adv:'按三阶段时间窗滚动减仓, 准备空头对冲'}
+    : score<80?{t:'高度相似+触发临近',c:'#e05c5c',adv:'降低 Beta, 锁定收益, 仅留真盈利龙头'}
+    : {t:'极端泡沫警告',c:'#c0392b',adv:'防御为主, 现金+长债+黄金组合, 等待出清'};
+  return {score,sim,trig,verdict};
+}
+
 
 /* ==================== MASTERS ==================== */
 const MASTERS=[
@@ -3116,6 +3282,72 @@ function renderCrisisWarning(){
   const verdict=CW_SCORE<40?{t:'综合风险偏低',c:'#4caf72'}:CW_SCORE<55?{t:'部分相似，需保持警惕',c:'#5b9bd5'}:CW_SCORE<70?{t:'中高相似度，系统性风险上升',c:'#e0a23c'}:{t:'高度相似，极端泡沫警告',c:'#e05c5c'};
   const dangerCount=CW_ANOMALIES.filter(a=>a.signal==='danger').length;
   const warnCount=CW_ANOMALIES.filter(a=>a.signal==='warn').length;
+
+  // ===== v2.0: 复合评分(历史相似度 50% + 触发期望 50%) =====
+  const v2=compositeCrisisScoreV2();
+  const trigExp=aiTriggerExpectation();
+  const cumProb=cumulativeCleanupProb();
+  // 触发器卡片
+  const trigCards=AI_TRIGGERS.slice().sort((a,b)=>b.prob*b.aiImpact-a.prob*a.aiImpact).map(t=>{
+    const score=t.prob*t.aiImpact;
+    const cls=score>=0.30?'high':score>=0.18?'med':'low';
+    const col=score>=0.30?'#e05c5c':score>=0.18?'#e0a23c':'#5b9bd5';
+    const probPct=Math.round(t.prob*100);
+    const impPct=Math.round(t.aiImpact*100);
+    return `<div class="trig-card ${cls}">
+      <div class="trig-head">
+        <div class="trig-name">${t.label}</div>
+        <div class="trig-prob" style="color:${col}">${probPct}<span style="font-size:13px;opacity:.7">%</span></div>
+      </div>
+      <div class="trig-meter"><div class="trig-meter-fill" style="width:${probPct}%;background:linear-gradient(90deg,${col},${col}88)"></div></div>
+      <div class="trig-impact">
+        <div><span class="imp-l">对 AI 泡沫冲击</span><b style="color:${col}">${impPct}%</b></div>
+        <div><span class="imp-l">权重</span><b style="color:#d4af37">${Math.round(t.weight*100)}%</b></div>
+      </div>
+      <div class="trig-impact">
+        <div><span class="imp-l">美股</span>${t.us}</div>
+        <div><span class="imp-l">中国资产</span>${t.cn}</div>
+      </div>
+      <div class="trig-note">${t.note}</div>
+    </div>`;
+  }).join('');
+  // 时间窗卡片(标记当前所在窗口为 active)
+  const today=new Date();
+  const curIdx=(today.getFullYear()===2026&&today.getMonth()<=8)?0
+              :(today.getFullYear()===2026&&today.getMonth()>=9)?1
+              :(today.getFullYear()===2027&&today.getMonth()<=5)?2:-1;
+  const twCards=TIME_WINDOWS.map((w,i)=>{
+    const probPct=Math.round(w.cleanupProb*100);
+    const lo=Math.round((w.cleanupProb-0.025)*100),hi=Math.round((w.cleanupProb+0.025)*100);
+    const drivers=w.drivers.map(d=>`<li>${d}</li>`).join('');
+    return `<div class="tw-card ${i===curIdx?'active':''}">
+      <div class="tw-label" style="color:${w.color}">${w.label}</div>
+      <div class="tw-stage" style="color:${w.color}">${w.stage}${i===curIdx?' · <span style="color:#e05c5c">▶ 当前阶段</span>':''}</div>
+      <div class="tw-prob" style="color:${w.color}">${lo}–${hi}<span style="font-size:14px;opacity:.7">%</span></div>
+      <div style="font-size:11px;color:var(--text-3)">出清概率(单阶段)</div>
+      <ul class="tw-drivers">${drivers}</ul>
+      <div class="tw-verdict">${w.verdict}</div>
+    </div>`;
+  }).join('');
+  // 三层下跌
+  const tierRows=TIER_IMPACT.map(t=>`<div class="tier-row" style="border-left:3px solid ${t.color}">
+    <div class="tier-name" style="color:${t.color}">${t.tier}</div>
+    <div class="tier-drop" style="color:${t.color}">${t.drop}</div>
+    <div class="tier-note">${t.note}</div>
+  </div>`).join('');
+  // 四层联动
+  const polRows=POLITICAL_LAYERS.map(p=>{
+    const items=p.items.map(x=>`<span class="pi">${x}</span>`).join('');
+    return `<div class="pol-row" style="border-left:3px solid ${p.color}">
+      <div class="pol-head">
+        <div class="ph-icon">${p.icon}</div>
+        <div class="ph-name" style="color:${p.color}">${p.layer}</div>
+      </div>
+      <div class="pol-items">${items}</div>
+      <div class="pol-tension" style="border-left-color:${p.color}88">${p.tension}</div>
+    </div>`;
+  }).join('');
+
   // 4 基准对比表
   const benchRows=(cwCalcScore._perBench||[]).map(b=>{
     const wPct=Math.round(b.weight*100);
@@ -3125,22 +3357,74 @@ function renderCrisisWarning(){
   }).join('');
 
   return `
-  <div class="sec-title" style="margin-top:34px">🚨 美国股市危机预警<span class="when">2000/2008/2020/2022 vs 2026 综合对比 · 更新于 ${new Date().toLocaleDateString('zh-CN')}</span></div>
+  <div class="sec-title" style="margin-top:34px">🚨 AI 泡沫危机预警 v2.0<span class="when">政治-财政-货币-情绪四层联动 · 8触发器矩阵 · 更新于 ${new Date().toLocaleDateString('zh-CN')}</span></div>
+
+  <!-- v2.0 复合评分 hero -->
+  <div class="crisis-v2-hero">
+    <div class="cv2-card" style="text-align:center">
+      <div class="cv2-num" style="color:${v2.verdict.c}">${v2.score}<small>/100</small></div>
+      <div class="cv2-lbl">COMPOSITE CRISIS INDEX v2.0</div>
+      <div class="cv2-verdict" style="color:${v2.verdict.c}">${v2.verdict.t}</div>
+      <div class="cv2-sub-row">
+        <div class="cv2-sub"><div class="l">历史相似度</div><div class="v" style="color:${scoreCol}">${v2.sim}%</div></div>
+        <div class="cv2-sub"><div class="l">触发器期望</div><div class="v" style="color:#e0a23c">${v2.trig}%</div></div>
+      </div>
+      <div class="cv2-formula">复合评分 = 历史相似度 × 50% + AI触发器期望 × 50%<br>触发期望 = √(Σ Pᵢ × Iᵢ × Wᵢ) × 100, 单调放大避免低估</div>
+      <div class="cv2-adv" style="background:${v2.verdict.c}14;color:${v2.verdict.c};border:1px solid ${v2.verdict.c}33"><b>策略建议</b> ${v2.verdict.adv}</div>
+    </div>
+    <div class="cv2-card">
+      <div style="font-weight:700;color:var(--gold-bright);margin-bottom:10px;font-size:14px">📋 v2.0 核心判断</div>
+      <div style="font-size:12.5px;line-height:1.85;color:var(--text-2)">
+        本次升级把"单点历史相似度"扩展为<b style="color:#d4af37">"政治主导的资产再通胀"</b>四层模型。
+        白宫用强美元、短债容器(GENIUS Act)、AI 资本开支、IPO 与指数化资金托住财政与股市；沃什 Fed 由
+        独立反通胀转向<b style="color:#e0a23c">"嘴上鹰派, 行动保流动性"</b>。这会把 AI 泡沫的出清时间
+        <b style="color:#e05c5c">推迟而非消灭</b>。
+        <br><br>
+        累计出清概率 (Q3-26 ~ H1-27): <b style="color:#e05c5c;font-family:'JetBrains Mono'">${cumProb}%</b> ·
+        最危险窗口: <b style="color:#e05c5c">2027 Q1–Q2</b> ·
+        关键引爆器: <b style="color:#d4af37">10Y 破 5% / capex 证伪 / 巨型 IPO 反噬</b>
+        <br><br>
+        <span style="color:#e05c5c">⛔ ${dangerCount}项危险</span> ·
+        <span style="color:#e0a23c">⚠️ ${warnCount}项关注</span> ·
+        <span style="color:#4caf72">✅ ${CW_ANOMALIES.length-dangerCount-warnCount}项安全</span> ·
+        9 维相似度: <b style="color:${scoreCol}">${CW_SCORE}%</b>
+      </div>
+    </div>
+  </div>
+
+  <!-- 8 触发器矩阵 -->
+  <div class="sec-title">⚡ AI 泡沫 8 大触发器矩阵<span class="cnt">概率 × 冲击 × 权重 → 期望损伤</span></div>
+  <div class="trig-grid">${trigCards}</div>
+
+  <!-- 三阶段时间窗 -->
+  <div class="sec-title">⏱️ 出清时间窗口推演<span class="cnt">2026 Q3 → 2027 Q2 · 累计出清概率 ${cumProb}%</span></div>
+  <div class="tw-grid">${twCards}</div>
+
+  <!-- 三层下跌 -->
+  <div class="sec-title">📉 出清不是一个数字 · 三层下跌幅度<span class="cnt">伪AI / 基建链 / 真龙头</span></div>
+  <div class="tier-stack">${tierRows}</div>
+
+  <!-- 四层联动 -->
+  <div class="sec-title">🔗 政治–财政–货币–情绪 四层联动<span class="cnt">推演模型核心框架</span></div>
+  <div class="pol-stack">${polRows}</div>
+
+  <!-- 历史相似度面板 -->
   <div class="card gold-edge" style="padding:0;overflow:hidden;margin-bottom:20px">
     <div style="padding:24px 28px;border-bottom:1px solid var(--line-gold);background:linear-gradient(100deg,rgba(212,175,55,.06),transparent)">
       <div class="cw-header">
         <div class="cw-gauge">
           ${cwGaugeSVG(CW_SCORE)}
           <div class="cw-score" style="color:${scoreCol}">${CW_SCORE}<span style="font-size:20px">%</span></div>
-          <div class="cw-label">综合系统性风险指数</div>
+          <div class="cw-label">历史相似度子项</div>
           <div class="cw-verdict" style="color:${verdict.c}">${verdict.t}</div>
-          <div style="font-size:11px;color:var(--text-3);margin-top:6px;line-height:1.5">综合 = 2000年×80% + (2008+2020+2022)×20% · 各基准IQR剔除异常后加权</div>
+          <div style="font-size:11px;color:var(--text-3);margin-top:6px;line-height:1.5">= 2000×80% + (2008+2020+2022)×20% · 各基准 IQR 剔除异常后加权</div>
         </div>
         <div class="cw-summary">
-          <div style="font-weight:700;color:var(--gold-bright);margin-bottom:6px">📋 核心结论</div>
-          当前市场与历史危机综合相似度<b style="color:${scoreCol}">${CW_SCORE}%</b>。其中与2000年互联网泡沫相似度最高，主导了整体评分。
-          <br><br>
-          <span style="color:#e05c5c">⛔ ${dangerCount}项危险信号</span> · <span style="color:#e0a23c">⚠️ ${warnCount}项关注信号</span> · <span style="color:#4caf72">✅ ${CW_ANOMALIES.length-dangerCount-warnCount}项安全信号</span>
+          <div style="font-weight:700;color:var(--gold-bright);margin-bottom:6px">📋 历史镜鉴</div>
+          当前与 1999/2000 互联网泡沫顶部综合相似度 <b style="color:${scoreCol}">${CW_SCORE}%</b>。
+          估值(CAPE 39.8 vs 44.19)、集中度(39% vs 27%)、油价上行均与 2000 共振；
+          但 Mag7 真实盈利、Fed 降息周期、利率绝对水平更低三项关键差异避免简单重演。
+          v2.0 将其作为 50% 权重子项, 与触发器期望(${trigExp.scaled}%)等权合成。
         </div>
       </div>
     </div>
