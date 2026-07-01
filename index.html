@@ -961,13 +961,13 @@ const FETCH_TIMEOUT = 12000; // 加长超时到12s，应对热点/弱网环境
 const CURATED = {
   fedRate:'4.25-4.50%', chinaLPR:'3.00',
   // ↓ 非实时宏观指标: 手动更新(每月BLS/FRED发布后), 标注数据截至日期
-  cpi: 3.8,            cpiDate:'2026-04',    // BLS CPI同比% (Monthly, ~15th)
-  unemployment: 4.1,   unemploymentDate:'2026-05', // BLS U-3 失业率% (1st Friday)
-  hySpread: 3.5,       hySpreadDate:'2026-06',  // ICE BofA HY OAS利差% (Daily via FRED)
-  consumerSentiment:72,csentDate:'2026-05',  // UMich消费者信心指数 (Monthly)
-  ccDelinquency: 3.2,  ccDelDate:'2026-Q1',  // FRED DCCLACBS 信用卡拖欠率% (Quarterly)
-  caseShiller: 3.5,    csDate:'2026-03',     // S&P Case-Shiller房价同比% (Monthly, 2m lag)
-  sp500YoY: 14.1,      sp500YoYDate:'2026-06', // 标普500近12月涨幅% (来自BUBBLE_2026)
+  cpi: 4.2,            cpiDate:'2026-05',    // BLS CPI同比% (Monthly, ~15th)
+  unemployment: 4.1,   unemploymentDate:'2026-06', // BLS U-3 失业率% (1st Friday)
+  hySpread: 3.8,       hySpreadDate:'2026-06',  // ICE BofA HY OAS利差% (Daily via FRED)
+  consumerSentiment:68,csentDate:'2026-06',  // UMich消费者信心指数 (Monthly)
+  ccDelinquency: 3.4,  ccDelDate:'2026-Q1',  // FRED DCCLACBS 信用卡拖欠率% (Quarterly)
+  caseShiller: 3.2,    csDate:'2026-04',     // S&P Case-Shiller房价同比% (Monthly, 2m lag)
+  sp500YoY: 12.5,      sp500YoYDate:'2026-07', // 标普500近12月涨幅% (来自BUBBLE_2026)
 };
 
 /* Chart.js defaults for cycle charts */
@@ -1028,14 +1028,14 @@ const CRISIS_INDICATORS=[
 function getCurrentIndicators(){
   const md=cache||{};
   return {
-    T10Y2Y: md.yieldSpread!=null? md.yieldSpread : (md.t10y!=null&&md.t2y!=null? +(md.t10y-md.t2y).toFixed(2) : 0.40),
-    VIXCLS: md.vixIndex||14,
+    T10Y2Y: md.yieldSpread!=null? md.yieldSpread : (md.t10y!=null&&md.t2y!=null? +(md.t10y-md.t2y).toFixed(2) : 0.32),
+    VIXCLS: md.vixIndex||19,
     UNRATE: md.unemployment||4.1,
-    UMCSENT: md.consumerSentiment||72,
-    DCCLACBS: md.ccDelinquency||3.2,
-    CSUSHPINSA: md.caseShiller||3.5,
-    BAMLH0A0HYM2: md.hySpread||3.5,
-    SP500: md.sp500YoY||14.1
+    UMCSENT: md.consumerSentiment||68,
+    DCCLACBS: md.ccDelinquency||3.4,
+    CSUSHPINSA: md.caseShiller||3.2,
+    BAMLH0A0HYM2: md.hySpread||3.8,
+    SP500: md.sp500YoY||12.5
   };
 }
 const CRISIS_PERIODS=[
@@ -1046,46 +1046,46 @@ const CRISIS_PERIODS=[
 ];
 function normalize(v,min,max,dir){let n=(v-min)/(max-min);n=Math.max(0,Math.min(1,n));return dir==='lower'?1-n:n}
 
-/* ===== 1999/2000 互联网泡沫顶部 vs 2026(截至5月) 多维对比 =====
+/* ===== 1999/2000 互联网泡沫顶部 vs 2026(截至7月) 多维对比 =====
    每个维度: h=历史(1999/2000)关键数据, cur(md)=当前(部分接入实时行情),
    sim=该维度与历史规律的重合度(0-100, 基于回归与定性研究), note=解读 */
 const COMPARE_DIMS=[
   {dim:'美股走势',en:'Equity Trend',ic:'📈',
    h:'长牛后加速冲顶 · 1999 标普 +19.5% / 纳指 +85.6%，2000.3 见顶回落',
    cur:md=>`AI 牛市续创新高 · 标普 ${(md&&md.sp500)||'—'} / 纳指 ${(md&&md.nasdaq)||'—'}`,
-   sim:80,note:'同处长牛末段、由少数科技龙头领涨并加速冲顶'},
+   sim:78,note:'同处长牛末段，由少数科技龙头领涨；但近 1 月从峰值回落 ~3%，动量略减弱'},
   {dim:'盈利与估值',en:'Earnings & Valuation',ic:'💰',
    h:'估值史上极端 · Shiller CAPE 44(2000.1 历史峰值) · 标普前瞻 PE ~25 · 纳指 PE >100',
-   cur:md=>'估值高位 · CAPE ~39.8 · 标普 TTM PE 25.9 · 前瞻 PE ~21 · Nasdaq-100 PE 37',
-   sim:78,note:'估值同处历史顶部区间，但 2000 更极端(纳指 PE >100 且多无盈利支撑)'},
+   cur:md=>'估值逼近历史峰值 · CAPE 41.6(仅次于 2000) · 标普 TTM PE 26.8 · 前瞻 PE ~21.5',
+   sim:82,note:'CAPE 41.6 已是 1957 年以来第二高，距 2000 峰值 44.19 仅一步之遥'},
   {dim:'长中短期利率',en:'Rates & Curve',ic:'🏦',
    h:'高利率+深度倒挂 · 联邦基金 6.5% · 10Y ~6.5% · 2Y>10Y',
-   cur:md=>'利率正常化 · 联邦基金 4.25-4.50% · 10Y ~4.4% · 30Y ~5.0% · 曲线已转正',
-   sim:42,note:'Fed 从 6.5% 加息 vs 当前 4.375% 降息，利率绝对水平更低、方向相反'},
+   cur:md=>'利率高位僵持 · 联邦基金 4.25-4.50% · 10Y 4.47% · 30Y ~5.05% · 曲线已转正',
+   sim:45,note:'利率方向从"降息周期"转为"暂停观望"，Fed 加息概率上升(CPI 4.2%)，与 2000 趋同'},
   {dim:'美元走势',en:'US Dollar',ic:'💵',
    h:'强势美元 · DXY 升向 ~110(2001 见顶 121)',
-   cur:md=>`偏强美元 · DXY ${(md&&md.dxyIndex)||'—'}`,
-   sim:66,note:'同为强美元周期，但当前强度与持续性弱于 2000-2001'},
+   cur:md=>`偏强美元 · DXY ${(md&&md.dxyIndex)||'~101'}`,
+   sim:68,note:'DXY 从 99 反弹至 101，美元因避险+高利率走强，方向与 2000 趋同'},
   {dim:'黄金走势',en:'Gold',ic:'🥇',
    h:'历史低迷 · ~$280/oz(1999 英国央行抛售低点 $252)',
-   cur:md=>`历史新高 · $${(md&&md.goldPrice)||'—'}/oz`,
-   sim:8,note:'⚠ 方向完全相反: 2000 金价低迷 vs 当前创历史新高 → 去美元化/主权避险，列为异常维度'},
+   cur:md=>`高位回调 · $${(md&&md.goldPrice)||'~3988'}/oz (峰值 $4520)`,
+   sim:10,note:'⚠ 方向完全相反: 2000 金价低迷 vs 当前仍处历史高位(虽从峰值回落 12%) → 去美元化/主权避险'},
   {dim:'比特币',en:'Bitcoin',ic:'₿',
    h:'尚不存在(BTC 2009 才诞生)',
-   cur:md=>`$${(md&&md.btcPrice)||'—'} · 风险资产新锚`,
+   cur:md=>`$${(md&&md.btcPrice)||'~67K'} · 风险资产新锚`,
    sim:null,note:'1999 无对应资产，不纳入相似度计算 (N/A)'},
   {dim:'石油价格',en:'Crude Oil',ic:'🛢️',
    h:'三倍上行 · 从 1998 $12 涨至 1999-2000 $30-37',
-   cur:md=>`WTI $${(md&&md.oil)||'—'} · 高位坚挺`,
-   sim:60,note:'同处油价上行/高位，但当前更多由供给约束与地缘驱动'},
+   cur:md=>`WTI $${(md&&md.oil)||'~93'} · 伊朗战争推高`,
+   sim:62,note:'同处油价上行/高位，霍尔木兹海峡封锁推动 Brent 逼近 $96，供给冲击性质更强'},
   {dim:'PCE / CPI',en:'Inflation',ic:'🌡️',
    h:'温和抬升 · CPI 2.2%→3.4% · 核心 PCE ~1.7%',
-   cur:md=>'偏黏抬升 · CPI 3.8%(Apr 2026) · 核心 PCE 3.3% · 高于 Fed 2% 目标',
-   sim:58,note:'通胀同步温和抬升，当前更具黏性(核心 PCE 3.3% vs 2000 的 1.7%)'},
+   cur:md=>'加速抬升 · CPI 4.2%(May 2026) · 核心 PCE 3.5% · 三年新高 · Fed 加息概率↑',
+   sim:65,note:'通胀加速超越 2000 水平(CPI 4.2% vs 3.4%)，且伊朗战争推高能源, 黏性更强'},
   {dim:'企业基本面',en:'Corporate Fundamentals',ic:'🏭',
    h:'龙头烧钱 · 多数互联网公司负现金流、无盈利 · 利润率 1997 见顶回落',
-   cur:md=>'龙头高质量 · Mag7 真实高盈利、强自由现金流、利润率历史高位',
-   sim:24,note:'⚠ 本质差异: 当前龙头盈利质量远胜 2000 概念股，列为异常维度'},
+   cur:md=>'龙头高质量 · Mag7 真实高盈利、$3200亿+FCF，但增速从 33%→22% 逐季放缓',
+   sim:26,note:'⚠ 本质差异: 当前龙头盈利质量远胜 2000 概念股；但增速放缓趋势值得警惕'},
 ];
 // 总体重合度: 去掉偏离中位数 >1×IQR 的异常维度后再取均值
 function overlapScore(){
@@ -1107,22 +1107,22 @@ const EPS_FORECAST={
   sp:[{y:'2024',v:235,t:'实际'},{y:'2025',v:271,t:'实际'},{y:'2026E',v:340,t:'共识(GS)'},{y:'2027E',v:385,t:'共识(GS)'},{y:'2028E',v:412,t:'回归预测'}],
   // Mag7 合计净利润同比增速(%)
   m7:[{y:'2024',g:33},{y:'2025',g:24},{y:'2026E',g:21},{y:'2027E',g:13},{y:'2028E',g:9}],
-  note:'方法: 以 Goldman Sachs 2026E $340、2027E $385 为锚(FactSet Q1 blended +27.1%佐证)，2028 假设 AI 资本开支边际回报递减、盈利增速向长期中枢(~7%/年)平滑收敛；Mag7 增速随基数抬升逐年压缩。'
+  note:'方法: 以 Goldman Sachs 2026E $340、2027E $385 为锚(FactSet Q1 blended +27.1%佐证)，2028 假设 AI 资本开支边际回报递减、盈利增速向长期中枢(~7%/年)平滑收敛；Mag7 增速随基数抬升逐季放缓(33%→22%→13%→9%)。'
 };
 
 /* ===== 真假繁荣判断(分析#3) ===== */
 const TRUTH_CHECK=[
   {item:'30 年期美债 ~5% 收益率',v:'真实 · 健康',c:'#4caf72',
-   reason:'相对 2010s 的异常低利率，4.99% 接近长期历史均值，是"中性利率上移 + 期限溢价回归"的正常化结果，符合经济周期规律。'},
+   reason:'相对 2010s 的异常低利率，5.05% 接近长期历史均值，是"中性利率上移 + 期限溢价回归"的正常化结果，符合经济周期规律。'},
   {item:'美股持续创新高',v:'半真半虚',c:'#e0a23c',
-   reason:'Mag7 真实盈利与现金流支撑(区别于 2000)，此为"真"；但 CAPE ~39.8 已透支未来多年增长、市场宽度收窄、集中度极高，估值层面含"虚"。'},
+   reason:'Mag7 真实盈利与现金流支撑(区别于 2000)，此为"真"；但 CAPE 41.6 已透支未来多年增长、市场宽度收窄、集中度极高，估值层面含"虚"。'},
   {item:'石油价格坚挺升高',v:'偏虚',c:'#e0a23c',
-   reason:'更多由供给约束 + 地缘溢价驱动而非需求强劲；全球制造业偏弱，需求端走软风险大，高油价更像供给冲击而非繁荣信号。'},
+   reason:'更多由伊朗战争+霍尔木兹海峡封锁等供给约束驱动而非需求强劲；全球制造业偏弱，需求端走软风险大，高油价更像供给冲击而非繁荣信号。'},
   {item:'美元汇率升高',v:'矛盾信号',c:'#e05c5c',
-   reason:'利差支撑部分真实；但强美元通常压制金价，当前金价却创历史新高，此罕见背离暗示去美元化/主权避险，美元强势含"虚高"成分。'},
+   reason:'利差支撑部分真实；但强美元通常压制金价，当前金价虽从峰值回落仍处$4000附近历史高位，此罕见背离暗示去美元化/主权避险，美元强势含"虚高"成分。'},
 ];
 
-/* ===== 4 位大师当前布局建议(基准 2026-05-29, 分析#4) ===== */
+/* ===== 4 位大师当前布局建议(基准 2026-07-01, 分析#5) ===== */
 const MASTER_ADVICE=[
   {nm:'斯坦利·德鲁肯米勒',en:'Stanley Druckenmiller',av:'🎯',c:'#e0a23c',stance:'减仓·灵活',
    logic:'宏观集中下注 + 严格止损，以流动性与利率拐点定方向',
@@ -1180,20 +1180,20 @@ const BUBBLE_2000={
 };
 const BUBBLE_2026={
   label:'2025–2026 当前市场',
-  sp500_peak:7610,sp500_ye99:6670,sp500_ret_12m:14.1,sp500_ret_24m:38,
-  nasdaq_peak:27094,nasdaq_ret_12m:18.5,nasdaq_ret_24m:45,
-  cape:39.8,trailing_pe:25.9,forward_pe:21.0,
+  sp500_peak:7610,sp500_ye99:7354,sp500_ret_12m:12.5,sp500_ret_24m:38,
+  nasdaq_peak:27094,nasdaq_ret_12m:15.8,nasdaq_ret_24m:42,
+  cape:41.6,trailing_pe:26.8,forward_pe:21.5,
   corp_profit_growth_99:null,corp_profit_growth_00:27.1,
-  mag_pe:35,mag_earnings_growth:24,
+  mag_pe:36,mag_earnings_growth:22,
   market_concentration:39,
-  fed_rate_start:5.375,fed_rate_end:4.375,fed_direction:'降息周期 -100bp',
-  t2y:4.00,t5y:4.10,t10y:4.40,t30y:4.99,spread_10y2y:0.40,
-  dxy_start:104,dxy_end:99.2,dxy_chg:-4.6,
-  gold_start:2600,gold_end:4508,gold_chg:73,
-  btc_start:62000,btc_end:66614,btc_chg:7.4,
-  oil_start:72,oil_end:95,oil_chg:32,
-  cpi:3.8,pce:3.3,
-  corp_debt_gdp:78,tech_cashflow:'Mag7合计$3000亿+自由现金流',
+  fed_rate_start:5.375,fed_rate_end:4.375,fed_direction:'暂停降息 · 维持 4.25-4.50%',
+  t2y:4.15,t5y:4.25,t10y:4.47,t30y:5.05,spread_10y2y:0.32,
+  dxy_start:104,dxy_end:101.2,dxy_chg:-2.7,
+  gold_start:2600,gold_end:3988,gold_chg:53,
+  btc_start:62000,btc_end:67000,btc_chg:8.1,
+  oil_start:72,oil_end:93,oil_chg:29,
+  cpi:4.2,pce:3.5,
+  corp_debt_gdp:80,tech_cashflow:'Mag7合计$3200亿+自由现金流',
 };
 // 维度相似度计算: 参数化 calcFn(benchmark) 可对比任意历史危机
 // 2026 端数据固定取自 BUBBLE_2026; 基准端通过 _bDim(bench) 提取对应字段
@@ -1372,21 +1372,21 @@ let CW_SCORE=cwCalcScore();
 
 // 异常检测: 当前市场哪些表现不符合经济规律
 const CW_ANOMALIES=[
-  {metric:'30Y国债5%+美股新高',signal:'danger',detail:'历史上30Y>4.5%时股市极少创新高。2000年6%时股市见顶后崩盘。当前5%+新高=资金在"赌盈利兑现"，一旦miss将剧烈回调'},
-  {metric:'黄金暴涨73%+股市新高',signal:'danger',detail:'黄金是终极避险资产。当黄金暴涨时同步股市新高，说明"聪明钱"已在对冲。2000年黄金持平=市场无恐惧。当前黄金暴涨=隐性恐惧极高'},
-  {metric:'CPI 3.8%+Fed已降息100bp',signal:'warn',detail:'通胀高于目标+降息=实际利率在走低。短期利好资产价格，但中期加剧通胀黏性。2000年Fed在通胀3.4%时加息至6.5%，当前反向操作增加政策风险'},
+  {metric:'30Y国债5.05%+美股新高',signal:'danger',detail:'历史上30Y>4.5%时股市极少创新高。2000年6%时股市见顶后崩盘。当前5.05%+年内25次新高=资金在"赌盈利兑现"，一旦miss将剧烈回调'},
+  {metric:'黄金涨53%+股市新高',signal:'danger',detail:'黄金是终极避险资产。当黄金大涨时同步股市新高，说明"聪明钱"已在对冲。2000年黄金持平=市场无恐惧。当前黄金虽从峰值回落仍涨53%=隐性恐惧仍高'},
+  {metric:'CPI 4.2%+Fed暂停降息',signal:'warn',detail:'通胀三年新高+降息暂停=实际利率压力增大。Fed已从降息转为暂停观望，市场开始定价加息概率。2000年Fed在CPI 3.4%时加息至6.5%，当前路径趋同'},
   {metric:'市场集中度39% (Mag7)',signal:'warn',detail:'远超2000年的27%。前7只股票贡献S&P500大部分涨幅。集中度越高，系统性风险越大，一只miss可能拖垮整个指数'},
-  {metric:'CAPE 39.8接近历史极值',signal:'warn',detail:'2000年峰值44.19为历史最高。当前39.8虽略低但仍远超均值(~17)。高CAPE预示未来10年回报将显著低于均值'},
-  {metric:'油价$95+通胀3.8%',signal:'warn',detail:'类似2000年油价翻3倍至$35推动CPI到3.4%。当前油价高位+通胀回升=滞胀风险。AI算力需求推高能源成本是新变量'},
-  {metric:'Mag7盈利增长24%+真实现金流',signal:'safe',detail:'Q1 2026 blended EPS +27.1%(FactSet)。与2000年dot-com企业无盈利形成关键区别。Mag7合计$3000亿+FCF证明AI投资正在产生真实回报。这是当前市场最重要的支撑因素'},
-  {metric:'Fed降息周期(vs 2000加息)',signal:'safe',detail:'与2000年Fed激进加息至6.5%相反，当前处于降息周期(已降100bp至4.375%)。流动性改善通常支撑股市。但降息原因是经济放缓，需关注是否"落后于曲线"'},
+  {metric:'CAPE 41.6逼近历史极值',signal:'warn',detail:'2000年峰值44.19为历史最高。当前41.6是1957年以来第二高(Motley Fool确认)。高CAPE预示未来10年回报将显著低于均值'},
+  {metric:'油价$93+CPI 4.2%',signal:'warn',detail:'伊朗战争+霍尔木兹海峡封锁推动能源占CPI月度涨幅60%+。类似2000年油价翻3倍推高CPI。当前滞胀风险更甚'},
+  {metric:'Mag7盈利增长22%+真实现金流',signal:'safe',detail:'Q1 2026 blended EPS +27.1%(FactSet)。与2000年dot-com企业无盈利形成关键区别。Mag7合计$3200亿+FCF证明AI投资正在产生真实回报。但增速从33%→22%放缓是转折信号'},
+  {metric:'Fed暂停观望(vs 2000加息)',signal:'safe',detail:'当前已从降息周期转为暂停观望(4.25-4.50%)。与2000年Fed激进加息至6.5%有区别，但若CPI继续上行加息预期将快速升温，差距在缩小'},
 ];
 
 // 大师投资策略建议
 const CW_STRATEGIES=[
   {nm:'德鲁肯米勒',en:'Stanley Druckenmiller',av:'🎯',c:'#FFA726',
    verdict:'⚠️ 减仓至50%，增持黄金和对冲',verdictC:'#e0a23c',
-   logic:'宏观信号发出"黄色警报"：黄金暴涨73%说明聪明钱在买保险，而股市新高说明散户仍在追涨。30Y 5%的利率环境历史上对股票估值构成压力。但AI盈利是真实的新变量——不像2000年的dot-com幻觉。结论：市场可能还有最后一波上涨，但风险回报已经不对称。保持灵活，准备随时调仓。',
+   logic:'宏观信号发出"黄色警报"：黄金涨53%说明聪明钱在买保险，而股市年内25次新高说明散户仍在追涨。30Y 5.05%+CPI 4.2%的利率环境历史上对股票估值构成压力。但AI盈利是真实的新变量——不像2000年的dot-com幻觉。结论：市场可能还有最后一波上涨，但风险回报已经不对称。保持灵活，准备随时调仓。',
    alloc:[['黄金/金矿股',30,'#e0a23c'],['短期国债/货币',25,'#5b9bd5'],['AI基础设施精选',20,'#4caf72'],['现金(等待暴跌)',20,'#b9b4ab'],['小型空头对冲',5,'#e05c5c']],
    ret:'8-12% (含对冲)',risk:'中等'},
   {nm:'巴菲特',en:'Warren Buffett',av:'🦉',c:'#4FC3F7',
@@ -1401,7 +1401,7 @@ const CW_STRATEGIES=[
    ret:'7-10% (3年期)',risk:'低'},
   {nm:'彼得·林奇',en:'Peter Lynch',av:'📊',c:'#EF5350',
    verdict:'✅ 寻找Mag7之外的"十倍股"',verdictC:'#4caf72',
-   logic:'Mag7 P/E 30x但PEG可能>2。关键是在被忽视的领域找PEG<1的好公司。中小型医疗、能源(油价$95利好)、消费必需品中有很多被市场忽略的优质标的。市场集中度39%意味着493只S&P成分股被低估——这是猎场。',
+   logic:'Mag7 P/E 36x但PEG可能>2。关键是在被忽视的领域找PEG<1的好公司。中小型医疗、能源(油价$93利好)、消费必需品中有很多被市场忽略的优质标的。市场集中度39%意味着493只S&P成分股被低估——这是猎场。',
    alloc:[['中小盘价值(PEG<1)',35,'#4caf72'],['能源板块(受益油价)',20,'#e0a23c'],['消费必需品',20,'#5b9bd5'],['分红增长股',15,'#d4af37'],['现金',10,'#b9b4ab']],
    ret:'12-18% (选股驱动)',risk:'中高'},
 ];
@@ -1426,12 +1426,12 @@ const AI_TRIGGERS=[
   {id:'credit', label:'数据中心 / 私募信贷项目违约', prob:0.25, aiImpact:0.95, weight:0.14,
    us:'信用风险扩散, Nasdaq -20%+', cn:'全球风险偏好下降, A股防御占优',
    note:'隐性杠杆: AI 基建已从企业现金流转向债务/私募信贷/表外融资(BIS), 一旦违约即多链同时收缩'},
-  {id:'oil100', label:'油价突破 100 美元',          prob:0.30, aiImpact:0.55, weight:0.08,
+  {id:'oil100', label:'油价突破 100 美元',          prob:0.35, aiImpact:0.55, weight:0.08,
    us:'通胀交易压估值', cn:'输入性成本上升, 人民币承压',
-   note:'通胀回灌: 战争/地缘供给冲击, 把核心 PCE 推高, 限制 Fed 救市空间'},
-  {id:'fedhike',label:'Fed 被迫重新加息',            prob:0.20, aiImpact:0.95, weight:0.10,
+   note:'通胀回灌: 伊朗战争+霍尔木兹海峡封锁, Brent 已逼近 $96, 突破 $100 概率↑, 把核心 PCE 推高, 限制 Fed 救市空间'},
+  {id:'fedhike',label:'Fed 被迫重新加息',            prob:0.25, aiImpact:0.95, weight:0.10,
    us:'全市场估值压缩', cn:'港股最受伤, A股结构性杀跌',
-   note:'政策反转: 沃什 Fed "选择性鹰派"被通胀迫到墙角, 市场相信的"政策不会让 AI 崩"叙事破灭'},
+   note:'政策反转: CPI 已升至 4.2% 三年新高, Fed 从降息转为暂停, 下一步加息概率市场已开始定价; "政策不会让 AI 崩"叙事面临考验'},
   {id:'jobs',   label:'美国就业突然恶化',           prob:0.30, aiImpact:0.55, weight:0.08,
    us:'先跌后盼降息', cn:'出口链受压, 政策宽松预期升温',
    note:'增长证伪: 失业率快速抬升 → 衰退担忧 → 风险偏好下移; 中期反而开启降息救市预期'},
@@ -3069,7 +3069,7 @@ function renderCrisis(){
       <div class="ov-meta">去异常值(IQR)后 <b>${ov.trimmed}%</b> · 含异常原始均值 ${ov.raw}% · 剔除维度: ${removedNames}</div>
     </div>
     <div class="card ov-intro gold-edge">
-      <div class="ov-title">1999 / 2000 互联网泡沫顶部 &nbsp;<span style="color:var(--gold)">vs</span>&nbsp; 2026(截至 5 月)</div>
+      <div class="ov-title">1999 / 2000 互联网泡沫顶部 &nbsp;<span style="color:var(--gold)">vs</span>&nbsp; 2026(截至 7 月)</div>
       <p>本看板逐维度对照"互联网泡沫见顶前"与"当前 AI 行情"，计算每个维度与历史规律的<b>重合度</b>；总体相似度<b>剔除偏离中位数 &gt;1×IQR 的异常维度</b>后再测算，避免黄金、企业基本面等方向相反维度扭曲结论。当前侧的股指/黄金/油价/美元/BTC 均接入<b>东方财富实时行情</b>，随盘面更新。</p>
       <p style="margin-top:10px"><b>一句话结论:</b> 估值与情绪与 2000 高度相似，<b>但</b>本轮龙头有真实盈利支撑、利率已正常化且曲线转正 —— 是"贵"而非简单"泡沫重演"，风险集中在估值透支与少数龙头的高集中度。</p>
     </div>
@@ -3087,7 +3087,7 @@ function renderCrisis(){
     <div class="card gold-edge"><div class="card-h">Mag7 合计净利润增速(同比)</div>${m7rows}<div class="eps-note">${EPS_FORECAST.note}</div></div>
   </div>
 
-  <div class="sec-title">🧑‍💼 大师视角 · 当前如何布局<span class="cnt">基准 2026-05-29</span></div>
+  <div class="sec-title">🧑‍💼 大师视角 · 当前如何布局<span class="cnt">基准 2026-07-01</span></div>
   <div class="grid g-2 fade-stagger">${masters}</div>
 
   <div class="sec-title">📜 1999 深度复盘<span class="cnt">泡沫前全资产图景</span></div>
@@ -3189,15 +3189,15 @@ function renderCrisisWarning(){
   CW_SCORE=cwCalcScore();
   // 对比表格行
   const rows=[
-    {dim:'📈 美股走势',k:[`S&P 1,527 (+19% 1Y)`,`Nasdaq 5,048 (+86% 1Y)`],c:[`S&P 7,610 (+14% 1Y)`,`Nasdaq 27,094 (+19% 1Y)`],signal:'warn',note:'涨幅低于2000但基数效应显著'},
-    {dim:'📊 盈利与估值',k:[`CAPE 44.19 (历史最高)`,`P/E 32x`,`盈利增长 +28%→+4%`],c:[`CAPE 41.6 (接近极值)`,`P/E 27.4x`,`Mag7 P/E 30x, 盈利+22%`],signal:'danger',note:'CAPE接近历史最高，但Mag7盈利真实',anomaly:'high'},
-    {dim:'🏛️ 利率环境',k:[`30Y 6.0% (权重50%)`,`10Y 6.3% (权重30%)`,`2-5Y 5.8~5.9% (权重20%)`,`Fed 4.6%→6.3% (加息)`,`利差 10Y-2Y +0.5%`],c:[`30Y 5.0% (权重50%)`,`10Y 4.5% (权重30%)`,`2-5Y 4.1~4.2% (权重20%)`,`Fed 5.4%→3.6% (降息)`,`利差 10Y-2Y +0.4%`],signal:'info',note:'30Y均在5%+高位(相似度83%)，10Y均>4.4%(相似度71%)。中长期利率水平高度相似，但Fed方向相反(降vs加)'},
-    {dim:'💵 美元走势',k:[`DXY 96→120 (+25%)`,`强势美元吸引全球资金`],c:[`DXY 104→99 (-5%)`,`美元走弱，资金分散`],signal:'safe',note:'方向完全相反：2000强美元vs当前弱美元'},
-    {dim:'🥇 黄金走势',k:[`$286→$272 (-5%)`,`无避险需求，市场乐观`],c:[`$2,600→$4,493 (+73%)`,`极强避险信号`],signal:'danger',note:'最大分歧：黄金暴涨=隐性恐惧极高',anomaly:'high'},
-    {dim:'₿ BTC走势',k:[`不存在`],c:[`$62K→$67K (+9%)`,`距ATH $109K -38%`],signal:'info',note:'新资产类别，2000年无对应参照'},
-    {dim:'🛢️ 石油价格',k:[`$12→$35 (+192%)`,`亚洲危机后反弹`],c:[`$72→$95 (+32%)`,`地缘+AI算力需求`],signal:'warn',note:'都在涨但2000涨幅更大。油价高企推高通胀'},
-    {dim:'📉 PCE / CPI',k:[`CPI 3.4% | PCE 2.0%`,`Fed加息应对通胀`],c:[`CPI 3.8% | PCE 3.3%`,`Fed却在降息`],signal:'danger',note:'通胀更高但Fed反向操作=政策风险',anomaly:'med'},
-    {dim:'🏢 企业健康度',k:[`前10占27%`,`大量dot-com无盈利`,`负债/GDP 57%`],c:[`前10占39%`,`Mag7 FCF $3000亿+`,`负债/GDP 78%`],signal:'warn',note:'集中度更高但盈利质量远优于2000',anomaly:'med'},
+    {dim:'📈 美股走势',k:[`S&P 1,527 (+19% 1Y)`,`Nasdaq 5,048 (+86% 1Y)`],c:[`S&P 7,354 (+12.5% 1Y)`,`Nasdaq ~27K (+16% 1Y)`],signal:'warn',note:'涨幅低于2000但基数效应显著；近1月从峰值回落~3%'},
+    {dim:'📊 盈利与估值',k:[`CAPE 44.19 (历史最高)`,`P/E 32x`,`盈利增长 +28%→+4%`],c:[`CAPE 41.6 (接近极值)`,`P/E 26.8x`,`Mag7 P/E 36x, 盈利+22%`],signal:'danger',note:'CAPE 41.6 为1957年以来第二高(仅次2000)',anomaly:'high'},
+    {dim:'🏛️ 利率环境',k:[`30Y 6.0% (权重50%)`,`10Y 6.3% (权重30%)`,`2-5Y 5.8~5.9% (权重20%)`,`Fed 4.6%→6.3% (加息)`,`利差 10Y-2Y +0.5%`],c:[`30Y 5.05% (权重50%)`,`10Y 4.47% (权重30%)`,`2-5Y 4.15~4.25% (权重20%)`,`Fed 暂停 4.25-4.50%`,`利差 10Y-2Y +0.32%`],signal:'info',note:'30Y均在5%+高位。Fed从降息转暂停，CPI 4.2%下加息概率↑，方向趋同'},
+    {dim:'💵 美元走势',k:[`DXY 96→120 (+25%)`,`强势美元吸引全球资金`],c:[`DXY 104→101 (-2.7%)`,`美元偏强但未大涨`],signal:'info',note:'DXY从99反弹至101，走强方向与2000趋同但幅度有限'},
+    {dim:'🥇 黄金走势',k:[`$286→$272 (-5%)`,`无避险需求，市场乐观`],c:[`$2,600→$3,988 (+53%)`,`高位回调但仍强`],signal:'danger',note:'方向相反：黄金涨53%(峰值$4520后回调)=去美元化信号',anomaly:'high'},
+    {dim:'₿ BTC走势',k:[`不存在`],c:[`$62K→$67K (+8%)`,`距ATH $109K -38%`],signal:'info',note:'新资产类别，2000年无对应参照'},
+    {dim:'🛢️ 石油价格',k:[`$12→$35 (+192%)`,`亚洲危机后反弹`],c:[`$72→$93 (+29%)`,`伊朗战争+霍尔木兹`],signal:'warn',note:'都在涨但2000涨幅更大。油价高企推高CPI至4.2%'},
+    {dim:'📉 PCE / CPI',k:[`CPI 3.4% | PCE 2.0%`,`Fed加息应对通胀`],c:[`CPI 4.2% | PCE 3.5%`,`Fed暂停观望`],signal:'danger',note:'通胀已超2000水平(4.2%>3.4%)且仍在加速，Fed暂停=政策滞后风险',anomaly:'med'},
+    {dim:'🏢 企业健康度',k:[`前10占27%`,`大量dot-com无盈利`,`负债/GDP 57%`],c:[`前10占39%`,`Mag7 FCF $3200亿+`,`负债/GDP 80%`],signal:'warn',note:'集中度更高但盈利质量远优于2000',anomaly:'med'},
   ];
   const tableRows=rows.map(r=>{
     const kHtml=r.k.map(x=>`<div class="cw-val">${x}</div>`).join('');
@@ -3423,8 +3423,8 @@ function renderCrisisWarning(){
         <div class="cw-summary">
           <div style="font-weight:700;color:var(--gold-bright);margin-bottom:6px">📋 历史镜鉴</div>
           当前与 1999/2000 互联网泡沫顶部综合相似度 <b style="color:${scoreCol}">${CW_SCORE}%</b>。
-          估值(CAPE 39.8 vs 44.19)、集中度(39% vs 27%)、油价上行均与 2000 共振；
-          但 Mag7 真实盈利、Fed 降息周期、利率绝对水平更低三项关键差异避免简单重演。
+          估值(CAPE 41.6 vs 44.19)、集中度(39% vs 27%)、油价上行均与 2000 共振；
+          但 Mag7 真实盈利、Fed 暂停而非加息、利率绝对水平更低三项关键差异避免简单重演。
           v2.0 将其作为 50% 权重子项, 与触发器期望(${trigExp.scaled}%)等权合成。
         </div>
       </div>
