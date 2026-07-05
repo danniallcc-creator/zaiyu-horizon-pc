@@ -4710,18 +4710,19 @@ async function dsaFetchQuote(code){
   const candidates=dsaSecid(code);
   for(const secid of candidates){
     try{
-      const url=`${EM_SNAPSHOT_HOST}/api/qt/stock/get?secid=${secid}&fields=f57,f58,f43,f44,f45,f46,f47,f48,f50,f51,f52,f60,f116,f117,f162,f167,f170,f171,f168,f169&_=${Date.now()}`;
+      const url=`${EM_SNAPSHOT_HOST}/api/qt/stock/get?secid=${secid}&fields=f57,f58,f59,f43,f44,f45,f46,f47,f48,f50,f51,f52,f60,f116,f117,f162,f167,f170,f171,f168,f169&_=${Date.now()}`;
       const r=await fetch(url);
       const j=await r.json();
       if(!j.data||!j.data.f43) continue;
       const d=j.data;
+      const dec=Math.pow(10,d.f59||2); // f59=小数位: A股2, 港股/美股3
       return {
         code:d.f57||code, name:d.f58||code, secid,
-        price:(d.f43/100)||0, high:(d.f44/100)||0, low:(d.f45/100)||0, open:(d.f46/100)||0,
-        volume:d.f47, amount:d.f48, pe:d.f167||0, pb:(d.f167?d.f167:0),
-        chg:(d.f170/100)||0, chgPct:(d.f171/100)||0,
-        prevClose:(d.f60/100)||0, mktCap:d.f116, floatCap:d.f117,
-        high52w:(d.f51/100)||0, low52w:(d.f52/100)||0, turnover:d.f168||0, amplitude:(d.f169/100)||0
+        price:(d.f43/dec)||0, high:(d.f44/dec)||0, low:(d.f45/dec)||0, open:(d.f46/dec)||0,
+        volume:d.f47, amount:d.f48, pe:(d.f167/100)||0, pb:(d.f162/100)||0,
+        chg:(d.f169/dec)||0, chgPct:(d.f170/100)||0,
+        prevClose:(d.f60/dec)||0, mktCap:d.f116, floatCap:d.f117,
+        high52w:(d.f51/dec)||0, low52w:(d.f52/dec)||0, turnover:(d.f168/100)||0, amplitude:(d.f171/100)||0
       };
     }catch(e){continue;}
   }
