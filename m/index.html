@@ -353,11 +353,13 @@ body{font-family:'Noto Sans SC',system-ui,-apple-system,sans-serif;background:va
 /* ========== DATA + COMPUTATION (extracted from PC version) ========== */
 
 /* ==================== CONFIG ==================== */
-// 全部行情走 东方财富 push2 公开接口(浏览器直连, 支持 CORS, 国内可访问, UTF-8 JSON)
-//   股指/商品/外汇/人民币/美元指数/美股/港股/A股 → push2.eastmoney.com
-//   加密货币 BTC/ETH → OKX(国内可访问) → Binance 公共数据(备用)
+// 全部行情走 东方财富 push2delay 公开接口(浏览器直连, 支持 CORS, 国内可访问, UTF-8 JSON)
+//   股指/商品/外汇/人民币/美元指数/美股/港股/A股 → push2delay.eastmoney.com (延迟报价镜像, push2主域名2026-07起服务异常)
+//   加密货币 BTC/ETH → Binance 公共数据(全球稳定, OKX 国内当前受限)
 // 无需任何后端代理, 彻底解决跨域与海外服务器被墙问题
-const EM_BASE = "https://push2.eastmoney.com/api/qt/ulist.np/get";
+const EM_BASE = "https://push2delay.eastmoney.com/api/qt/ulist.np/get";
+const EM_SNAPSHOT_HOST = "https://push2delay.eastmoney.com"; // 个股详情等快照接口统一走此主机
+const EM_KLINE_HOST = "https://push2delay.eastmoney.com";    // K线走同域(备用: 优先走腾讯gtimg)
 const FETCH_TIMEOUT = 12000; // 移动端网络波动大, 12s超时更稳定
 
 /* 宏观数据分两类:
@@ -1287,8 +1289,11 @@ async function fetchKline(secid,days){
   const ck='kl_'+secid+'_'+(days||120);
   const cached=cacheGet(ck,300000); // 5分钟缓存
   if(cached)return cached;
-  // 主源: 东方财富push2his
-  const url=`https://push2his.eastmoney.com/api/qt/stock/kline/get?secid=${secid}&fields1=f1,f2,f3,f4,f5,f6&fields2=f51,f52,f53,f54,f55,f56,f57&klt=101&fqt=1&end=20500101&lmt=${days||120}&_=${Date.now()}`;
+  // 主源: 腾讯财经 gtimg (push2his 域名 2026-07 起宕机, 改用腾讯作主源)
+  const tcResult=await fetchKlineTencent(secid,days);
+  if(tcResult&&tcResult.length){cacheSet(ck,tcResult);return tcResult;}
+  // 备用源: 东方财富 push2delay (延迟镜像, 部分市场返回空klines则忽略)
+  const url=`${EM_KLINE_HOST}/api/qt/stock/kline/get?secid=${secid}&fields1=f1,f2,f3,f4,f5,f6&fields2=f51,f52,f53,f54,f55,f56,f57&klt=101&fqt=1&end=20500101&lmt=${days||120}&_=${Date.now()}`;
   try{
     const j=await _emFetchRace(url);
     const klines=j.data&&j.data.klines;
@@ -1296,10 +1301,7 @@ async function fetchKline(secid,days){
       const result=klines.map(k=>{const p=k.split(',');return{date:p[0],open:+p[1],close:+p[2],high:+p[3],low:+p[4],vol:+p[5],amt:+p[6]};});
       cacheSet(ck,result);return result;
     }
-  }catch(e){/* 主源失败,降级 */}
-  // 备用源: 腾讯财经
-  const tcResult=await fetchKlineTencent(secid,days);
-  if(tcResult&&tcResult.length){cacheSet(ck,tcResult);return tcResult;}
+  }catch(e){/* 双源都失败 */}
   return[];
 }
 
@@ -1308,7 +1310,7 @@ async function fetchFundamentals(secid){
   const ck='fund_'+secid;
   const cached=cacheGet(ck,300000); // 5分钟缓存
   if(cached)return cached;
-  const url=`https://push2.eastmoney.com/api/qt/stock/get?secid=${secid}&fields=f57,f58,f162,f163,f167,f173,f116,f117,f127,f183,f186&_=${Date.now()}`;
+  const url=`${EM_SNAPSHOT_HOST}/api/qt/stock/get?secid=${secid}&fields=f57,f58,f162,f163,f167,f173,f116,f117,f127,f183,f186&_=${Date.now()}`;
   for(let attempt=0;attempt<2;attempt++){
     try{
       const j=await _emFetchRace(url);
@@ -2753,7 +2755,7 @@ async function qtAnalyze(){
     // 获取周K
     let weekK=[];
     try{
-      const wUrl=`https://push2his.eastmoney.com/api/qt/stock/kline/get?secid=${secid}&fields1=f1,f2,f3,f4,f5,f6&fields2=f51,f52,f53,f54,f55,f56,f57&klt=102&fqt=1&end=20500101&lmt=60&_=${Date.now()}`;
+      const wUrl=`${EM_KLINE_HOST}/api/qt/stock/kline/get?secid=${secid}&fields1=f1,f2,f3,f4,f5,f6&fields2=f51,f52,f53,f54,f55,f56,f57&klt=102&fqt=1&end=20500101&lmt=60&_=${Date.now()}`;
       const wj=await _emFetchRace(wUrl);
       if(wj.data&&wj.data.klines)weekK=wj.data.klines.map(k=>{const p=k.split(',');return{date:p[0],open:+p[1],close:+p[2],high:+p[3],low:+p[4]};});
     }catch(e){}
