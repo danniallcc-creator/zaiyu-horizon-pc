@@ -4716,6 +4716,16 @@ function dsaSecid(code){
   return ['1.'+code];
 }
 
+// secid → 腾讯 gtimg 标的代码前缀 (1.600519→sh600519, 0.000001→sz000001, 116.00700→hk00700, 105.AAPL→usAAPL)
+function dsaSecidToGtimg(secid){
+  const [mkt,sym]=secid.split('.');
+  if(mkt==='1') return 'sh'+sym;
+  if(mkt==='0') return 'sz'+sym;
+  if(mkt==='116') return 'hk'+sym;
+  if(mkt==='105'||mkt==='106'||mkt==='107') return 'us'+sym;
+  return null;
+}
+
 // 获取实时行情 (自动尝试多交易所)
 async function dsaFetchQuote(code){
   const candidates=dsaSecid(code);
@@ -4740,22 +4750,45 @@ async function dsaFetchQuote(code){
   throw new Error('无法获取行情: '+code);
 }
 
-// 获取K线数据(日线,60根)
+// 获取K线数据(日线,60根) — 双源 fallback: 东财 push2delay → 腾讯 gtimg
 async function dsaFetchKline(code,resolvedSecid){
   const candidates=resolvedSecid?[resolvedSecid]:dsaSecid(code);
+  const want=60;
+
+  // 源1: 东财 push2delay
   for(const secid of candidates){
     try{
-      const url=`${EM_KLINE_HOST}/api/qt/stock/kline/get?secid=${secid}&fields1=f1,f2,f3,f4,f5,f6&fields2=f51,f52,f53,f54,f55,f56,f57&klt=101&fqt=1&lmt=60&_=${Date.now()}`;
+      const url=`${EM_KLINE_HOST}/api/qt/stock/kline/get?secid=${secid}&fields1=f1,f2,f3,f4,f5,f6&fields2=f51,f52,f53,f54,f55,f56,f57&klt=101&fqt=1&lmt=${want}&end=20500101&_=${Date.now()}`;
       const r=await fetch(url);
       const j=await r.json();
-      if(!j.data||!j.data.klines||j.data.klines.length===0) continue;
-      return j.data.klines.map(k=>{
-        const [date,open,close,high,low,vol,amount]=k.split(',');
-        return {date,open:+open,close:+close,high:+high,low:+low,vol:+vol,amount:+amount};
-      });
+      if(j.data&&j.data.klines&&j.data.klines.length>0){
+        return j.data.klines.map(k=>{
+          const [date,open,close,high,low,vol,amount]=k.split(',');
+          return {date,open:+open,close:+close,high:+high,low:+low,vol:+vol,amount:+amount};
+        });
+      }
+    }catch(e){/* fallback */}
+  }
+
+  // 源2: 腾讯 gtimg
+  for(const secid of candidates){
+    const gsym=dsaSecidToGtimg(secid);
+    if(!gsym) continue;
+    try{
+      const url=`https://web.ifzq.gtimg.cn/appstock/app/fqkline/get?param=${gsym},day,,,${want},qfq&_=${Date.now()}`;
+      const r=await fetch(url);
+      const j=await r.json();
+      const sub=(j.data||{})[gsym]||{};
+      const arr=sub.qfqday||sub.day||[];
+      if(!arr||arr.length===0) continue;
+      return arr.map(k=>({
+        date:k[0], open:+k[1], close:+k[2], high:+k[3], low:+k[4],
+        vol:+(k[5]||0), amount:0
+      }));
     }catch(e){continue;}
   }
-  return [];
+
+  throw new Error('无法获取K线: '+code);
 }
 
 // 计算技术指标
@@ -5128,25 +5161,53 @@ const QDD={
   running:false
 };
 
-// 拉取更长历史K线 (复用 dsaSecid 探测机制)
+// 拉取更长历史K线 (双源 fallback: 东财 push2delay → 腾讯 gtimg)
 async function qddFetchLongKline(code,limit){
   const candidates=dsaSecid(code);
+  const want=limit||250;
+
+  // 源1: 东财 push2delay (可能返回空 klines, 仅作为快路径)
   for(const secid of candidates){
     try{
-      const url=`${EM_KLINE_HOST}/api/qt/stock/kline/get?secid=${secid}&fields1=f1,f2,f3,f4,f5,f6&fields2=f51,f52,f53,f54,f55,f56,f57&klt=101&fqt=1&lmt=${limit||250}&end=20500101&_=${Date.now()}`;
+      const url=`${EM_KLINE_HOST}/api/qt/stock/kline/get?secid=${secid}&fields1=f1,f2,f3,f4,f5,f6&fields2=f51,f52,f53,f54,f55,f56,f57&klt=101&fqt=1&lmt=${want}&end=20500101&_=${Date.now()}`;
       const r=await fetch(url);
       const j=await r.json();
-      if(!j.data||!j.data.klines||j.data.klines.length===0) continue;
+      if(j.data&&j.data.klines&&j.data.klines.length>0){
+        return {
+          secid,name:j.data.name||code,source:'eastmoney',
+          klines:j.data.klines.map(k=>{
+            const [date,open,close,high,low,vol,amount]=k.split(',');
+            return {date,open:+open,close:+close,high:+high,low:+low,vol:+vol,amount:+amount};
+          })
+        };
+      }
+    }catch(e){/* fallback */}
+  }
+
+  // 源2: 腾讯 gtimg (日线前复权, 返回完整历史)
+  for(const secid of candidates){
+    const gsym=dsaSecidToGtimg(secid);
+    if(!gsym) continue;
+    try{
+      const url=`https://web.ifzq.gtimg.cn/appstock/app/fqkline/get?param=${gsym},day,,,${want},qfq&_=${Date.now()}`;
+      const r=await fetch(url);
+      const j=await r.json();
+      const sub=(j.data||{})[gsym]||{};
+      const arr=sub.qfqday||sub.day||[];
+      if(!arr||arr.length===0) continue;
+      // gtimg 字段: [date, open, close, high, low, vol]
+      const name=(sub.qt&&((sub.qt[gsym]&&sub.qt[gsym][1])||null))||code;
       return {
-        secid,name:j.data.name||code,
-        klines:j.data.klines.map(k=>{
-          const [date,open,close,high,low,vol,amount]=k.split(',');
-          return {date,open:+open,close:+close,high:+high,low:+low,vol:+vol,amount:+amount};
-        })
+        secid,name,source:'gtimg',
+        klines:arr.map(k=>({
+          date:k[0], open:+k[1], close:+k[2], high:+k[3], low:+k[4],
+          vol:+(k[5]||0), amount:0
+        }))
       };
     }catch(e){continue;}
   }
-  throw new Error('无法获取历史K线: '+code);
+
+  throw new Error('无法获取历史K线: '+code+' (东财/腾讯均失败, 请检查代码或稍后重试)');
 }
 
 // ---- 指标计算 ----
