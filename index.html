@@ -4750,27 +4750,35 @@ async function dsaFetchQuote(code){
   throw new Error('无法获取行情: '+code);
 }
 
-// 获取K线数据(日线,60根) — 双源 fallback: 东财 push2delay → 腾讯 gtimg
+// 获取K线数据(日线,60根) — 多源 fallback: 东财 push2delay → push2his → push2 → 腾讯 gtimg
 async function dsaFetchKline(code,resolvedSecid){
   const candidates=resolvedSecid?[resolvedSecid]:dsaSecid(code);
   const want=60;
 
-  // 源1: 东财 push2delay
-  for(const secid of candidates){
-    try{
-      const url=`${EM_KLINE_HOST}/api/qt/stock/kline/get?secid=${secid}&fields1=f1,f2,f3,f4,f5,f6&fields2=f51,f52,f53,f54,f55,f56,f57&klt=101&fqt=1&lmt=${want}&end=20500101&_=${Date.now()}`;
-      const r=await fetch(url);
-      const j=await r.json();
-      if(j.data&&j.data.klines&&j.data.klines.length>0){
-        return j.data.klines.map(k=>{
-          const [date,open,close,high,low,vol,amount]=k.split(',');
-          return {date,open:+open,close:+close,high:+high,low:+low,vol:+vol,amount:+amount};
-        });
-      }
-    }catch(e){/* fallback */}
-  }
+  const tryEM = async (host, label) => {
+    for(const secid of candidates){
+      try{
+        const url=`https://${host}.eastmoney.com/api/qt/stock/kline/get?secid=${secid}&fields1=f1,f2,f3,f4,f5,f6&fields2=f51,f52,f53,f54,f55,f56,f57&klt=101&fqt=1&lmt=${want}&end=20500101&_=${Date.now()}`;
+        const ctl=new AbortController();
+        const to=setTimeout(()=>ctl.abort(),5000);
+        const r=await fetch(url,{signal:ctl.signal});
+        clearTimeout(to);
+        const j=await r.json();
+        if(j.data&&j.data.klines&&j.data.klines.length>0){
+          return {src:label, bars:j.data.klines.map(k=>{
+            const [date,open,close,high,low,vol,amount]=k.split(',');
+            return {date,open:+open,close:+close,high:+high,low:+low,vol:+vol,amount:+amount};
+          })};
+        }
+      }catch(e){/* fallback */}
+    }
+    return null;
+  };
+  const em1=await tryEM('push2delay','eastmoney'); if(em1) return em1.bars;
+  const em2=await tryEM('push2his','eastmoney-his'); if(em2) return em2.bars;
+  const em3=await tryEM('push2','eastmoney-main'); if(em3) return em3.bars;
 
-  // 源2: 腾讯 gtimg
+  // 腾讯 gtimg
   for(const secid of candidates){
     const gsym=dsaSecidToGtimg(secid);
     if(!gsym) continue;
@@ -5161,12 +5169,12 @@ const QDD={
   running:false
 };
 
-// 拉取更长历史K线 (双源 fallback: 东财 push2delay → 腾讯 gtimg)
+// 拉取更长历史K线 (多源 fallback: 东财 push2delay → push2his → push2 → 腾讯 gtimg → AI 合成)
 async function qddFetchLongKline(code,limit){
   const candidates=dsaSecid(code);
   const want=limit||250;
 
-  // 源1: 东财 push2delay (可能返回空 klines, 仅作为快路径)
+  // 源1: 东财 push2delay
   for(const secid of candidates){
     try{
       const url=`${EM_KLINE_HOST}/api/qt/stock/kline/get?secid=${secid}&fields1=f1,f2,f3,f4,f5,f6&fields2=f51,f52,f53,f54,f55,f56,f57&klt=101&fqt=1&lmt=${want}&end=20500101&_=${Date.now()}`;
@@ -5184,7 +5192,49 @@ async function qddFetchLongKline(code,limit){
     }catch(e){/* fallback */}
   }
 
-  // 源2: 腾讯 gtimg (日线前复权, 返回完整历史)
+  // 源2: 东财 push2his (浏览器侧 CORS, 部分网络可达)
+  for(const secid of candidates){
+    try{
+      const url=`https://push2his.eastmoney.com/api/qt/stock/kline/get?secid=${secid}&fields1=f1,f2,f3,f4,f5,f6&fields2=f51,f52,f53,f54,f55,f56,f57&klt=101&fqt=1&lmt=${want}&end=20500101&_=${Date.now()}`;
+      const ctl=new AbortController();
+      const to=setTimeout(()=>ctl.abort(),5000);
+      const r=await fetch(url,{signal:ctl.signal});
+      clearTimeout(to);
+      const j=await r.json();
+      if(j.data&&j.data.klines&&j.data.klines.length>0){
+        return {
+          secid,name:j.data.name||code,source:'eastmoney-his',
+          klines:j.data.klines.map(k=>{
+            const [date,open,close,high,low,vol,amount]=k.split(',');
+            return {date,open:+open,close:+close,high:+high,low:+low,vol:+vol,amount:+amount};
+          })
+        };
+      }
+    }catch(e){/* fallback */}
+  }
+
+  // 源3: 东财 push2 主域
+  for(const secid of candidates){
+    try{
+      const url=`https://push2.eastmoney.com/api/qt/stock/kline/get?secid=${secid}&fields1=f1,f2,f3,f4,f5,f6&fields2=f51,f52,f53,f54,f55,f56,f57&klt=101&fqt=1&lmt=${want}&end=20500101&_=${Date.now()}`;
+      const ctl=new AbortController();
+      const to=setTimeout(()=>ctl.abort(),5000);
+      const r=await fetch(url,{signal:ctl.signal});
+      clearTimeout(to);
+      const j=await r.json();
+      if(j.data&&j.data.klines&&j.data.klines.length>0){
+        return {
+          secid,name:j.data.name||code,source:'eastmoney-main',
+          klines:j.data.klines.map(k=>{
+            const [date,open,close,high,low,vol,amount]=k.split(',');
+            return {date,open:+open,close:+close,high:+high,low:+low,vol:+vol,amount:+amount};
+          })
+        };
+      }
+    }catch(e){/* fallback */}
+  }
+
+  // 源4: 腾讯 gtimg (A股 qfqday, 港股/美股 day)
   for(const secid of candidates){
     const gsym=dsaSecidToGtimg(secid);
     if(!gsym) continue;
@@ -5207,7 +5257,69 @@ async function qddFetchLongKline(code,limit){
     }catch(e){continue;}
   }
 
-  throw new Error('无法获取历史K线: '+code+' (东财/腾讯均失败, 请检查代码或稍后重试)');
+  // 源5 (兜底): AI 合成 K 线 — 用东财实时报价(现价/52周高低/成交量)锚定, GBM 模拟日线 OHLC
+  try{
+    const syn=await qddSynthKlines(code,want);
+    if(syn) return syn;
+  }catch(e){/* fall through */}
+
+  throw new Error('无法获取历史K线: '+code+' (东财/腾讯/AI 合成均失败, 请检查代码或稍后重试)');
+}
+
+// 确定性伪随机 (Mulberry32) — 同代码+同日生成稳定序列
+function qddMulberry32(seed){
+  let a=seed>>>0;
+  return function(){
+    a=(a+0x6D2B79F5)>>>0;
+    let t=a;
+    t=Math.imul(t^(t>>>15),t|1);
+    t^=t+Math.imul(t^(t>>>7),t|61);
+    return ((t^(t>>>14))>>>0)/4294967296;
+  };
+}
+
+// AI 合成 K 线: 以东财实时报价为锚点, GBM 生成日线 OHLC
+async function qddSynthKlines(code,want){
+  const quote=await dsaFetchQuote(code);
+  if(!quote||!quote.price||quote.price<=0) return null;
+
+  // 历史波动率 (由 52 周高低估算): σ ≈ ln(H/L) / (2·√(252/2))
+  const H=quote.high52w||quote.price*1.3, L=quote.low52w||quote.price*0.7;
+  const sigFromRange=Math.max(0.10,Math.min(0.90,(Math.log(H/L)/(2*Math.sqrt(126)))));
+  // 年化 drift: 从 low 到 price 在约 126 天(半年)的 CAGR 近似
+  const driftAnn=(L>0&&quote.price>L)?Math.log(quote.price/L)/0.5:0.05;
+  const sigDaily=sigFromRange/Math.sqrt(252);
+  const muDaily=driftAnn/252-0.5*sigDaily*sigDaily;
+
+  const n=want||250;
+  const seed=(code.toUpperCase().split('').reduce((s,c)=>((s*31)+c.charCodeAt(0))>>>0,7))^(Date.now()/(86400000)|0);
+  const rng=qddMulberry32(seed);
+
+  const closes=[quote.price];
+  for(let i=1;i<n;i++){
+    const u1=Math.max(1e-10,rng()), u2=rng();
+    const z=Math.sqrt(-2*Math.log(u1))*Math.cos(2*Math.PI*u2);
+    const ret=muDaily+sigDaily*z;
+    closes.push(closes[i-1]*Math.exp(ret));
+  }
+  closes.reverse(); // 旧 → 新
+
+  const today=new Date();
+  const bars=[];
+  for(let i=0;i<n;i++){
+    const dt=new Date(today); dt.setDate(dt.getDate()-(n-1-i));
+    const dateStr=dt.toISOString().slice(0,10);
+    const c=closes[i];
+    const prev=i>0?closes[i-1]:c;
+    const intraVol=sigDaily*c*0.6;
+    const open=prev+(rng()-0.5)*intraVol*0.3;
+    const high=Math.max(open,c)+rng()*intraVol*0.5;
+    const low=Math.min(open,c)-rng()*intraVol*0.5;
+    const vol=Math.round((quote.volume||1e6)*(0.6+rng()*0.8));
+    bars.push({date:dateStr,open:+open.toFixed(2),close:+c.toFixed(2),high:+high.toFixed(2),low:+Math.max(0.01,low).toFixed(2),vol,amount:0});
+  }
+  return {secid:quote.secid,name:quote.name||code,source:'ai-synth',klines:bars,
+    synthNote:`基于当前价 ${quote.price.toFixed(2)} / 52周 ${L.toFixed(2)}–${H.toFixed(2)} / 日均量 ${(quote.volume||0).toLocaleString()} 拟合的 ${n} 日模拟日线 (非历史实盘)`};
 }
 
 // ---- 指标计算 ----
@@ -5465,9 +5577,13 @@ async function qddRunBacktest(){
   statusEl.style.display='block';
   statusEl.innerHTML=`<div style="padding:10px 14px;background:linear-gradient(90deg,rgba(224,162,60,.14),rgba(224,162,60,.04));border:1px solid rgba(224,162,60,.3);border-radius:6px;font-size:12px"><span class="spin"></span> 正在拉取 ${symbol} 历史K线…</div>`;
   try{
-    const {klines,name}=await qddFetchLongKline(symbol,QDD.barsLimit);
+    const data=await qddFetchLongKline(symbol,QDD.barsLimit);
+    const {klines,name}=data;
     if(klines.length<30)throw new Error('K线数据不足(至少30根)');
-    statusEl.innerHTML=`<div style="padding:10px 14px;background:linear-gradient(90deg,rgba(224,162,60,.14),rgba(224,162,60,.04));border:1px solid rgba(224,162,60,.3);border-radius:6px;font-size:12px"><span class="spin"></span> 获取到 ${klines.length} 根K线, 执行策略回测…</div>`;
+    const srcBadge=data.source==='ai-synth'
+      ? `<span style="color:#e0a23c">● AI 模拟日线</span>`
+      : `<span style="color:#4caf72">● ${data.source||'实时'} 日线</span>`;
+    statusEl.innerHTML=`<div style="padding:10px 14px;background:linear-gradient(90deg,rgba(224,162,60,.14),rgba(224,162,60,.04));border:1px solid rgba(224,162,60,.3);border-radius:6px;font-size:12px"><span class="spin"></span> 获取到 ${klines.length} 根K线 (${srcBadge}), 执行策略回测…</div>`;
     let signals,stratName;
     switch(QDD.strategy){
       case 'ma_cross':signals=qddStrategyMA(klines,QDD.params.maFast,QDD.params.maSlow);stratName=`MA金叉/死叉 (${QDD.params.maFast}/${QDD.params.maSlow})`;break;
@@ -5479,8 +5595,13 @@ async function qddRunBacktest(){
     const m=qddMetrics(equity,trades,klines,QDD.initCap);
     if(!m)throw new Error('指标计算失败');
     // 渲染
-    statusEl.innerHTML=`<div style="padding:10px 14px;background:rgba(76,175,114,.12);border:1px solid rgba(76,175,114,.35);border-radius:6px;font-size:12px;color:#4caf72">✓ 回测完成 · ${klines.length} 根K线 · ${new Date().toLocaleString('zh-CN')}</div>`;
-    resultEl.innerHTML=qddRenderResult(name,symbol,stratName,m,equity,trades);
+    statusEl.innerHTML=`<div style="padding:10px 14px;background:rgba(76,175,114,.12);border:1px solid rgba(76,175,114,.35);border-radius:6px;font-size:12px;color:#4caf72">✓ 回测完成 · ${klines.length} 根K线 · ${srcBadge} · ${new Date().toLocaleString('zh-CN')}</div>`;
+    const synthBanner=data.synthNote
+      ? `<div style="padding:10px 14px;margin-bottom:12px;background:rgba(224,162,60,.08);border:1px dashed rgba(224,162,60,.4);border-radius:6px;font-size:12px;color:#e0a23c">
+           ⚠ 当前标的暂无可用历史K线源, 以下结果基于 <b>${data.synthNote}</b>。策略表现仅供演示, 不代表真实历史回测。
+         </div>`
+      : '';
+    resultEl.innerHTML=synthBanner+qddRenderResult(name,symbol,stratName,m,equity,trades);
     // AI 复盘 (异步)
     if(DSA.apiKey){
       document.getElementById('qddAiBox').innerHTML=`<div class="data-loading"><span class="spin"></span> AI 复盘中…</div>`;
