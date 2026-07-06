@@ -4788,7 +4788,7 @@ async function dsaFetchKline(code,resolvedSecid){
       const j=await r.json();
       const sub=(j.data||{})[gsym]||{};
       const arr=sub.qfqday||sub.day||[];
-      if(!arr||arr.length===0) continue;
+      if(!arr||arr.length<30) continue; // gtimg 对美股硬上限 2 根, 不足 30 根时视为失败
       return arr.map(k=>({
         date:k[0], open:+k[1], close:+k[2], high:+k[3], low:+k[4],
         vol:+(k[5]||0), amount:0
@@ -5244,7 +5244,7 @@ async function qddFetchLongKline(code,limit){
       const j=await r.json();
       const sub=(j.data||{})[gsym]||{};
       const arr=sub.qfqday||sub.day||[];
-      if(!arr||arr.length===0) continue;
+      if(!arr||arr.length<30) continue; // gtimg 对美股硬上限 2 根, 不足 30 根时视为失败
       // gtimg 字段: [date, open, close, high, low, vol]
       const name=(sub.qt&&((sub.qt[gsym]&&sub.qt[gsym][1])||null))||code;
       return {
