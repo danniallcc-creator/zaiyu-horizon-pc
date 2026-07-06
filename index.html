@@ -5600,7 +5600,7 @@ async function qddRunBacktest(){
     statusEl.innerHTML=`<div style="padding:10px 14px;background:rgba(76,175,114,.12);border:1px solid rgba(76,175,114,.35);border-radius:6px;font-size:12px;color:#4caf72">✓ 回测完成 · ${klines.length} 根K线 · ${srcBadge} · ${new Date().toLocaleString('zh-CN')}</div>`;
     const synthBanner=data.synthNote
       ? `<div style="padding:10px 14px;margin-bottom:12px;background:rgba(224,162,60,.08);border:1px dashed rgba(224,162,60,.4);border-radius:6px;font-size:12px;color:#e0a23c">
-           ⚠ 当前标的暂无可用历史K线源, 以下结果 <b>${data.synthNote}</b>。策略表现仅供演示, 不代表真实历史回测。
+           ⚠ 当前标的暂无可用历史K线源, <b>${data.synthNote}</b>。策略表现仅供演示, 不代表真实历史回测。
          </div>`
       : '';
     resultEl.innerHTML=synthBanner+qddRenderResult(name,symbol,stratName,m,equity,trades);
