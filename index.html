@@ -825,6 +825,7 @@ a{color:inherit;text-decoration:none}
       <div class="nav-item" data-view="camps"><span class="ic">⊕</span>G2阵营</div>
       <div class="nav-item" data-view="stocks"><span class="ic">⊞</span>个股分析</div>
       <div class="nav-item" data-view="dsa"><span class="ic">📊</span>每日股票分析</div>
+      <div class="nav-item" data-view="qdd"><span class="ic">📉</span>量化回撤分析</div>
       <div class="nav-item" data-view="hedgefund"><span class="ic">♜</span>AI对冲建议</div>
     </nav>
     <div class="sidebar-foot">
@@ -940,6 +941,16 @@ a{color:inherit;text-decoration:none}
         <p class="page-sub">AI 大模型驱动 · A股/港股/美股/日韩台多市场 · 自动决策仪表盘 · GitHub Actions 零成本部署</p>
       </div>
       <div id="dsaContent"><div class="data-loading"><span class="spin"></span> 正在加载每日股票分析模块…</div></div>
+    </section>
+
+    <!-- ===== Quantitative Drawdown Analysis (QDD) ===== -->
+    <section class="view" id="view-qdd">
+      <div class="page-head">
+        <div class="page-kicker">Quantitative Drawdown · Backtest & Risk Metrics</div>
+        <h1 class="page-title">量化<span class="gold">回撤分析</span></h1>
+        <p class="page-sub">权益曲线 · 最大回撤 · Sharpe/Sortino/Calmar · 交易日志 · AI 复盘评估 (灵感来源: QuantDinger)</p>
+      </div>
+      <div id="qddContent"><div class="data-loading"><span class="spin"></span> 正在加载量化回撤分析模块…</div></div>
     </section>
 
     <!-- ===== Hedge Fund ===== -->
@@ -5107,6 +5118,459 @@ async function dsaRun(){
   document.getElementById('dsaRunBtn').textContent='🔍 开始分析';
 }
 
+/* ==================== 量化回撤分析 (QDD) ==================== */
+// 灵感来源: QuantDinger (github.com/brokermr810/QuantDinger)
+// 浏览器纯前端实现: 拉取历史K线 → 策略信号 → 回测 → 指标计算 → AI 复盘
+
+const QDD={
+  symbol:'',strategy:'ma_cross',initCap:100000,barsLimit:250,
+  params:{maFast:5,maSlow:20,rsiPeriod:14,rsiLow:30,rsiHigh:70,bollN:20,bollK:2},
+  running:false
+};
+
+// 拉取更长历史K线 (复用 dsaSecid 探测机制)
+async function qddFetchLongKline(code,limit){
+  const candidates=dsaSecid(code);
+  for(const secid of candidates){
+    try{
+      const url=`${EM_KLINE_HOST}/api/qt/stock/kline/get?secid=${secid}&fields1=f1,f2,f3,f4,f5,f6&fields2=f51,f52,f53,f54,f55,f56,f57&klt=101&fqt=1&lmt=${limit||250}&end=20500101&_=${Date.now()}`;
+      const r=await fetch(url);
+      const j=await r.json();
+      if(!j.data||!j.data.klines||j.data.klines.length===0) continue;
+      return {
+        secid,name:j.data.name||code,
+        klines:j.data.klines.map(k=>{
+          const [date,open,close,high,low,vol,amount]=k.split(',');
+          return {date,open:+open,close:+close,high:+high,low:+low,vol:+vol,amount:+amount};
+        })
+      };
+    }catch(e){continue;}
+  }
+  throw new Error('无法获取历史K线: '+code);
+}
+
+// ---- 指标计算 ----
+function qddSMA(arr,n){const r=[];for(let i=0;i<arr.length;i++){if(i<n-1){r.push(null);continue;}let s=0;for(let j=i-n+1;j<=i;j++)s+=arr[j];r.push(s/n);}return r;}
+function qddRSI(closes,n){
+  const r=[null];let gains=0,losses=0;
+  for(let i=1;i<=n&&i<closes.length;i++){const d=closes[i]-closes[i-1];if(d>=0)gains+=d;else losses-=d;}
+  let ag=gains/n,al=losses/n;
+  for(let i=1;i<closes.length;i++){
+    if(i<n){r.push(null);continue;}
+    if(i>n){const d=closes[i]-closes[i-1];const g=d>0?d:0,l=d<0?-d:0;ag=(ag*(n-1)+g)/n;al=(al*(n-1)+l)/n;}
+    const rs=al===0?100:ag/al;r.push(100-100/(1+rs));
+  }
+  return r;
+}
+function qddBoll(closes,n,k){
+  const ma=qddSMA(closes,n);const up=[],lo=[];
+  for(let i=0;i<closes.length;i++){
+    if(i<n-1){up.push(null);lo.push(null);continue;}
+    let s=0;for(let j=i-n+1;j<=i;j++)s+=(closes[j]-ma[i])**2;
+    const sd=Math.sqrt(s/n);up.push(ma[i]+k*sd);lo.push(ma[i]-k*sd);
+  }
+  return {mid:ma,up,lo};
+}
+
+// ---- 策略信号生成 ----
+// 返回: signals[i] = 1 (买入/持有), 0 (空仓), -1 (可选做空 - 本引擎仅多头)
+function qddStrategyMA(klines,fast,slow){
+  const closes=klines.map(k=>k.close);
+  const mf=qddSMA(closes,fast),ms=qddSMA(closes,slow);
+  const sig=[];let pos=0;
+  for(let i=0;i<klines.length;i++){
+    if(mf[i]==null||ms[i]==null){sig.push(0);continue;}
+    if(i>0&&mf[i-1]!=null&&ms[i-1]!=null){
+      if(mf[i-1]<=ms[i-1]&&mf[i]>ms[i])pos=1;
+      else if(mf[i-1]>=ms[i-1]&&mf[i]<ms[i])pos=0;
+    }
+    sig.push(pos);
+  }
+  return sig;
+}
+function qddStrategyRSI(klines,n,lo,hi){
+  const closes=klines.map(k=>k.close);const r=qddRSI(closes,n);
+  const sig=[];let pos=0;
+  for(let i=0;i<klines.length;i++){
+    if(r[i]==null){sig.push(0);continue;}
+    if(r[i]<lo)pos=1;else if(r[i]>hi)pos=0;
+    sig.push(pos);
+  }
+  return sig;
+}
+function qddStrategyBoll(klines,n,k){
+  const closes=klines.map(k=>k.close);const b=qddBoll(closes,n,k);
+  const sig=[];let pos=0;
+  for(let i=0;i<klines.length;i++){
+    if(b.up[i]==null){sig.push(0);continue;}
+    if(closes[i]<b.lo[i])pos=1;else if(closes[i]>b.up[i])pos=0;
+    sig.push(pos);
+  }
+  return sig;
+}
+function qddStrategyBuyHold(klines){
+  const sig=new Array(klines.length).fill(0);
+  for(let i=1;i<klines.length;i++)sig[i]=1;
+  return sig;
+}
+
+// ---- 回测引擎 ----
+// 假设: T日收盘信号变化, T+1开盘执行
+function qddBacktest(klines,signals,initCap){
+  let cash=initCap,shares=0,entryPrice=0,entryIdx=0;
+  const equity=[];const trades=[];
+  for(let i=0;i<klines.length;i++){
+    const k=klines[i];
+    const prevSig=i>0?signals[i-1]:0;
+    // T+1 执行前日信号
+    if(i>0){
+      if(prevSig===1&&shares===0){
+        // 买入 - 满仓
+        shares=Math.floor(cash/k.open/100)*100;
+        if(shares===0)shares=Math.floor(cash/k.open);
+        cash-=shares*k.open;
+        entryPrice=k.open;entryIdx=i;
+      }else if(prevSig===0&&shares>0){
+        // 平仓
+        cash+=shares*k.open;
+        const pnl=(k.open-entryPrice)*shares;
+        const pnlPct=(k.open-entryPrice)/entryPrice*100;
+        trades.push({
+          entryDate:klines[entryIdx].date,exitDate:k.date,
+          entryPrice:entryPrice,exitPrice:k.open,shares,
+          pnl,pnlPct,holdDays:i-entryIdx
+        });
+        shares=0;
+      }
+    }
+    const eq=cash+shares*k.close;
+    equity.push({date:k.date,equity:eq,close:k.close,pos:shares>0?1:0});
+  }
+  // 最后强制平仓 (计算未实现盈亏)
+  if(shares>0){
+    const last=klines[klines.length-1];
+    trades.push({
+      entryDate:klines[entryIdx].date,exitDate:last.date+'(未平)',
+      entryPrice,exitPrice:last.close,shares,
+      pnl:(last.close-entryPrice)*shares,pnlPct:(last.close-entryPrice)/entryPrice*100,
+      holdDays:klines.length-1-entryIdx,unrealized:true
+    });
+  }
+  return {equity,trades};
+}
+
+// ---- 风险指标 ----
+function qddMetrics(equity,trades,klines,initCap){
+  const n=equity.length;if(n<2)return null;
+  const finalEq=equity[n-1].equity;
+  const totalRet=(finalEq/initCap-1)*100;
+  const days=n;const years=days/252;
+  const annRet=(Math.pow(finalEq/initCap,1/Math.max(years,1e-9))-1)*100;
+  // 每日收益
+  const rets=[];
+  for(let i=1;i<n;i++)rets.push(equity[i].equity/equity[i-1].equity-1);
+  const mean=rets.reduce((a,b)=>a+b,0)/rets.length;
+  const std=Math.sqrt(rets.reduce((s,r)=>s+(r-mean)**2,0)/rets.length);
+  const downside=rets.filter(r=>r<0);
+  const dStd=downside.length>0?Math.sqrt(downside.reduce((s,r)=>s+r*r,0)/downside.length):0;
+  const sharpe=std>0?(mean/std)*Math.sqrt(252):0;
+  const sortino=dStd>0?(mean/dStd)*Math.sqrt(252):0;
+  // 最大回撤
+  let peak=equity[0].equity,maxDD=0,maxDDDur=0,curDDStart=0,ddStart=null,ddEnd=null;
+  for(let i=0;i<n;i++){
+    if(equity[i].equity>peak){peak=equity[i].equity;curDDStart=i;}
+    const dd=(peak-equity[i].equity)/peak*100;
+    if(dd>maxDD){maxDD=dd;ddStart=curDDStart;ddEnd=i;}
+    if(equity[i].equity<peak){const dur=i-curDDStart;if(dur>maxDDDur)maxDDDur=dur;}
+  }
+  const calmar=maxDD>0?annRet/maxDD:0;
+  // 交易统计
+  const closedTrades=trades.filter(t=>!t.unrealized);
+  const wins=closedTrades.filter(t=>t.pnl>0);
+  const losses=closedTrades.filter(t=>t.pnl<=0);
+  const winRate=closedTrades.length>0?wins.length/closedTrades.length*100:0;
+  const grossProfit=wins.reduce((s,t)=>s+t.pnl,0);
+  const grossLoss=Math.abs(losses.reduce((s,t)=>s+t.pnl,0));
+  const profitFactor=grossLoss>0?grossProfit/grossLoss:(grossProfit>0?999:0);
+  const avgTrade=closedTrades.length>0?closedTrades.reduce((s,t)=>s+t.pnlPct,0)/closedTrades.length:0;
+  const avgWin=wins.length>0?wins.reduce((s,t)=>s+t.pnlPct,0)/wins.length:0;
+  const avgLoss=losses.length>0?losses.reduce((s,t)=>s+t.pnlPct,0)/losses.length:0;
+  const avgHold=closedTrades.length>0?closedTrades.reduce((s,t)=>s+t.holdDays,0)/closedTrades.length:0;
+  // Benchmark: 买入持有
+  const bhRet=(klines[klines.length-1].close/klines[0].close-1)*100;
+  const excess=totalRet-bhRet;
+  return {
+    finalEq,totalRet,annRet,sharpe,sortino,calmar,maxDD,maxDDDur,
+    ddStart:ddStart!=null?equity[ddStart].date:null,ddEnd:ddEnd!=null?equity[ddEnd].date:null,
+    totalTrades:closedTrades.length,winRate,profitFactor,avgTrade,avgWin,avgLoss,avgHold,
+    grossProfit,grossLoss,bhRet,excess
+  };
+}
+
+// ---- SVG 图表: 权益曲线 + 回撤 ----
+function qddChart(equity,initCap){
+  const W=900,H=280,padL=50,padR=20,padT=15,padB=30;
+  const cw=W-padL-padR,ch=H-padT-padB;
+  const eqVals=equity.map(e=>e.equity);
+  const minE=Math.min(...eqVals,initCap*0.95),maxE=Math.max(...eqVals,initCap*1.05);
+  const rangeE=maxE-minE||1;
+  const x=i=>padL+(i/(equity.length-1))*cw;
+  const y=v=>padT+ch-((v-minE)/rangeE)*ch;
+  // 计算回撤序列
+  let peak=equity[0].equity;const ddSer=[];
+  equity.forEach(e=>{if(e.equity>peak)peak=e.equity;ddSer.push((peak-e.equity)/peak*100);});
+  const maxDD=Math.max(...ddSer,1);
+  const ddH=80;const ddY=v=>H+30+padT+ddH-(v/maxDD)*ddH;
+  const fullH=H+ddH+50;
+  const eqPath='M'+equity.map((e,i)=>`${x(i).toFixed(1)},${y(e.equity).toFixed(1)}`).join(' L');
+  const initY=y(initCap);
+  const ddPath='M'+equity.map((e,i)=>`${x(i).toFixed(1)},${ddY(ddSer[i]).toFixed(1)}`).join(' L')+
+               ` L${x(equity.length-1).toFixed(1)},${ddY(0).toFixed(1)} L${x(0).toFixed(1)},${ddY(0).toFixed(1)} Z`;
+  // 网格
+  const gridLines=[0.25,0.5,0.75,1].map(p=>{
+    const yv=minE+rangeE*(1-p);
+    return `<line x1="${padL}" y1="${(padT+ch*p).toFixed(1)}" x2="${padL+cw}" y2="${(padT+ch*p).toFixed(1)}" stroke="#2a251b" stroke-width="0.5" stroke-dasharray="2,3"/>
+            <text x="${padL-6}" y="${(padT+ch*p+3).toFixed(1)}" fill="#76726c" font-size="9" text-anchor="end">${(yv/1000).toFixed(0)}k</text>`;
+  }).join('');
+  // 日期标签 (首/中/末)
+  const dateLabels=[0,Math.floor(equity.length/2),equity.length-1].map(i=>
+    `<text x="${x(i).toFixed(1)}" y="${(padT+ch+14).toFixed(1)}" fill="#76726c" font-size="9" text-anchor="middle">${equity[i].date}</text>`
+  ).join('');
+  return `
+  <svg viewBox="0 0 ${W} ${fullH}" style="width:100%;height:auto;background:#12100b;border:1px solid #2a251b;border-radius:6px">
+    <text x="${padL}" y="12" fill="#e0a23c" font-size="10" font-weight="700">权益曲线 (Equity Curve)</text>
+    ${gridLines}
+    <line x1="${padL}" y1="${initY.toFixed(1)}" x2="${padL+cw}" y2="${initY.toFixed(1)}" stroke="#76726c" stroke-width="0.5" stroke-dasharray="4,3"/>
+    <text x="${padL+cw-5}" y="${(initY-3).toFixed(1)}" fill="#76726c" font-size="9" text-anchor="end">初始 ${(initCap/1000).toFixed(0)}k</text>
+    <path d="${eqPath}" stroke="#e0a23c" stroke-width="1.6" fill="none"/>
+    ${dateLabels}
+
+    <text x="${padL}" y="${(H+25).toFixed(1)}" fill="#e05c5c" font-size="10" font-weight="700">回撤 % (Drawdown)</text>
+    <line x1="${padL}" y1="${(H+30+padT).toFixed(1)}" x2="${padL+cw}" y2="${(H+30+padT).toFixed(1)}" stroke="#2a251b" stroke-width="0.5"/>
+    <text x="${padL-6}" y="${(H+30+padT+3).toFixed(1)}" fill="#76726c" font-size="9" text-anchor="end">0%</text>
+    <text x="${padL-6}" y="${(H+30+padT+ddH+3).toFixed(1)}" fill="#76726c" font-size="9" text-anchor="end">-${maxDD.toFixed(1)}%</text>
+    <path d="${ddPath}" fill="#e05c5c" fill-opacity="0.35" stroke="#e05c5c" stroke-width="1"/>
+  </svg>`;
+}
+
+// ---- AI 复盘 ----
+async function qddAIReview(metrics,quoteName,strategyName){
+  if(!DSA.apiKey)return null;
+  const prompt=`作为量化基金分析师,请针对以下回测结果给出专业复盘评估。
+标的: ${quoteName}
+策略: ${strategyName}
+
+关键指标:
+- 总收益: ${metrics.totalRet.toFixed(2)}%
+- 年化收益: ${metrics.annRet.toFixed(2)}%
+- 最大回撤: ${metrics.maxDD.toFixed(2)}%
+- 回撤持续: ${metrics.maxDDDur} 天
+- Sharpe: ${metrics.sharpe.toFixed(2)}
+- Sortino: ${metrics.sortino.toFixed(2)}
+- Calmar: ${metrics.calmar.toFixed(2)}
+- 胜率: ${metrics.winRate.toFixed(1)}%
+- 盈亏比: ${metrics.profitFactor.toFixed(2)}
+- 交易次数: ${metrics.totalTrades}
+- 相对买入持有超额: ${metrics.excess.toFixed(2)}%
+- 买入持有基准: ${metrics.bhRet.toFixed(2)}%
+
+请严格按以下JSON格式输出评估结果(不要有多余文字,不要代码块标记):
+{
+  "grade": "A+/A/B/C/D 五档评级",
+  "verdict": "策略适用性一句话结论(20字内)",
+  "strengths": ["优势1","优势2"],
+  "weaknesses": ["缺陷1","缺陷2"],
+  "risks": ["风险点1","风险点2"],
+  "improvements": ["改进建议1","改进建议2"]
+}`;
+  try{
+    const text=await dsaCallAI(prompt);
+    return dsaParseResult(text);
+  }catch(e){return null;}
+}
+
+// ---- 单次回测执行 ----
+async function qddRunBacktest(){
+  const symbol=document.getElementById('qddSymbol').value.trim();
+  if(!symbol){alert('请输入股票代码');return;}
+  QDD.symbol=symbol;
+  QDD.strategy=document.getElementById('qddStrategy').value;
+  QDD.initCap=+document.getElementById('qddInitCap').value||100000;
+  QDD.barsLimit=+document.getElementById('qddBars').value||250;
+  const btn=document.getElementById('qddRunBtn');
+  const statusEl=document.getElementById('qddStatus');
+  const resultEl=document.getElementById('qddResult');
+  btn.disabled=true;btn.textContent='⏳ 回测中…';
+  statusEl.style.display='block';
+  statusEl.innerHTML=`<div style="padding:10px 14px;background:linear-gradient(90deg,rgba(224,162,60,.14),rgba(224,162,60,.04));border:1px solid rgba(224,162,60,.3);border-radius:6px;font-size:12px"><span class="spin"></span> 正在拉取 ${symbol} 历史K线…</div>`;
+  try{
+    const {klines,name}=await qddFetchLongKline(symbol,QDD.barsLimit);
+    if(klines.length<30)throw new Error('K线数据不足(至少30根)');
+    statusEl.innerHTML=`<div style="padding:10px 14px;background:linear-gradient(90deg,rgba(224,162,60,.14),rgba(224,162,60,.04));border:1px solid rgba(224,162,60,.3);border-radius:6px;font-size:12px"><span class="spin"></span> 获取到 ${klines.length} 根K线, 执行策略回测…</div>`;
+    let signals,stratName;
+    switch(QDD.strategy){
+      case 'ma_cross':signals=qddStrategyMA(klines,QDD.params.maFast,QDD.params.maSlow);stratName=`MA金叉/死叉 (${QDD.params.maFast}/${QDD.params.maSlow})`;break;
+      case 'rsi':signals=qddStrategyRSI(klines,QDD.params.rsiPeriod,QDD.params.rsiLow,QDD.params.rsiHigh);stratName=`RSI反转 (${QDD.params.rsiPeriod},${QDD.params.rsiLow}/${QDD.params.rsiHigh})`;break;
+      case 'boll':signals=qddStrategyBoll(klines,QDD.params.bollN,QDD.params.bollK);stratName=`布林带突破 (${QDD.params.bollN},${QDD.params.bollK}σ)`;break;
+      case 'buyhold':default:signals=qddStrategyBuyHold(klines);stratName='买入持有 (Buy & Hold)';break;
+    }
+    const {equity,trades}=qddBacktest(klines,signals,QDD.initCap);
+    const m=qddMetrics(equity,trades,klines,QDD.initCap);
+    if(!m)throw new Error('指标计算失败');
+    // 渲染
+    statusEl.innerHTML=`<div style="padding:10px 14px;background:rgba(76,175,114,.12);border:1px solid rgba(76,175,114,.35);border-radius:6px;font-size:12px;color:#4caf72">✓ 回测完成 · ${klines.length} 根K线 · ${new Date().toLocaleString('zh-CN')}</div>`;
+    resultEl.innerHTML=qddRenderResult(name,symbol,stratName,m,equity,trades);
+    // AI 复盘 (异步)
+    if(DSA.apiKey){
+      document.getElementById('qddAiBox').innerHTML=`<div class="data-loading"><span class="spin"></span> AI 复盘中…</div>`;
+      const review=await qddAIReview(m,name,stratName);
+      if(review)document.getElementById('qddAiBox').innerHTML=qddRenderAI(review);
+      else document.getElementById('qddAiBox').innerHTML=`<div style="color:#76726c;font-size:12px;padding:10px">AI 复盘失败,请检查每日股票分析模块的 API Key 配置</div>`;
+    }else{
+      document.getElementById('qddAiBox').innerHTML=`<div style="color:#76726c;font-size:12px;padding:10px;border:1px dashed #2a251b;border-radius:6px">💡 前往「每日股票分析」页配置 AI API Key 后即可获得策略复盘评估</div>`;
+    }
+  }catch(e){
+    statusEl.innerHTML=`<div style="padding:10px 14px;background:rgba(224,92,92,.12);border:1px solid rgba(224,92,92,.35);border-radius:6px;font-size:12px;color:#e05c5c">✗ 回测失败: ${e.message}</div>`;
+  }
+  btn.disabled=false;btn.textContent='🚀 开始回测';
+}
+
+// ---- 结果渲染 ----
+function qddRenderResult(name,code,stratName,m,equity,trades){
+  const colorRet=m.totalRet>=0?'#4caf72':'#e05c5c';
+  const colorEx=m.excess>=0?'#4caf72':'#e05c5c';
+  const gradeCls=m.sharpe>=1.5?'#4caf72':(m.sharpe>=0.8?'#e0a23c':'#e05c5c');
+  return `
+  <div style="margin-bottom:14px;padding:16px;background:linear-gradient(135deg,#1a170f,#12100b);border:1px solid var(--line-gold);border-radius:8px">
+    <div style="display:flex;align-items:baseline;gap:10px;margin-bottom:6px">
+      <span style="font-size:20px;font-weight:800;color:var(--gold-bright)">${name}</span>
+      <span style="font-size:12px;color:var(--text-3)">${code}</span>
+      <span style="margin-left:auto;font-size:11px;color:var(--text-3)">策略: <b style="color:var(--gold)">${stratName}</b></span>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:10px;margin-top:12px">
+      <div><div style="font-size:10px;color:var(--text-3)">总收益</div><div style="font-size:18px;font-weight:700;color:${colorRet}">${m.totalRet>=0?'+':''}${m.totalRet.toFixed(2)}%</div></div>
+      <div><div style="font-size:10px;color:var(--text-3)">年化收益</div><div style="font-size:18px;font-weight:700;color:${colorRet}">${m.annRet>=0?'+':''}${m.annRet.toFixed(2)}%</div></div>
+      <div><div style="font-size:10px;color:var(--text-3)">最大回撤</div><div style="font-size:18px;font-weight:700;color:#e05c5c">-${m.maxDD.toFixed(2)}%</div></div>
+      <div><div style="font-size:10px;color:var(--text-3)">Sharpe</div><div style="font-size:18px;font-weight:700;color:${gradeCls}">${m.sharpe.toFixed(2)}</div></div>
+      <div><div style="font-size:10px;color:var(--text-3)">Sortino</div><div style="font-size:18px;font-weight:700;color:${gradeCls}">${m.sortino.toFixed(2)}</div></div>
+      <div><div style="font-size:10px;color:var(--text-3)">Calmar</div><div style="font-size:18px;font-weight:700;color:${gradeCls}">${m.calmar.toFixed(2)}</div></div>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:10px;margin-top:14px;padding-top:12px;border-top:1px solid #2a251b">
+      <div><div style="font-size:10px;color:var(--text-3)">交易次数</div><div style="font-size:14px;font-weight:600">${m.totalTrades}</div></div>
+      <div><div style="font-size:10px;color:var(--text-3)">胜率</div><div style="font-size:14px;font-weight:600;color:${m.winRate>=50?'#4caf72':'#e05c5c'}">${m.winRate.toFixed(1)}%</div></div>
+      <div><div style="font-size:10px;color:var(--text-3)">盈亏比</div><div style="font-size:14px;font-weight:600">${m.profitFactor.toFixed(2)}</div></div>
+      <div><div style="font-size:10px;color:var(--text-3)">回撤持续</div><div style="font-size:14px;font-weight:600">${m.maxDDDur} 天</div></div>
+      <div><div style="font-size:10px;color:var(--text-3)">平均持仓</div><div style="font-size:14px;font-weight:600">${m.avgHold.toFixed(1)} 天</div></div>
+      <div><div style="font-size:10px;color:var(--text-3)">超额收益 vs B&H</div><div style="font-size:14px;font-weight:600;color:${colorEx}">${m.excess>=0?'+':''}${m.excess.toFixed(2)}%</div></div>
+    </div>
+    <div style="margin-top:10px;font-size:11px;color:var(--text-3)">买入持有基准: <b style="color:var(--text)">${m.bhRet>=0?'+':''}${m.bhRet.toFixed(2)}%</b> · 最大回撤区间: <b style="color:var(--text)">${m.ddStart||'-'} → ${m.ddEnd||'-'}</b> · 期末权益: <b style="color:var(--gold)">${m.finalEq.toFixed(0)}</b></div>
+  </div>
+
+  <div style="margin-bottom:14px;padding:14px;background:#12100b;border:1px solid var(--line-gold);border-radius:8px">
+    ${qddChart(equity,QDD.initCap)}
+  </div>
+
+  <div id="qddAiBox" style="margin-bottom:14px"></div>
+
+  <div style="padding:14px;background:#12100b;border:1px solid var(--line-gold);border-radius:8px">
+    <div style="font-weight:700;color:var(--gold-bright);margin-bottom:10px;font-size:13px">📋 交易日志 (${trades.length} 笔)</div>
+    ${trades.length===0?'<div style="color:var(--text-3);font-size:12px;padding:10px 0">回测期内无交易记录</div>':`
+    <div style="max-height:320px;overflow-y:auto"><table style="width:100%;border-collapse:collapse;font-size:11px">
+      <thead style="position:sticky;top:0;background:#1a170f"><tr style="color:var(--text-3)">
+        <th style="text-align:left;padding:6px 8px;border-bottom:1px solid #2a251b">#</th>
+        <th style="text-align:left;padding:6px 8px;border-bottom:1px solid #2a251b">买入日</th>
+        <th style="text-align:right;padding:6px 8px;border-bottom:1px solid #2a251b">买入价</th>
+        <th style="text-align:left;padding:6px 8px;border-bottom:1px solid #2a251b">卖出日</th>
+        <th style="text-align:right;padding:6px 8px;border-bottom:1px solid #2a251b">卖出价</th>
+        <th style="text-align:right;padding:6px 8px;border-bottom:1px solid #2a251b">持仓</th>
+        <th style="text-align:right;padding:6px 8px;border-bottom:1px solid #2a251b">收益率</th>
+        <th style="text-align:right;padding:6px 8px;border-bottom:1px solid #2a251b">盈亏</th>
+      </tr></thead>
+      <tbody>${trades.map((t,i)=>`<tr style="color:var(--text)">
+        <td style="padding:5px 8px;border-bottom:1px solid #1a170f">${i+1}${t.unrealized?' <span style="color:#e0a23c">*</span>':''}</td>
+        <td style="padding:5px 8px;border-bottom:1px solid #1a170f;font-family:monospace">${t.entryDate}</td>
+        <td style="padding:5px 8px;border-bottom:1px solid #1a170f;text-align:right;font-family:monospace">${t.entryPrice.toFixed(2)}</td>
+        <td style="padding:5px 8px;border-bottom:1px solid #1a170f;font-family:monospace">${t.exitDate}</td>
+        <td style="padding:5px 8px;border-bottom:1px solid #1a170f;text-align:right;font-family:monospace">${t.exitPrice.toFixed(2)}</td>
+        <td style="padding:5px 8px;border-bottom:1px solid #1a170f;text-align:right">${t.holdDays}天</td>
+        <td style="padding:5px 8px;border-bottom:1px solid #1a170f;text-align:right;color:${t.pnlPct>=0?'#4caf72':'#e05c5c'};font-weight:600">${t.pnlPct>=0?'+':''}${t.pnlPct.toFixed(2)}%</td>
+        <td style="padding:5px 8px;border-bottom:1px solid #1a170f;text-align:right;color:${t.pnl>=0?'#4caf72':'#e05c5c'};font-family:monospace">${t.pnl>=0?'+':''}${t.pnl.toFixed(0)}</td>
+      </tr>`).join('')}</tbody>
+    </table></div>
+    ${trades.some(t=>t.unrealized)?'<div style="font-size:10px;color:var(--text-3);margin-top:6px">* 标记为未平仓,以最新收盘价计算浮动盈亏</div>':''}
+    `}
+  </div>`;
+}
+
+function qddRenderAI(r){
+  const gradeCls={'A+':'#4caf72','A':'#4caf72','B':'#e0a23c','C':'#e0a23c','D':'#e05c5c'}[r.grade]||'#76726c';
+  return `<div style="padding:14px;background:linear-gradient(135deg,#1a170f,#12100b);border:1px solid var(--line-gold);border-radius:8px">
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:10px">
+      <div style="font-size:11px;color:var(--text-3)">AI 复盘评级</div>
+      <div style="font-size:22px;font-weight:800;color:${gradeCls}">${r.grade||'-'}</div>
+      <div style="font-size:12px;color:var(--text);font-weight:600">${r.verdict||''}</div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+      <div>
+        <div style="font-size:11px;color:#4caf72;font-weight:700;margin-bottom:4px">✓ 优势</div>
+        ${(r.strengths||[]).map(s=>`<div style="font-size:11px;color:var(--text-1);padding:3px 0">· ${s}</div>`).join('')}
+        <div style="font-size:11px;color:#e05c5c;font-weight:700;margin:8px 0 4px">✗ 缺陷</div>
+        ${(r.weaknesses||[]).map(s=>`<div style="font-size:11px;color:var(--text-1);padding:3px 0">· ${s}</div>`).join('')}
+      </div>
+      <div>
+        <div style="font-size:11px;color:#e0a23c;font-weight:700;margin-bottom:4px">⚠ 风险</div>
+        ${(r.risks||[]).map(s=>`<div style="font-size:11px;color:var(--text-1);padding:3px 0">· ${s}</div>`).join('')}
+        <div style="font-size:11px;color:var(--gold);font-weight:700;margin:8px 0 4px">→ 改进</div>
+        ${(r.improvements||[]).map(s=>`<div style="font-size:11px;color:var(--text-1);padding:3px 0">· ${s}</div>`).join('')}
+      </div>
+    </div>
+  </div>`;
+}
+
+// ---- 主入口 ----
+function renderQDD(){
+  const el=document.getElementById('qddContent');
+  el.innerHTML=`
+  <div style="max-width:1200px">
+    <div class="card" style="padding:16px;margin-bottom:16px">
+      <div style="font-weight:700;color:var(--gold-bright);font-size:14px;margin-bottom:12px">⚙️ 回测配置</div>
+      <div style="display:grid;grid-template-columns:1.4fr 1.6fr 1fr 1fr auto;gap:10px;align-items:end">
+        <div>
+          <div style="font-size:10px;color:var(--text-3);margin-bottom:4px">股票代码</div>
+          <input type="text" id="qddSymbol" value="AAPL" placeholder="AAPL / 600519 / HK00700" style="width:100%;padding:7px 8px;background:var(--panel);border:1px solid var(--line-gold);border-radius:4px;color:var(--text);font-size:12px">
+        </div>
+        <div>
+          <div style="font-size:10px;color:var(--text-3);margin-bottom:4px">策略</div>
+          <select id="qddStrategy" style="width:100%;padding:7px 8px;background:var(--panel);border:1px solid var(--line-gold);border-radius:4px;color:var(--text);font-size:12px">
+            <option value="ma_cross">MA金叉/死叉 (5/20)</option>
+            <option value="rsi">RSI反转 (14, 30/70)</option>
+            <option value="boll">布林带突破 (20, 2σ)</option>
+            <option value="buyhold">买入持有 (基准)</option>
+          </select>
+        </div>
+        <div>
+          <div style="font-size:10px;color:var(--text-3);margin-bottom:4px">初始资金</div>
+          <input type="number" id="qddInitCap" value="100000" style="width:100%;padding:7px 8px;background:var(--panel);border:1px solid var(--line-gold);border-radius:4px;color:var(--text);font-size:12px">
+        </div>
+        <div>
+          <div style="font-size:10px;color:var(--text-3);margin-bottom:4px">K线数量</div>
+          <input type="number" id="qddBars" value="250" min="30" max="500" style="width:100%;padding:7px 8px;background:var(--panel);border:1px solid var(--line-gold);border-radius:4px;color:var(--text);font-size:12px">
+        </div>
+        <button id="qddRunBtn" style="padding:8px 20px;background:var(--gold-deep);color:var(--bg);border:none;border-radius:4px;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap">🚀 开始回测</button>
+      </div>
+      <div style="margin-top:10px;font-size:10px;color:var(--text-3)">
+        引擎参数: T日信号 → T+1开盘执行 · 满仓单向多头 · 无手续费/滑点 · 数据源: 东方财富日线复权
+        · 支持 A股/港股/美股 · 灵感来源: <a href="https://github.com/brokermr810/QuantDinger" target="_blank" style="color:var(--gold)">QuantDinger</a>
+      </div>
+    </div>
+
+    <div id="qddStatus" style="display:none;margin-bottom:12px"></div>
+    <div id="qddResult"></div>
+    ${disclaimerHTML()}
+  </div>`;
+  document.getElementById('qddRunBtn').onclick=qddRunBacktest;
+}
+
 // ---- 主编排函数 ----
 let hfRunning=false;
 let _hfTimeoutId=null;
@@ -5285,7 +5749,7 @@ function renderHedgeFund(){loadHedgeFund(false);}
 /* ==================== APP CONTROL ==================== */
 // [FIX] cache 已在脚本前部声明, 此处仅重置赋值, 避免 let 重复声明报错
 cache=null;
-const rendered={dashboard:false,crisis:false,cycle:false,masters:false,scenario:false,camps:false,stocks:false,dsa:false,hedgefund:false,quant:false};
+const rendered={dashboard:false,crisis:false,cycle:false,masters:false,scenario:false,camps:false,stocks:false,dsa:false,qdd:false,hedgefund:false,quant:false};
 function renderView(v){
   if(v==='crisis'&&!rendered.crisis){renderCrisis();rendered.crisis=true}
   if(v==='cycle'&&!rendered.cycle){renderCycles();rendered.cycle=true}
@@ -5294,6 +5758,7 @@ function renderView(v){
   if(v==='camps'&&!rendered.camps){renderCamps();rendered.camps=true}
   if(v==='stocks'&&!rendered.stocks){loadStocks();rendered.stocks=true}
   if(v==='dsa'&&!rendered.dsa){renderDSA();rendered.dsa=true}
+  if(v==='qdd'&&!rendered.qdd){renderQDD();rendered.qdd=true}
   if(v==='hedgefund'&&!rendered.hedgefund){renderHedgeFund();rendered.hedgefund=true}
   if(v==='quant'&&!rendered.quant){renderQuantTrading();rendered.quant=true}
 }
