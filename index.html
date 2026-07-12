@@ -796,6 +796,121 @@ a{color:inherit;text-decoration:none}
 
 @media(max-width:1180px){.crisis-v2-hero{grid-template-columns:1fr}.trig-grid{grid-template-columns:1fr}.tw-grid{grid-template-columns:1fr}.tier-row{grid-template-columns:1fr;text-align:left}.pol-row{grid-template-columns:1fr}}
 @media(max-width:700px){.hf-summary{grid-template-columns:repeat(2,1fr)}.hf-agent-grid{grid-template-columns:1fr 1fr}.hf-card-top{flex-direction:column;align-items:flex-start}.hf-card-right{align-self:flex-end}}
+
+/* ============ TradingAgents 交易代理师 ============ */
+.ta-wrap{max-width:1100px;margin:0 auto;padding-bottom:60px}
+.ta-input-bar{display:flex;gap:12px;margin-bottom:28px;align-items:stretch}
+.ta-input-bar input{flex:1;background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:14px 18px;color:var(--text);font-size:15px;outline:none;transition:border .2s;font-family:inherit}
+.ta-input-bar input:focus{border-color:var(--gold)}
+.ta-input-bar input::placeholder{color:var(--text-3)}
+.ta-input-bar select{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:0 16px;color:var(--text-2);font-size:13px;outline:none;cursor:pointer;min-width:110px;font-family:inherit}
+.ta-input-bar select:focus{border-color:var(--gold)}
+.ta-input-bar button{background:linear-gradient(135deg,var(--gold-deep),var(--gold));color:#000;font-weight:700;border:none;border-radius:var(--r);padding:0 32px;cursor:pointer;font-size:14px;white-space:nowrap;letter-spacing:.5px;transition:opacity .2s}
+.ta-input-bar button:hover{opacity:.85}
+.ta-input-bar button:disabled{opacity:.4;cursor:not-allowed}
+.ta-pipeline{margin-bottom:28px}
+.ta-pipe-steps{display:flex;gap:0;position:relative;margin-bottom:6px}
+.ta-pipe-step{flex:1;text-align:center;padding:14px 6px;position:relative;z-index:2}
+.ta-pipe-step .step-num{width:32px;height:32px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;background:var(--panel);border:2px solid var(--line);color:var(--text-3);transition:all .4s;margin-bottom:6px}
+.ta-pipe-step.active .step-num{border-color:var(--gold);color:var(--gold);box-shadow:0 0 16px rgba(212,175,55,.3);animation:taPulse 1.5s infinite}
+.ta-pipe-step.done .step-num{border-color:var(--green);background:var(--green);color:#fff}
+.ta-pipe-step .step-label{font-size:11px;color:var(--text-3);letter-spacing:.5px;transition:color .3s}
+.ta-pipe-step.active .step-label{color:var(--gold-bright)}
+.ta-pipe-step.done .step-label{color:var(--green)}
+.ta-pipe-bar{height:3px;background:var(--panel-hi);border-radius:2px;overflow:hidden;margin-bottom:18px}
+.ta-pipe-bar span{display:block;height:100%;background:linear-gradient(90deg,var(--green),var(--gold));border-radius:2px;transition:width .5s ease;width:0}
+@keyframes taPulse{0%,100%{box-shadow:0 0 8px rgba(212,175,55,.2)}50%{box-shadow:0 0 20px rgba(212,175,55,.5)}}
+.ta-stage{display:none;animation:taFadeIn .5s ease}
+.ta-stage.visible{display:block}
+@keyframes taFadeIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+.ta-stage-title{font-family:'Noto Serif SC',serif;font-size:18px;font-weight:700;margin-bottom:16px;display:flex;align-items:center;gap:10px}
+.ta-stage-title .stg-badge{font-size:10px;padding:3px 10px;border-radius:20px;background:rgba(212,175,55,.12);color:var(--gold);letter-spacing:1px;font-weight:600;font-family:'JetBrains Mono',monospace}
+.ta-agent-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px;margin-bottom:24px}
+.ta-ac{padding:16px;border-radius:12px;background:var(--panel);border:1px solid var(--line);transition:border-color .3s,box-shadow .3s;position:relative;overflow:hidden}
+.ta-ac::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;border-radius:0 2px 2px 0}
+.ta-ac.bullish::before{background:var(--green)}.ta-ac.bearish::before{background:var(--red)}.ta-ac.neutral::before{background:var(--orange)}
+.ta-ac:hover{border-color:var(--line-gold);box-shadow:0 4px 18px rgba(0,0,0,.3)}
+.ta-ac .nm{font-size:13px;font-weight:700;color:var(--text);margin-bottom:6px}
+.ta-ac .role{font-size:10px;color:var(--text-3);letter-spacing:.5px;margin-bottom:8px;text-transform:uppercase}
+.ta-ac .sig{display:inline-block;font-size:11px;font-weight:700;padding:2px 10px;border-radius:5px;margin-bottom:8px}
+.ta-ac .sig.bullish{background:rgba(76,175,114,.15);color:#4caf72}.ta-ac .sig.bearish{background:rgba(224,92,92,.15);color:#e05c5c}.ta-ac .sig.neutral{background:rgba(212,175,55,.12);color:#e0a23c}
+.ta-ac .conf{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-3);margin-bottom:6px}
+.ta-ac .rs{font-size:11.5px;color:var(--text-2);line-height:1.65}
+.ta-ac .metrics{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:10px;padding-top:10px;border-top:1px dashed var(--line)}
+.ta-ac .metrics .m-item{font-size:10px;color:var(--text-3)}
+.ta-ac .metrics .m-val{font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:600;color:var(--text-2)}
+.ta-debate{margin-bottom:24px}
+.ta-debate-round{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:14px}
+.ta-debate-side{padding:16px;border-radius:12px;border:1px solid var(--line);position:relative}
+.ta-debate-side.bull{background:rgba(76,175,114,.04);border-color:rgba(76,175,114,.25)}
+.ta-debate-side.bear{background:rgba(224,92,92,.04);border-color:rgba(224,92,92,.25)}
+.ta-debate-side .side-label{font-size:12px;font-weight:700;margin-bottom:8px;letter-spacing:.5px}
+.ta-debate-side.bull .side-label{color:#4caf72}
+.ta-debate-side.bear .side-label{color:#e05c5c}
+.ta-debate-side .side-text{font-size:12px;color:var(--text-2);line-height:1.7}
+.ta-debate-side .side-points{margin-top:10px}
+.ta-debate-side .side-points .pt{font-size:11px;color:var(--text-2);padding:4px 0;border-bottom:1px dotted var(--line);line-height:1.5}
+.ta-debate-side .side-points .pt:last-child{border-bottom:none}
+.ta-round-label{text-align:center;font-size:11px;color:var(--text-3);margin-bottom:10px;letter-spacing:1px}
+.ta-trader-box{padding:20px;border-radius:12px;background:var(--panel);border:1px solid var(--gold-deep);margin-bottom:24px}
+.ta-trader-box .tb-title{font-size:14px;font-weight:700;color:var(--gold);margin-bottom:12px}
+.ta-trader-box .tb-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.ta-trader-box .tb-item .lbl{font-size:10px;color:var(--text-3);text-transform:uppercase;letter-spacing:.5px}
+.ta-trader-box .tb-item .val{font-family:'JetBrains Mono',monospace;font-size:16px;font-weight:700;margin-top:2px}
+.ta-risk-debate{margin-bottom:24px}
+.ta-risk-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:14px}
+.ta-risk-card{padding:16px;border-radius:12px;background:var(--panel);border:1px solid var(--line);position:relative;overflow:hidden}
+.ta-risk-card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px}
+.ta-risk-card.aggressive::before{background:#e05c5c}
+.ta-risk-card.conservative::before{background:#5b9bd5}
+.ta-risk-card.neutral-r::before{background:#e0a23c}
+.ta-risk-card .rc-title{font-size:13px;font-weight:700;margin-bottom:4px}
+.ta-risk-card.aggressive .rc-title{color:#e05c5c}
+.ta-risk-card.conservative .rc-title{color:#5b9bd5}
+.ta-risk-card.neutral-r .rc-title{color:#e0a23c}
+.ta-risk-card .rc-stance{font-size:10px;color:var(--text-3);margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px}
+.ta-risk-card .rc-text{font-size:11.5px;color:var(--text-2);line-height:1.65}
+.ta-risk-card .rc-metrics{display:flex;gap:12px;margin-top:10px;padding-top:10px;border-top:1px dashed var(--line)}
+.ta-risk-card .rc-metric{text-align:center;flex:1}
+.ta-risk-card .rc-metric .lbl{font-size:9px;color:var(--text-3)}
+.ta-risk-card .rc-metric .val{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:700}
+.ta-pm-box{padding:24px;border-radius:14px;border:2px solid var(--gold);background:linear-gradient(135deg,rgba(212,175,55,.06),rgba(212,175,55,.02));margin-bottom:24px;position:relative;overflow:hidden}
+.ta-pm-box::before{content:'';position:absolute;inset:0;background:radial-gradient(400px 200px at 50% -20%,rgba(212,175,55,.1),transparent);pointer-events:none}
+.ta-pm-head{text-align:center;margin-bottom:18px;position:relative;z-index:1}
+.ta-pm-head .pm-label{font-size:11px;color:var(--text-3);letter-spacing:2px;text-transform:uppercase;margin-bottom:6px}
+.ta-pm-head .pm-decision{font-size:32px;font-weight:800;font-family:'Cormorant Garamond',serif}
+.ta-pm-head .pm-decision.buy{color:#4caf72}.ta-pm-head .pm-decision.sell{color:#e05c5c}.ta-pm-head .pm-decision.hold{color:#e0a23c}.ta-pm-head .pm-decision.overweight{color:#66bb6a}.ta-pm-head .pm-decision.underweight{color:#ef5350}
+.ta-pm-head .pm-ticker{font-family:'JetBrains Mono',monospace;font-size:14px;color:var(--gold);margin-top:6px}
+.ta-pm-conf{display:flex;justify-content:center;gap:24px;margin-bottom:16px}
+.ta-pm-conf .ci{text-align:center}
+.ta-pm-conf .ci .cv{font-family:'JetBrains Mono',monospace;font-size:22px;font-weight:800}
+.ta-pm-conf .ci .cl{font-size:10px;color:var(--text-3);margin-top:2px}
+.ta-pm-reason{font-size:13px;color:var(--text-2);line-height:1.8;text-align:center;padding:14px 20px;background:rgba(0,0,0,.2);border-radius:10px;margin-bottom:14px}
+.ta-pm-breakdown{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}
+.ta-pm-breakdown .bk{text-align:center;padding:10px 6px;border-radius:8px;background:rgba(0,0,0,.15)}
+.ta-pm-breakdown .bk .bk-label{font-size:9px;color:var(--text-3);text-transform:uppercase;letter-spacing:.5px}
+.ta-pm-breakdown .bk .bk-val{font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:700;margin-top:2px}
+.ta-timeline{margin:24px 0;padding:16px 20px;border-radius:12px;background:var(--panel);border:1px solid var(--line)}
+.ta-timeline .tl-title{font-size:12px;color:var(--text-3);margin-bottom:12px;letter-spacing:1px;text-transform:uppercase}
+.ta-timeline .tl-item{display:flex;gap:12px;padding:6px 0;border-bottom:1px dotted var(--line);font-size:12px}
+.ta-timeline .tl-item:last-child{border-bottom:none}
+.ta-timeline .tl-time{font-family:'JetBrains Mono',monospace;color:var(--text-3);min-width:60px;font-size:11px}
+.ta-timeline .tl-agent{color:var(--gold);min-width:100px;font-weight:600}
+.ta-timeline .tl-msg{color:var(--text-2);flex:1}
+.ta-disclaimer{font-size:11px;color:var(--text-3);line-height:1.7;padding:16px 20px;border-radius:10px;background:rgba(0,0,0,.2);border:1px solid var(--line);margin-top:24px}
+.ta-empty{text-align:center;padding:60px 20px;color:var(--text-3)}
+.ta-empty .em-icon{font-size:48px;margin-bottom:16px;opacity:.5}
+.ta-empty .em-title{font-size:18px;font-weight:600;color:var(--text-2);margin-bottom:8px}
+.ta-empty .em-desc{font-size:13px;line-height:1.7;max-width:500px;margin:0 auto}
+.ta-stock-head{display:flex;align-items:center;gap:16px;margin-bottom:20px;padding:16px 20px;border-radius:12px;background:var(--panel);border:1px solid var(--line)}
+.ta-stock-head .sh-name{font-size:20px;font-weight:700;font-family:'Noto Serif SC',serif}
+.ta-stock-head .sh-ticker{font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--gold)}
+.ta-stock-head .sh-price{font-family:'JetBrains Mono',monospace;font-size:22px;font-weight:700;margin-left:auto}
+.ta-stock-head .sh-chg{font-family:'JetBrains Mono',monospace;font-size:14px;padding:4px 10px;border-radius:6px}
+.ta-stock-head .sh-chg.up{background:rgba(76,175,114,.15);color:var(--green)}
+.ta-stock-head .sh-chg.down{background:rgba(224,92,92,.15);color:var(--red)}
+.ta-stock-head .sh-chg.flat{color:var(--text-3)}
+@media(max-width:700px){.ta-debate-round{grid-template-columns:1fr}.ta-risk-cards{grid-template-columns:1fr}.ta-pm-breakdown{grid-template-columns:repeat(3,1fr)}.ta-agent-grid{grid-template-columns:1fr}.ta-trader-box .tb-grid{grid-template-columns:repeat(2,1fr)}.ta-pipe-steps{flex-wrap:wrap}.ta-pipe-step{flex:none;width:33.3%}}
 </style>
 </head>
 <body>
@@ -827,6 +942,7 @@ a{color:inherit;text-decoration:none}
       <div class="nav-item" data-view="dsa"><span class="ic">📊</span>每日股票分析</div>
       <div class="nav-item" data-view="qdd"><span class="ic">📉</span>量化回撤分析</div>
       <div class="nav-item" data-view="hedgefund"><span class="ic">♜</span>AI对冲建议</div>
+      <div class="nav-item" data-view="tradingagents"><span class="ic">⚔</span>交易代理师</div>
     </nav>
     <div class="sidebar-foot">
       数据仅供参考 · 不构成投资建议<br>
@@ -961,6 +1077,15 @@ a{color:inherit;text-decoration:none}
         <p class="page-sub">19位AI Agent并行分析 · 5类量化策略 + 10位投资大师 · 波动率风控 · 组合决策引擎</p>
       </div>
       <div id="hfContent"><div class="data-loading"><span class="spin"></span> 正在初始化AI对冲基金分析引擎…</div></div>
+    </section>
+
+    <section class="view" id="view-tradingagents">
+      <div class="page-head">
+        <div class="page-kicker">TradingAgents · Multi-Agent LLM Trading Framework</div>
+        <h1 class="page-title">交易<span class="gold">代理师</span></h1>
+        <p class="page-sub">5维分析师团队 · 多空辩论 · 交易员提案 · 三方风控博弈 · 组合经理终审决策</p>
+      </div>
+      <div id="taContent"><div class="ta-empty"><div class="em-icon">⚔</div><div class="em-title">多Agent交易决策引擎</div><div class="em-desc">基于TradingAgents开源框架，模拟真实交易公司的组织架构：<br>分析师团队 → 研究员辩论 → 交易员提案 → 风控博弈 → 组合经理终审<br><br>输入股票代码或关键词开始分析</div></div></div>
     </section>
 
     <div class="view-foot"></div>
@@ -5600,7 +5725,7 @@ async function qddRunBacktest(){
     statusEl.innerHTML=`<div style="padding:10px 14px;background:rgba(76,175,114,.12);border:1px solid rgba(76,175,114,.35);border-radius:6px;font-size:12px;color:#4caf72">✓ 回测完成 · ${klines.length} 根K线 · ${srcBadge} · ${new Date().toLocaleString('zh-CN')}</div>`;
     const synthBanner=data.synthNote
       ? `<div style="padding:10px 14px;margin-bottom:12px;background:rgba(224,162,60,.08);border:1px dashed rgba(224,162,60,.4);border-radius:6px;font-size:12px;color:#e0a23c">
-           ⚠ 当前标的暂无可用历史K线源, <b>${data.synthNote}</b>。策略表现仅供演示, 不代表真实历史回测。
+           ⚠ 当前标的暂无可用历史K线源, 以下结果 <b>${data.synthNote}</b>。策略表现仅供演示, 不代表真实历史回测。
          </div>`
       : '';
     resultEl.innerHTML=synthBanner+qddRenderResult(name,symbol,stratName,m,equity,trades);
@@ -5933,7 +6058,7 @@ function renderHedgeFund(){loadHedgeFund(false);}
 /* ==================== APP CONTROL ==================== */
 // [FIX] cache 已在脚本前部声明, 此处仅重置赋值, 避免 let 重复声明报错
 cache=null;
-const rendered={dashboard:false,crisis:false,cycle:false,masters:false,scenario:false,camps:false,stocks:false,dsa:false,qdd:false,hedgefund:false,quant:false};
+const rendered={dashboard:false,crisis:false,cycle:false,masters:false,scenario:false,camps:false,stocks:false,dsa:false,qdd:false,hedgefund:false,quant:false,tradingagents:false};
 function renderView(v){
   if(v==='crisis'&&!rendered.crisis){renderCrisis();rendered.crisis=true}
   if(v==='cycle'&&!rendered.cycle){renderCycles();rendered.cycle=true}
@@ -5945,6 +6070,7 @@ function renderView(v){
   if(v==='qdd'&&!rendered.qdd){renderQDD();rendered.qdd=true}
   if(v==='hedgefund'&&!rendered.hedgefund){renderHedgeFund();rendered.hedgefund=true}
   if(v==='quant'&&!rendered.quant){renderQuantTrading();rendered.quant=true}
+  if(v==='tradingagents'&&!rendered.tradingagents){renderTradingAgents();rendered.tradingagents=true}
 }
 async function loadStocks(silent){
   const el=document.getElementById('stocksContent');
@@ -6739,6 +6865,565 @@ function qtRenderBacktest(el,results,stockName,kdata){
   html+=`</div>`;
   el.innerHTML+=html;
 }
+
+/* ==================== TradingAgents 交易代理师模块 ==================== */
+// 基于 TauricResearch/TradingAgents 开源框架 (arXiv:2412.20138)
+// 5阶段流水线: 分析师团队 → 多空辩论 → 交易员提案 → 风控博弈 → 组合经理终审
+// 数据源: 东方财富push2delay(行情/K线) + 基本面快照
+
+let taRunning=false;
+
+function renderTradingAgents(){
+  const el=document.getElementById('taContent');
+  el.innerHTML=`<div class="ta-wrap">
+    <div class="ta-input-bar">
+      <input id="taSearchInput" placeholder="输入股票代码或名称，如 AAPL、600519、0700.HK、BTC-USD" autocomplete="off">
+      <select id="taDepthSelect"><option value="2">快速分析 (2轮辩论)</option><option value="3" selected>标准分析 (3轮辩论)</option><option value="4">深度分析 (4轮辩论)</option></select>
+      <button id="taRunBtn" onclick="taRunAnalysis()">启动分析引擎</button>
+    </div>
+    <div id="taResultArea"></div>
+  </div>`;
+  // 搜索建议
+  const inp=document.getElementById('taSearchInput');
+  inp.addEventListener('keydown',e=>{if(e.key==='Enter')taRunAnalysis();});
+}
+
+async function taRunAnalysis(){
+  if(taRunning)return;
+  const inp=document.getElementById('taSearchInput');
+  const q=inp.value.trim();
+  if(!q){inp.focus();return;}
+  taRunning=true;
+  const btn=document.getElementById('taRunBtn');
+  btn.disabled=true;
+  const area=document.getElementById('taResultArea');
+  const depth=parseInt(document.getElementById('taDepthSelect').value)||3;
+
+  area.innerHTML=`<div class="ta-pipeline">
+    <div class="ta-pipe-steps" id="taPipeSteps">
+      <div class="ta-pipe-step" data-stage="1"><div class="step-num">1</div><div class="step-label">分析师团队</div></div>
+      <div class="ta-pipe-step" data-stage="2"><div class="step-num">2</div><div class="step-label">多空辩论</div></div>
+      <div class="ta-pipe-step" data-stage="3"><div class="step-num">3</div><div class="step-label">交易员提案</div></div>
+      <div class="ta-pipe-step" data-stage="4"><div class="step-num">4</div><div class="step-label">风控博弈</div></div>
+      <div class="ta-pipe-step" data-stage="5"><div class="step-num">5</div><div class="step-label">终审决策</div></div>
+    </div>
+    <div class="ta-pipe-bar"><span id="taPipeBar"></span></div>
+    <div id="taStages"></div>
+  </div>`;
+
+  const progBar=document.getElementById('taPipeBar');
+  const stagesEl=document.getElementById('taStages');
+  const steps=document.querySelectorAll('.ta-pipe-step');
+  const setStage=(n)=>{steps.forEach(s=>{const sn=+s.dataset.stage;s.classList.remove('active','done');if(sn<n)s.classList.add('done');else if(sn===n)s.classList.add('active');});progBar.style.width=((n-1)/5*100)+'%';};
+  const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+
+  try{
+    // 1. 解析ticker
+    setStage(1);
+    stagesEl.innerHTML='<div class="data-loading"><span class="spin"></span> 正在解析标的 '+q+' …</div>';
+    const ticker=await taResolveTicker(q);
+    if(!ticker){stagesEl.innerHTML='<div class="ta-empty"><div class="em-icon">⚠</div><div class="em-title">无法识别标的</div><div class="em-desc">请尝试输入有效的股票代码，如 AAPL、600519.SS、0700.HK、BTC-USD</div></div>';return;}
+
+    // 2. 获取行情数据
+    stagesEl.innerHTML='<div class="data-loading"><span class="spin"></span> 正在获取 '+ticker.name+' 实时行情与K线数据…</div>';
+    let kdata=[],fund=null,quote=null;
+    try{
+      [kdata,fund,quote]=await Promise.allSettled([
+        fetchKline(ticker.secid,120),
+        fetchFundamentals(ticker.secid),
+        emQuoteBatched([ticker.secid])
+      ]).then(r=>[
+        r[0].status==='fulfilled'?r[0].value:[],
+        r[1].status==='fulfilled'?r[1].value:null,
+        r[2].status==='fulfilled'?r[2].value[ticker.secid]:null
+      ]);
+    }catch(e){console.warn('TA数据获取失败',e);}
+
+    if(!kdata||!kdata.length){stagesEl.innerHTML='<div class="ta-empty"><div class="em-icon">⚠</div><div class="em-title">K线数据不可用</div><div class="em-desc">无法获取 '+ticker.name+' 的历史K线数据，请检查代码或稍后重试。</div></div>';return;}
+
+    // 行情数据
+    const kClose=kdata[kdata.length-1].close;
+    const kPrev=kdata.length>1?kdata[kdata.length-2].close:kClose;
+    const kChg=kPrev?((kClose-kPrev)/kPrev*100):0;
+    const rtPrice=(quote&&quote.price!=null)?Number(quote.price):null;
+    const rtChg=(quote&&quote.chg!=null)?Number(quote.chg):null;
+    const inSession=(rtPrice!=null&&Math.abs(rtPrice-kClose)/kClose<0.03);
+    const curPrice=inSession?rtPrice:kClose;
+    const prevClose=inSession&&rtChg!=null?+(curPrice/(1+rtChg/100)).toFixed(2):kPrev;
+    const priceChange=inSession&&rtChg!=null?rtChg:kChg;
+
+    const ctx={ticker,kdata,fund,curPrice,prevClose,priceChange};
+
+    // 股票头部
+    const pCls=priceChange>0?'up':priceChange<0?'down':'flat';
+    const pStr=priceChange>=0?'+':'';
+    stagesEl.innerHTML=`<div class="ta-stock-head">
+      <div><div class="sh-name">${ticker.name}</div><div class="sh-ticker">${ticker.code}</div></div>
+      <div class="sh-price">${curPrice.toFixed(2)}</div>
+      <div class="sh-chg ${pCls}">${pStr}${priceChange.toFixed(2)}%</div>
+    </div><div id="taStageContent"></div>`;
+    const scEl=document.getElementById('taStageContent');
+
+    // Stage 1: 分析师团队
+    setStage(1);
+    scEl.innerHTML='<div class="data-loading"><span class="spin"></span> 分析师团队并行研判中…</div>';
+    await sleep(600);
+    const analysts=taAnalystTeam(ctx);
+    const timeline=[{time:ts(),agent:'系统',msg:'分析师团队已就绪，开始并行分析'}];
+    analysts.forEach((a,i)=>timeline.push({time:ts(),agent:a.name,msg:a.summary}));
+    scEl.innerHTML=`<div class="ta-stage visible">
+      <div class="ta-stage-title">Phase 1 · 分析师团队 <span class="stg-badge">5 AGENTS</span></div>
+      <div class="ta-agent-grid">${analysts.map(a=>taRenderAgentCard(a)).join('')}</div>
+    </div>`;
+    await sleep(800);
+
+    // Stage 2: 多空辩论
+    setStage(2);
+    const bullPts=analysts.filter(a=>a.signal==='bullish');
+    const bearPts=analysts.filter(a=>a.signal==='bearish');
+    const neutralPts=analysts.filter(a=>a.signal==='neutral');
+    const debate=taResearchDebate(ctx,analysts,depth);
+    scEl.innerHTML+=`<div class="ta-stage visible">
+      <div class="ta-stage-title">Phase 2 · 研究员辩论 <span class="stg-badge">${depth} ROUNDS</span></div>
+      <div class="ta-debate">${debate.rounds.map((rd,i)=>`
+        <div class="ta-round-label">— 第 ${i+1} 轮辩论 —</div>
+        <div class="ta-debate-round">
+          <div class="ta-debate-side bull">
+            <div class="side-label">🟢 看多研究员 Bull Researcher</div>
+            <div class="side-text">${rd.bull.text}</div>
+            <div class="side-points">${rd.bull.points.map(p=>'<div class="pt">▸ '+p+'</div>').join('')}</div>
+          </div>
+          <div class="ta-debate-side bear">
+            <div class="side-label">🔴 看空研究员 Bear Researcher</div>
+            <div class="side-text">${rd.bear.text}</div>
+            <div class="side-points">${rd.bear.points.map(p=>'<div class="pt">▸ '+p+'</div>').join('')}</div>
+          </div>
+        </div>`).join('')}
+      </div>
+    </div>`;
+    timeline.push({time:ts(),agent:'研究主管',msg:`${depth}轮辩论完成，看多${debate.bullScore}分 vs 看空${debate.bearScore}分`});
+    await sleep(600);
+
+    // Stage 3: 交易员提案
+    setStage(3);
+    const trader=taTraderProposal(ctx,analysts,debate);
+    scEl.innerHTML+=`<div class="ta-stage visible">
+      <div class="ta-stage-title">Phase 3 · 交易员提案 <span class="stg-badge">TRADER</span></div>
+      <div class="ta-trader-box">
+        <div class="tb-title">交易员交易提案 Transaction Proposal</div>
+        <div class="tb-grid">
+          <div class="tb-item"><div class="lbl">操作方向</div><div class="val" style="color:${trader.action==='买入'?'#4caf72':trader.action==='卖出'?'#e05c5c':'#e0a23c'}">${trader.action}</div></div>
+          <div class="tb-item"><div class="lbl">建议仓位</div><div class="val">${trader.positionPct}%</div></div>
+          <div class="tb-item"><div class="lbl">目标价位</div><div class="val" style="color:#4caf72">${trader.targetPrice}</div></div>
+          <div class="tb-item"><div class="lbl">止损价位</div><div class="val" style="color:#e05c5c">${trader.stopLoss}</div></div>
+        </div>
+        <div style="margin-top:14px;font-size:12px;color:var(--text-2);line-height:1.7;padding-top:12px;border-top:1px dashed var(--line)">${trader.reasoning}</div>
+      </div>
+    </div>`;
+    timeline.push({time:ts(),agent:'交易员',msg:`提案: ${trader.action} ${trader.positionPct}%仓位，目标${trader.targetPrice}`});
+    await sleep(600);
+
+    // Stage 4: 风控博弈
+    setStage(4);
+    const riskDebate=taRiskDebate(ctx,trader,analysts);
+    scEl.innerHTML+=`<div class="ta-stage visible">
+      <div class="ta-stage-title">Phase 4 · 风控管理博弈 <span class="stg-badge">3 DEBATERS</span></div>
+      <div class="ta-risk-cards">
+        ${riskDebate.map(r=>`<div class="ta-risk-card ${r.type}">
+          <div class="rc-title">${r.title}</div>
+          <div class="rc-stance">${r.stance}</div>
+          <div class="rc-text">${r.text}</div>
+          <div class="rc-metrics">
+            <div class="rc-metric"><div class="lbl">风险评分</div><div class="val">${r.riskScore}</div></div>
+            <div class="rc-metric"><div class="lbl">建议仓位</div><div class="val">${r.suggPos}%</div></div>
+            <div class="rc-metric"><div class="lbl">信心指数</div><div class="val">${r.confidence}%</div></div>
+          </div>
+        </div>`).join('')}
+      </div>
+    </div>`;
+    timeline.push({time:ts(),agent:'风控团队',msg:'三方博弈完成: 激进/保守/中性风控意见已汇总'});
+    await sleep(600);
+
+    // Stage 5: 组合经理终审
+    setStage(5);
+    const pm=taPortfolioManager(ctx,analysts,debate,trader,riskDebate);
+    scEl.innerHTML+=`<div class="ta-stage visible">
+      <div class="ta-stage-title">Phase 5 · 组合经理终审 <span class="stg-badge">PORTFOLIO MANAGER</span></div>
+      <div class="ta-pm-box">
+        <div class="ta-pm-head">
+          <div class="pm-label">Portfolio Manager Final Decision</div>
+          <div class="pm-decision ${pm.decisionClass}">${pm.decisionLabel}</div>
+          <div class="pm-ticker">${ticker.name} · ${ticker.code}</div>
+        </div>
+        <div class="ta-pm-conf">
+          <div class="ci"><div class="cv">${pm.confidence}%</div><div class="cl">决策置信度</div></div>
+          <div class="ci"><div class="cv">${pm.riskAdj}</div><div class="cl">风险调整</div></div>
+          <div class="ci"><div class="cv">${pm.finalPos}%</div><div class="cl">最终仓位</div></div>
+        </div>
+        <div class="ta-pm-reason">${pm.reasoning}</div>
+        <div class="ta-pm-breakdown">
+          <div class="bk"><div class="bk-label">分析师</div><div class="bk-val">${pm.analystScore}</div></div>
+          <div class="bk"><div class="bk-label">辩论</div><div class="bk-val">${pm.debateScore}</div></div>
+          <div class="bk"><div class="bk-label">交易员</div><div class="bk-val">${pm.traderScore}</div></div>
+          <div class="bk"><div class="bk-label">风控</div><div class="bk-val">${pm.riskScore}</div></div>
+          <div class="bk"><div class="bk-label">综合</div><div class="bk-val" style="color:var(--gold)">${pm.overallScore}</div></div>
+        </div>
+      </div>
+    </div>`;
+
+    // Timeline
+    timeline.push({time:ts(),agent:'组合经理',msg:`终审决策: ${pm.decisionLabel}，置信度${pm.confidence}%`});
+    scEl.innerHTML+=`<div class="ta-timeline"><div class="tl-title">Agent通信日志 Communication Log</div>
+      ${timeline.map(t=>`<div class="tl-item"><div class="tl-time">${t.time}</div><div class="tl-agent">${t.agent}</div><div class="tl-msg">${t.msg}</div></div>`).join('')}
+    </div>`;
+
+    // Disclaimer
+    scEl.innerHTML+=`<div class="ta-disclaimer"><b>风险提示</b>: 本模块基于 <a href="https://github.com/TauricResearch/TradingAgents" target="_blank" style="color:var(--gold);text-decoration:underline">TradingAgents</a> 开源框架(arXiv:2412.20138)的多Agent交易决策架构。5位专业分析师(基本面/情绪面/新闻面/技术面/社交面)独立研判后由多空研究员进行结构化辩论，交易员生成具体交易提案，经激进/保守/中性三方风控博弈后由组合经理做出五级终审决策(Buy/Overweight/Hold/Underweight/Sell)。所有分析基于历史技术面数据与公开基本面信息，仅供研究学习参考，不构成任何投资建议。市场有风险，投资需谨慎。</div>`;
+
+    steps.forEach(s=>s.classList.add('done'));
+    progBar.style.width='100%';
+
+  }catch(e){
+    console.error('TradingAgents分析异常',e);
+    area.innerHTML+='<div class="ta-empty"><div class="em-icon">⚠</div><div class="em-title">分析中断</div><div class="em-desc">'+e.message+'</div></div>';
+  }finally{
+    taRunning=false;
+    btn.disabled=false;
+  }
+}
+
+function ts(){const d=new Date();return d.getHours().toString().padStart(2,'0')+':'+d.getMinutes().toString().padStart(2,'0')+':'+d.getSeconds().toString().padStart(2,'0');}
+
+// ---- Ticker解析 ----
+async function taResolveTicker(q){
+  q=q.toUpperCase().trim();
+  // 加密货币
+  if(q.endsWith('-USD')||q==='BTC'||q==='ETH'){
+    const sym=q==='BTC'?'BTC-USD':q==='ETH'?'ETH-USD':q;
+    return {code:sym,name:sym.replace('-USD',''),secid:'binance_'+sym.toLowerCase(),market:'crypto'};
+  }
+  // 港股/美股带后缀
+  if(/^\d{4,5}\.HK$/i.test(q)) return {code:q,name:'港股'+q,secid:'116.'+q.replace('.HK',''),market:'hk'};
+  // A股
+  if(/^\d{6}$/.test(q)){
+    const prefix=q.startsWith('6')?'1':'0';
+    return {code:q,name:'A股'+q,secid:prefix+'.'+q,market:'cn'};
+  }
+  // 美股
+  if(/^[A-Z]{1,5}$/.test(q)){
+    return {code:q,name:q,secid:'105.'+q,market:'us'};
+  }
+  // 尝试东方财富搜索
+  try{
+    const url='https://searchapi.eastmoney.com/api/suggest/get?input='+encodeURIComponent(q)+'&type=14&token=D43BF722C8E33BDC906FB84D85E326E8&count=5';
+    const res=await fetch(url);
+    const data=await res.json();
+    if(data.QuotationCodeTable&&data.QuotationCodeTable.Data&&data.QuotationCodeTable.Data.length>0){
+      const item=data.QuotationCodeTable.Data[0];
+      const mkt=item.MktNum||item.SecurityTypeID;
+      const secid=(mkt==='1'?'1':mkt==='0'?'0':'105')+'.'+item.Code;
+      return {code:item.Code,name:item.Name,secid,market:mkt==='1'?'cn':mkt==='0'?'cn':'us'};
+    }
+  }catch(e){console.warn('搜索失败',e);}
+  return null;
+}
+
+// ---- Phase 1: 分析师团队 ----
+function taAnalystTeam(ctx){
+  const {kdata,fund,curPrice,priceChange,ticker}=ctx;
+  const n=kdata.length;
+  const agents=[];
+
+  // 1. 基本面分析师
+  const fundamentals=(()=>{
+    let signal='neutral',confidence=50,points=[],metrics={};
+    if(fund){
+      const pe=fund.pe!=null?Number(fund.pe):null;
+      const pb=fund.pb!=null?Number(fund.pb):null;
+      const roe=fund.roe!=null?Number(fund.roe):null;
+      const revGrowth=fund.revenueGrowth!=null?Number(fund.revenueGrowth):null;
+      metrics={PE:pe?pe.toFixed(1):'—',PB:pb?pb.toFixed(2):'—',ROE:roe?roe.toFixed(1)+'%':'—',营收增速:revGrowth?revGrowth.toFixed(1)+'%':'—'};
+      if(pe&&pe<15&&roe&&roe>10){signal='bullish';confidence=Math.min(85,60+roe*0.5);points.push('PE '+pe.toFixed(1)+'处于合理偏低区间，估值具备安全边际');points.push('ROE '+roe.toFixed(1)+'%表明公司盈利能力突出');}
+      else if(pe&&pe>35){signal='bearish';confidence=Math.min(75,55+pe*0.2);points.push('PE '+pe.toFixed(1)+'偏高，估值泡沫风险');}
+      else{confidence=55;points.push('基本面指标处于中性区间');}
+      if(revGrowth&&revGrowth>20){signal='bullish';confidence+=5;points.push('营收增速'+revGrowth.toFixed(1)+'%，成长动能强劲');}
+      if(revGrowth&&revGrowth<-10){signal='bearish';confidence+=5;points.push('营收同比下降'+Math.abs(revGrowth).toFixed(1)+'%，需关注经营质量');}
+    }else{
+      metrics={PE:'—',PB:'—',ROE:'—',营收增速:'—'};
+      points.push('基本面数据暂不可用，以技术面为主要参考');confidence=40;
+    }
+    return {id:'fundamentals',name:'基本面分析师',role:'Fundamentals Analyst',signal,confidence:Math.round(confidence),points,metrics,
+      summary:'估值'+(signal==='bullish'?'偏低有吸引力':signal==='bearish'?'偏高需警惕':'中性合理')};
+  })();
+  agents.push(fundamentals);
+
+  // 2. 情绪分析师
+  const sentiment=(()=>{
+    let signal='neutral',confidence=50,points=[];
+    const recent5=kdata.slice(-5);
+    const upDays=recent5.filter(k=>k.close>k.open).length;
+    const volTrend=kdata.slice(-10).reduce((s,k,i,a)=>i>0?s+(k.volume-a[i-1].volume):s,0);
+    const avgVol=kdata.slice(-20).reduce((s,k)=>s+k.volume,0)/Math.min(20,kdata.length);
+    const lastVol=kdata[n-1].volume;
+    const volRatio=avgVol?(lastVol/avgVol):1;
+    const metrics={连涨天数:upDays+'/5',量比:volRatio.toFixed(2),振幅:(kdata[n-1].high-kdata[n-1].low?((kdata[n-1].high-kdata[n-1].low)/kdata[n-1].low*100).toFixed(2)+'%':'—'),换手:volRatio>1.5?'活跃':'正常'};
+    if(upDays>=4){signal='bullish';confidence=65+upDays*3;points.push('近5日'+upDays+'日收阳，短期市场情绪偏乐观');points.push('买方力量持续占据主导');}
+    else if(upDays<=1){signal='bearish';confidence=60+(5-upDays)*3;points.push('近5日仅'+upDays+'日收阳，市场情绪偏悲观');points.push('卖压较重，空方占据主动');}
+    else{points.push('近5日涨跌交替，多空力量较为均衡');}
+    if(volRatio>1.5){confidence+=5;points.push('成交量放大至均量'+volRatio.toFixed(1)+'倍，市场关注度提升');}
+    return {id:'sentiment',name:'情绪分析师',role:'Sentiment Analyst',signal,confidence:Math.round(Math.min(confidence,88)),points,metrics,
+      summary:signal==='bullish'?'市场情绪偏乐观':signal==='bearish'?'情绪偏悲观':'多空情绪均衡'};
+  })();
+  agents.push(sentiment);
+
+  // 3. 新闻/宏观分析师
+  const news=(()=>{
+    let signal='neutral',confidence=45,points=[];
+    const d20=kdata.slice(-20);
+    const d20Chg=d20.length>=2?((d20[d20.length-1].close-d20[0].close)/d20[0].close*100):0;
+    const volatility=d20.length>1?Math.sqrt(d20.slice(1).map(k=>Math.log(k.close/d20[d20.indexOf(k)-1]?.close||1)).reduce((s,v)=>s+v*v,0)/d20.length)*Math.sqrt(252)*100:0;
+    const metrics={近20日涨跌:d20Chg.toFixed(2)+'%',年化波动:volatility.toFixed(1)+'%',趋势:d20Chg>5?'上行':d20Chg<-5?'下行':'震荡',宏观影响:'中性'};
+    if(d20Chg>10){signal='bullish';confidence=55+d20Chg*0.5;points.push('近20日累计上涨'+d20Chg.toFixed(1)+'%，趋势性行情特征明显');points.push('宏观环境对该标的形成正向支撑');}
+    else if(d20Chg<-10){signal='bearish';confidence=55+Math.abs(d20Chg)*0.5;points.push('近20日累计下跌'+Math.abs(d20Chg).toFixed(1)+'%，下行趋势尚未扭转');points.push('需关注是否存在系统性风险因素');}
+    else{points.push('近20日波动在正常范围内('+d20Chg.toFixed(1)+'%)');points.push('宏观面无显著冲击信号');}
+    if(volatility>40){confidence+=3;points.push('年化波动率'+volatility.toFixed(1)+'%偏高，注意风险管理');}
+    return {id:'news',name:'新闻分析师',role:'News Analyst',signal,confidence:Math.round(Math.min(confidence,80)),points,metrics,
+      summary:'宏观面'+(signal==='bullish'?'偏正面':signal==='bearish'?'偏负面':'无明显冲击')};
+  })();
+  agents.push(news);
+
+  // 4. 技术分析师
+  const technical=(()=>{
+    let signal='neutral',confidence=55,points=[];
+    // MACD
+    const ema12=taEMA(kdata.map(k=>k.close),12);
+    const ema26=taEMA(kdata.map(k=>k.close),26);
+    const dif=ema12-ema26;
+    const dea=taDEA(kdata.map(k=>k.close),12,26,9);
+    const macd=(dif-dea)*2;
+    // RSI
+    const rsi=taRSI(kdata.map(k=>k.close),14);
+    // 布林带
+    const ma20=kdata.slice(-20).reduce((s,k)=>s+k.close,0)/Math.min(20,kdata.length);
+    const std20=Math.sqrt(kdata.slice(-20).map(k=>Math.pow(k.close-ma20,2)).reduce((s,v)=>s+v,0)/Math.min(20,kdata.length));
+    const upper=ma20+2*std20,lower=ma20-2*std20;
+    const bollPos=curPrice>upper?'超买':curPrice<lower?'超卖':'正常';
+    // MA均线
+    const ma5=kdata.slice(-5).reduce((s,k)=>s+k.close,0)/Math.min(5,kdata.length);
+    const ma10=kdata.slice(-10).reduce((s,k)=>s+k.close,0)/Math.min(10,kdata.length);
+    const maCross=ma5>ma10?'金叉':'死叉';
+    const metrics={RSI:rsi.toFixed(1),MACD:macd.toFixed(3),布林位置:bollPos,均线:maCross,DIF:dif.toFixed(3),DEA:dea.toFixed(3)};
+    // 综合判定
+    let score=0;
+    if(macd>0)score++;else score--;
+    if(rsi<30){score++;points.push('RSI '+rsi.toFixed(1)+'进入超卖区间，存在反弹机会');}
+    else if(rsi>70){score--;points.push('RSI '+rsi.toFixed(1)+'进入超买区间，注意回调风险');}
+    else{points.push('RSI '+rsi.toFixed(1)+'处于中性区间');}
+    if(bollPos==='超卖'){score++;points.push('价格跌破布林带下轨，短期超卖');}
+    else if(bollPos==='超买'){score--;points.push('价格突破布林带上轨，短期超买');}
+    if(maCross==='金叉'){score++;points.push('MA5/MA10金叉，短中期趋势向上');}
+    else{score--;points.push('MA5/MA10死叉，短中期趋势向下');}
+    if(dif>dea&&dif>0){score++;points.push('MACD在零轴上方金叉，多头趋势确认');}
+    signal=score>=2?'bullish':score<=-2?'bearish':'neutral';
+    confidence=Math.min(85,50+Math.abs(score)*8);
+    return {id:'technical',name:'技术分析师',role:'Technical Analyst',signal,confidence:Math.round(confidence),points,metrics,
+      summary:'技术面'+(signal==='bullish'?'偏多':signal==='bearish'?'偏空':'震荡')};
+  })();
+  agents.push(technical);
+
+  // 5. 社交媒体分析师
+  const social=(()=>{
+    let signal='neutral',confidence=45,points=[];
+    const n5=kdata.slice(-5);
+    const momentum=n5.length>=2?((n5[n5.length-1].close-n5[0].close)/n5[0].close*100):0;
+    const volSurge=kdata.slice(-5).reduce((s,k)=>s+k.volume,0)/(kdata.slice(-20).reduce((s,k)=>s+k.volume,0)/4||1);
+    const metrics={短期动量:momentum.toFixed(2)+'%',社交热度:volSurge>1.3?'高热':volSurge>0.8?'正常':'低迷',舆情倾向:'待验证',话题度:volSurge>1.5?'爆发':'平稳'};
+    if(momentum>3&&volSurge>1.2){signal='bullish';confidence=60;points.push('短期动量+'+momentum.toFixed(1)+'%伴随放量，社交媒体讨论热度上升');points.push('散户情绪偏乐观，但需警惕过热风险');}
+    else if(momentum<-3&&volSurge>1.2){signal='bearish';confidence=60;points.push('短期下跌'+Math.abs(momentum).toFixed(1)+'%伴随放量，社交舆情偏悲观');points.push('恐慌情绪蔓延，可能加剧抛售压力');}
+    else{points.push('社交媒体舆情中性，无极端情绪信号');points.push('市场关注度处于正常水平');}
+    return {id:'social',name:'社交媒体分析师',role:'Social Media Analyst',signal,confidence:Math.round(Math.min(confidence,75)),points,metrics,
+      summary:'社交舆情'+(signal==='bullish'?'偏乐观':signal==='bearish'?'偏恐慌':'中性平稳')};
+  })();
+  agents.push(social);
+
+  return agents;
+}
+
+// ---- Phase 2: 多空辩论 ----
+function taResearchDebate(ctx,analysts,rounds){
+  const {curPrice,priceChange,ticker,kdata}=ctx;
+  const bullAnalysts=analysts.filter(a=>a.signal==='bullish');
+  const bearAnalysts=analysts.filter(a=>a.signal==='bearish');
+  const neutralAnalysts=analysts.filter(a=>a.signal==='neutral');
+  const bullAvgConf=bullAnalysts.length?Math.round(bullAnalysts.reduce((s,a)=>s+a.confidence,0)/bullAnalysts.length):40;
+  const bearAvgConf=bearAnalysts.length?Math.round(bearAnalysts.reduce((s,a)=>s+a.confidence,0)/bearAnalysts.length):40;
+  const debateRounds=[];
+  for(let r=0;r<rounds;r++){
+    const bull={text:'',points:[]};
+    const bear={text:'',points:[]};
+    if(r===0){
+      bull.text=bullAnalysts.length?`基于${bullAnalysts.map(a=>a.name).join('、')}的看多信号，我们认为${ticker.name}当前具备投资价值。综合看多置信度${bullAvgConf}%。`:'尽管缺乏明确的看多信号，我们从估值和长期趋势角度仍看到潜在机会。';
+      bull.points=bullAnalysts.length?bullAnalysts.flatMap(a=>a.points.slice(0,2)):['当前价格处于合理区间','长期增长逻辑未被破坏'];
+      bear.text=bearAnalysts.length?`综合${bearAnalysts.map(a=>a.name).join('、')}的看空信号，我们对${ticker.name}持谨慎态度。看空置信度${bearAvgConf}%。`:'即使短期无明显利空，我们从风险收益比角度认为当前入场时机不理想。';
+      bear.points=bearAnalysts.length?bearAnalysts.flatMap(a=>a.points.slice(0,2)):['估值已充分反映利好预期','下行风险大于上行空间'];
+    } else if(r===1){
+      bull.text=`回应看空方观点：我们认为${bearAnalysts.length?'其担忧':'市场噪音'}已被过度定价。${neutralAnalysts.length?neutralAnalysts[0].name+'的中性分析也暗示':'数据表明'}下行空间有限。`;
+      bull.points=['风险收益比仍然有利','技术面未出现破位信号','基本面长期逻辑未改变'].slice(0,2+Math.min(bullAnalysts.length,1));
+      bear.text=`回应看多方观点：${bullAnalysts.length?'其乐观':'市场情绪'}忽略了关键风险因素。当前市场环境需要更保守的策略。`;
+      bear.points=['市场情绪可能已过度乐观','存在未被定价的尾部风险','建议等待更明确的入场信号'].slice(0,2+Math.min(bearAnalysts.length,1));
+    } else {
+      bull.text=`经过${r+1}轮辩论，看多方维持核心论点：${ticker.name}的中长期价值被低估，建议把握当前配置窗口。`;
+      bull.points=['估值仍具吸引力','技术趋势支持上行','资金流向偏正面'];
+      bear.text=`经过${r+1}轮辩论，看空方坚持观点：当前价位风险溢价不足，建议降低仓位或等待更好的入场时机。`;
+      bear.points=['安全边际不足','波动率隐含风险上升','建议防御性配置'];
+    }
+    debateRounds.push({bull,bear});
+  }
+  const bullScore=Math.round(bullAnalysts.length?(bullAvgConf*0.6+analysts.filter(a=>a.signal!=='bearish').length/analysts.length*40):(30+neutralAnalysts.length*5));
+  const bearScore=Math.round(bearAnalysts.length?(bearAvgConf*0.6+analysts.filter(a=>a.signal!=='bullish').length/analysts.length*40):(30+neutralAnalysts.length*5));
+  return {rounds:debateRounds,bullScore:Math.min(bullScore,95),bearScore:Math.min(bearScore,95)};
+}
+
+// ---- Phase 3: 交易员提案 ----
+function taTraderProposal(ctx,analysts,debate){
+  const {curPrice,priceChange,ticker,kdata}=ctx;
+  const bullCount=analysts.filter(a=>a.signal==='bullish').length;
+  const bearCount=analysts.filter(a=>a.signal==='bearish').length;
+  const total=analysts.length;
+  const netScore=bullCount-bearCount;
+  const avgConf=Math.round(analysts.reduce((s,a)=>s+a.confidence,0)/total);
+  let action,positionPct,targetPct,stopPct;
+  if(netScore>=3){action='买入';positionPct=Math.min(30,10+netScore*5);targetPct=0.12;stopPct=-0.06;}
+  else if(netScore>=1){action='买入';positionPct=Math.min(20,8+netScore*4);targetPct=0.08;stopPct=-0.05;}
+  else if(netScore<=-3){action='卖出';positionPct=Math.min(25,10+Math.abs(netScore)*5);targetPct=-0.10;stopPct=0.05;}
+  else if(netScore<=-1){action='卖出';positionPct=Math.min(15,5+Math.abs(netScore)*3);targetPct=-0.06;stopPct=0.04;}
+  else{action='持有观望';positionPct=0;targetPct=0.05;stopPct=-0.05;}
+  // 辩论影响
+  if(debate.bullScore>debate.bearScore*1.3){positionPct=Math.min(35,positionPct+3);targetPct*=1.1;}
+  else if(debate.bearScore>debate.bullScore*1.3){positionPct=Math.min(30,positionPct+2);if(action==='买入')targetPct*=0.7;}
+  const targetPrice=(curPrice*(1+targetPct)).toFixed(2);
+  const stopLoss=(curPrice*(1+stopPct)).toFixed(2);
+  const reasoning=`基于${total}位分析师的独立研判(看多${bullCount}位/看空${bearCount}位/中性${total-bullCount-bearCount}位)，综合置信度${avgConf}%。${debate.bullScore>debate.bearScore?'研究员辩论中看多方占据优势('+debate.bullScore+' vs '+debate.bearScore+'分)，':'研究员辩论中看空方论据更充分('+debate.bearScore+' vs '+debate.bullScore+'分)，'}结合当前价格${curPrice.toFixed(2)}与近期走势(涨跌幅${priceChange.toFixed(2)}%)，交易员建议${action}，${positionPct>0?'建议仓位'+positionPct+'%，':''}目标价${targetPrice}，止损价${stopLoss}。`;
+  return {action,positionPct:Math.round(positionPct),targetPrice,stopLoss,reasoning};
+}
+
+// ---- Phase 4: 风控博弈 ----
+function taRiskDebate(ctx,trader,analysts){
+  const {curPrice,kdata,ticker}=ctx;
+  const d20=kdata.slice(-20);
+  const vol=Math.sqrt(d20.slice(1).map(k=>Math.log(k.close/d20[d20.indexOf(k)-1]?.close||1)).reduce((s,v)=>s+v*v,0)/d20.length)*Math.sqrt(252)*100;
+  const maxDD=taMaxDrawdown(kdata.slice(-60));
+  const rsi=taRSI(kdata.map(k=>k.close),14);
+  // 激进风控
+  const aggressive={
+    type:'aggressive',title:'激进风控官',stance:'Aggressive Risk Manager',
+    text:`从收益最大化角度，当前${trader.action}提案的风险收益比${trader.action==='买入'?'具有吸引力':'需要重新评估'}。年化波动率${vol.toFixed(1)}%在可控范围内，建议${trader.positionPct>0?'适当放大仓位至'+(Math.min(40,trader.positionPct+8))+'%':'维持当前判断'}。最大回撤${maxDD.toFixed(1)}%尚未触及警戒线。`,
+    riskScore:Math.round(Math.max(20,100-vol*1.2)),suggPos:Math.min(40,trader.positionPct+8),confidence:Math.min(75,60+Math.max(0,30-vol)*0.5)
+  };
+  // 保守风控
+  const conservative={
+    type:'conservative',title:'保守风控官',stance:'Conservative Risk Manager',
+    text:`从风险控制角度，当前波动率${vol.toFixed(1)}%${vol>30?'偏高，需严格控制仓位':'尚可接受但仍需警惕'}。最大回撤${maxDD.toFixed(1)}%显示潜在下行风险不可忽视。建议仓位上限控制在${Math.max(5,Math.round(trader.positionPct*0.6))}%以内，${rsi>65?'RSI偏高需注意短期回调':''}${rsi<35?'RSI偏低但底部尚不明确':'且需设置严格止损'}。`,
+    riskScore:Math.round(Math.min(90,40+vol*1.5)),suggPos:Math.max(5,Math.round(trader.positionPct*0.6)),confidence:Math.min(80,55+vol*0.5)
+  };
+  // 中性风控
+  const neutral={
+    type:'neutral-r',title:'中性风控官',stance:'Neutral Risk Manager',
+    text:`综合评估，当前${ticker.name}的风险指标处于${vol>35?'偏高':vol>20?'中等':'偏低'}水平。波动率${vol.toFixed(1)}%、最大回撤${maxDD.toFixed(1)}%、RSI ${rsi.toFixed(1)}等指标${vol>30?'提示需要审慎对待':'未触发极端风险信号'}。建议维持交易员原始仓位${trader.positionPct}%，动态监控关键风险指标。`,
+    riskScore:Math.round(40+vol*0.8),suggPos:trader.positionPct,confidence:Math.round(60+Math.min(20,(50-Math.abs(50-rsi))*0.5))
+  };
+  return [aggressive,conservative,neutral];
+}
+
+// ---- Phase 5: 组合经理终审 ----
+function taPortfolioManager(ctx,analysts,debate,trader,riskDebate){
+  const {curPrice,ticker}=ctx;
+  const bullCount=analysts.filter(a=>a.signal==='bullish').length;
+  const bearCount=analysts.filter(a=>a.signal==='bearish').length;
+  const avgConf=Math.round(analysts.reduce((s,a)=>s+a.confidence,0)/analysts.length);
+  // 各维度评分 (0-100)
+  const analystScore=Math.round((bullCount*20+(5-bullCount-bearCount)*10)/(analysts.length)*10);
+  const debateScore=Math.round(debate.bullScore/(debate.bullScore+debate.bearScore)*100);
+  const traderScore=trader.action==='买入'?70+Math.min(20,trader.positionPct):trader.action==='卖出'?30-Math.min(20,trader.positionPct):50;
+  const riskScore=Math.round((riskDebate[0].riskScore+riskDebate[1].riskScore+riskDebate[2].riskScore)/3);
+  // 加权综合
+  const overallScore=Math.round(analystScore*0.25+debateScore*0.25+traderScore*0.25+(100-riskScore)*0.25);
+  // 五级决策
+  let decisionLabel,decisionClass,finalPos;
+  if(overallScore>=75){decisionLabel='Buy · 买入';decisionClass='buy';finalPos=Math.min(35,trader.positionPct+5);}
+  else if(overallScore>=62){decisionLabel='Overweight · 增持';decisionClass='overweight';finalPos=Math.min(25,trader.positionPct);}
+  else if(overallScore>=45){decisionLabel='Hold · 持有';decisionClass='hold';finalPos=Math.max(0,trader.positionPct-5);}
+  else if(overallScore>=35){decisionLabel='Underweight · 减持';decisionClass='underweight';finalPos=Math.max(5,Math.round(trader.positionPct*0.4));}
+  else{decisionLabel='Sell · 卖出';decisionClass='sell';finalPos=0;}
+  // 风控调整
+  const conservativePos=riskDebate[1].suggPos;
+  finalPos=Math.min(finalPos,conservativePos+10);
+  finalPos=Math.max(0,Math.round(finalPos));
+  const confidence=Math.min(92,Math.round(avgConf*0.4+overallScore*0.6));
+  const riskAdj=overallScore>=60?'偏积极':overallScore>=45?'中性':'偏防御';
+  const reasoning=`组合经理综合${analysts.length}位分析师研判(看多${bullCount}/看空${bearCount})、${debate.rounds.length}轮研究员辩论结果(多方${debate.bullScore}分 vs 空方${debate.bearScore}分)、交易员${trader.action}提案及三方风控博弈意见，以25%分析师+25%辩论+25%交易员+25%风控的加权模型得出综合评分${overallScore}分。${overallScore>=60?'多方论据充分，风险可控，建议积极配置。':overallScore>=45?'多空分歧明显，建议维持现有仓位观望。':'空方风险信号较强，建议降低敞口或等待更明确的入场时机。'}最终决策: ${decisionLabel}，仓位${finalPos}%。`;
+  return {decisionLabel,decisionClass,confidence,finalPos,riskAdj,reasoning,analystScore,debateScore,traderScore,riskScore,overallScore};
+}
+
+// ---- 技术分析工具函数 ----
+function taEMA(data,period){
+  if(data.length<period)return data[data.length-1];
+  const k=2/(period+1);
+  let ema=data.slice(0,period).reduce((s,v)=>s+v,0)/period;
+  for(let i=period;i<data.length;i++)ema=data[i]*k+ema*(1-k);
+  return ema;
+}
+function taDEA(data,fast,slow,sig){
+  if(data.length<slow)return 0;
+  const kF=2/(fast+1),kS=2/(slow+1);
+  let emaF=data.slice(0,fast).reduce((s,v)=>s+v,0)/fast;
+  let emaS=data.slice(0,slow).reduce((s,v)=>s+v,0)/slow;
+  const difs=[];
+  for(let i=0;i<data.length;i++){
+    if(i<fast)emaF=data.slice(0,i+1).reduce((s,v)=>s+v,0)/(i+1);
+    else emaF=data[i]*kF+emaF*(1-kF);
+    if(i<slow)emaS=data.slice(0,i+1).reduce((s,v)=>s+v,0)/(i+1);
+    else emaS=data[i]*kS+emaS*(1-kS);
+    if(i>=slow-1)difs.push(emaF-emaS);
+  }
+  if(difs.length<sig)return difs.length?difs[difs.length-1]:0;
+  const kSig=2/(sig+1);
+  let dea=difs.slice(0,sig).reduce((s,v)=>s+v,0)/sig;
+  for(let i=sig;i<difs.length;i++)dea=difs[i]*kSig+dea*(1-kSig);
+  return dea;
+}
+function taRSI(data,period){
+  if(data.length<period+1)return 50;
+  let gains=0,losses=0;
+  for(let i=data.length-period;i<data.length;i++){
+    const d=data[i]-data[i-1];
+    if(d>0)gains+=d;else losses-=d;
+  }
+  const avgG=gains/period,avgL=losses/period;
+  return avgL===0?100:Math.round(100-100/(1+avgG/avgL)*10)/10;
+}
+function taMaxDrawdown(data){
+  if(!data.length)return 0;
+  let peak=data[0].close,maxDD=0;
+  for(const k of data){if(k.close>peak)peak=k.close;const dd=(peak-k.close)/peak*100;if(dd>maxDD)maxDD=dd;}
+  return maxDD;
+}
+
+// ---- Agent卡片渲染 ----
+function taRenderAgentCard(a){
+  const sigCls=a.signal==='bullish'?'bullish':a.signal==='bearish'?'bearish':'neutral';
+  const sigText=a.signal==='bullish'?'看多 Bullish':a.signal==='bearish'?'看空 Bearish':'中性 Neutral';
+  const metricsHtml=a.metrics?Object.entries(a.metrics).map(([k,v])=>`<div class="m-item">${k}<br><span class="m-val">${v}</span></div>`).join(''):'';
+  return `<div class="ta-ac ${sigCls}">
+    <div class="nm">${a.name}</div>
+    <div class="role">${a.role}</div>
+    <div class="sig ${sigCls}">${sigText}</div>
+    <div class="conf">置信度 ${a.confidence}%</div>
+    <div class="rs">${a.points.map(p=>'▸ '+p).join('<br>')}</div>
+    ${metricsHtml?'<div class="metrics">'+metricsHtml+'</div>':''}
+  </div>`;
+}
+
 </script>
 </body>
 </html>
