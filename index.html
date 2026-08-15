@@ -7678,7 +7678,7 @@ function wmShellHtml(){
         <button class="wm-chipbtn wm-info-close" id="wmInfoClose">✕ 关闭</button>
         <h3>口径与说明 METHODOLOGY</h3>
         <p>· GRX综合风险指数(0-100)由五维市场压力实时加权：波动率(30, VIX代理) · 股市(25, 十大股指均值跌幅) · 避险与利率(20, 黄金涨幅+2s10s倒挂深度) · 能源(15, 油/气绝对波动) · 加密(10, BTC 24h波动)。DEFCON映射：&lt;20→5 … ≥65→1。</p>
-        <p>· 地图底图与图层静态数据(冲突区域、情报热点、军事基地、核设施、管线、光缆、水道、发射场、AI数据中心)来自开源项目 World Monitor 的共享配置表，为研究性基线数据；热点"更新时间"为研究估算，用于时间范围筛选。</p>
+        <p>· 地图底图与各图层数据(冲突区域、情报热点、军事基地、核设施、管线、光缆、水道、发射场、AI数据中心)来自开源项目 World Monitor 的共享配置表，由定时任务每日自动同步上游 main 分支（地理数据快照：<b id="wmSnap">—</b>）；热点"更新时间"为研究估算，用于时间范围筛选。</p>
         <p>· 实时行情：东方财富公开延迟接口(约15分钟)；BTC/ETH：OKX/Binance/CoinGecko 实时；LIVE NEWS：东方财富7x24快讯。</p>
         <p>· 模块框架基于 <a href="https://github.com/koala73/worldmonitor" target="_blank">koala73/worldmonitor</a> (AGPL-3.0)，完整源码收录于本站仓库 <a href="https://github.com/danniallcc-creator/zaiyu-horizon-pc/tree/main/worldmonitor" target="_blank">worldmonitor/ 目录</a>。</p>
         <p>风险提示：本页全部数据与评估仅供研究参考，不构成任何投资建议。市场有风险，投资需谨慎。</p>
@@ -7829,6 +7829,8 @@ function renderWorldMonitor(){
   wmBindShell();
   wmLoadAssets().then(()=>{
     wmAssetsOk=true;
+    const sn=document.getElementById('wmSnap');
+    if(sn&&window.WM_GEO)sn.textContent=(WM_GEO.builtAt||'—')+' · upstream '+(WM_GEO.upstream||'local');
     wmBuildMap();
     wmRefresh(false);
     wmLoadNews();
