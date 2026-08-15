@@ -7767,6 +7767,7 @@ async function wmRefresh(silent){
     const de=document.getElementById('wmDefcon');
     if(de){de.textContent='DEFCON '+dn+' · GRX '+sc.total.toFixed(1);de.style.color=dc;de.style.borderColor=dc;de.style.background=dc+'1a';}
     wmUpdateAlerts();
+    wmLoadNews(); // 快讯随60s周期滚动刷新
     // 行情脉冲
     const mg=document.getElementById('wmMktGrid');
     if(mg){
