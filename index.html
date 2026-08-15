@@ -913,77 +913,77 @@ a{color:inherit;text-decoration:none}
 @media(max-width:700px){.ta-debate-round{grid-template-columns:1fr}.ta-risk-cards{grid-template-columns:1fr}.ta-pm-breakdown{grid-template-columns:repeat(3,1fr)}.ta-agent-grid{grid-template-columns:1fr}.ta-trader-box .tb-grid{grid-template-columns:repeat(2,1fr)}.ta-pipe-steps{flex-wrap:wrap}.ta-pipe-step{flex:none;width:33.3%}}
 
 /* ============ World Monitor 全球风险实时大屏 ============ */
-.wm-hero{display:grid;grid-template-columns:minmax(320px,1.2fr) 1fr;gap:16px;margin-bottom:16px}
-.wm-panel{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:20px 22px;position:relative;overflow:hidden}
-.wm-panel.gold-edge{border-color:var(--line-gold)}
-.wm-panel-title{font-size:13px;font-weight:600;color:var(--gold-pale);letter-spacing:.08em;margin-bottom:14px;display:flex;align-items:center;gap:8px}
-.wm-panel-title .wm-tag{font-size:10px;font-weight:400;color:var(--text-3);border:1px solid var(--line);border-radius:4px;padding:1px 7px;letter-spacing:.05em}
-.wm-live-dot{width:7px;height:7px;border-radius:50%;background:var(--green);display:inline-block;animation:wmPulse 1.6s infinite}
-@keyframes wmPulse{0%,100%{box-shadow:0 0 0 0 rgba(76,175,114,.5)}50%{box-shadow:0 0 0 5px rgba(76,175,114,0)}}
-.wm-score-wrap{display:flex;align-items:flex-end;gap:18px;margin-bottom:14px}
-.wm-score-num{font-family:'JetBrains Mono',monospace;font-size:62px;font-weight:700;line-height:.95;letter-spacing:-.02em}
-.wm-score-side{display:flex;flex-direction:column;gap:7px;padding-bottom:6px}
-.wm-score-label{font-size:12px;color:var(--text-2)}
-.wm-chip{display:inline-block;font-size:12px;font-weight:600;padding:3px 12px;border-radius:20px;letter-spacing:.06em}
-.wm-lv-low{color:var(--green);background:rgba(76,175,114,.12);border:1px solid rgba(76,175,114,.35)}
-.wm-lv-watch{color:var(--gold-bright);background:rgba(212,175,55,.10);border:1px solid rgba(212,175,55,.4)}
-.wm-lv-high{color:var(--orange);background:rgba(224,162,60,.12);border:1px solid rgba(224,162,60,.4)}
-.wm-lv-extreme{color:var(--red);background:rgba(224,92,92,.12);border:1px solid rgba(224,92,92,.45)}
-.wm-meter{height:10px;border-radius:5px;background:linear-gradient(90deg,rgba(76,175,114,.55) 0%,rgba(212,175,55,.55) 35%,rgba(224,162,60,.6) 65%,rgba(224,92,92,.65) 100%);position:relative;margin-bottom:12px}
-.wm-meter-pin{position:absolute;top:-4px;width:3px;height:18px;border-radius:2px;background:#fff;box-shadow:0 0 8px rgba(255,255,255,.8);transform:translateX(-50%)}
-.wm-meta-row{display:flex;gap:16px;font-size:11px;color:var(--text-3);flex-wrap:wrap}
-.wm-meta-row b{color:var(--text-2);font-weight:500}
-.wm-part{display:grid;grid-template-columns:112px 1fr 52px;align-items:center;gap:10px;margin-bottom:9px;font-size:12px}
-.wm-part:last-child{margin-bottom:0}
-.wm-part-name{color:var(--text-2)}
-.wm-part-bar{height:7px;border-radius:4px;background:rgba(255,255,255,.05);overflow:hidden}
-.wm-part-fill{height:100%;border-radius:4px;background:linear-gradient(90deg,var(--gold-deep),var(--gold));transition:width .6s ease}
-.wm-part-val{font-family:'JetBrains Mono',monospace;color:var(--gold-pale);text-align:right}
-.wm-grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}
-.wm-table{width:100%;border-collapse:collapse;font-size:13px}
-.wm-table th{font-size:11px;font-weight:500;color:var(--text-3);text-align:left;padding:0 10px 8px;border-bottom:1px solid var(--line);letter-spacing:.05em}
-.wm-table th.r,.wm-table td.r{text-align:right}
-.wm-table td{padding:8px 10px;border-bottom:1px solid rgba(38,38,47,.55)}
-.wm-table tr:last-child td{border-bottom:none}
-.wm-table .idx-name{font-weight:500}
-.wm-table .idx-flag{color:var(--text-3);font-size:11px;margin-left:6px}
-.wm-table .mono{font-family:'JetBrains Mono',monospace}
-.wm-badge{display:inline-block;font-family:'JetBrains Mono',monospace;font-size:12px;padding:2px 8px;border-radius:5px;min-width:64px;text-align:center}
-.wm-badge.up{background:rgba(76,175,114,.12);color:var(--green)}
-.wm-badge.down{background:rgba(224,92,92,.12);color:var(--red)}
-.wm-badge.flat{background:rgba(255,255,255,.04);color:var(--text-3)}
-.wm-stress-note{font-size:10px;color:var(--text-3);margin-top:10px}
-.wm-heat{display:grid;grid-template-columns:repeat(5,1fr);gap:12px}
-.wm-region{background:var(--panel-2);border:1px solid var(--line);border-radius:12px;padding:14px 15px;transition:border-color .3s}
-.wm-region:hover{border-color:var(--line-gold)}
-.wm-region-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:9px}
-.wm-region-name{font-size:14px;font-weight:600;font-family:'Noto Serif SC',serif}
-.wm-region-score{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:700}
-.wm-rs-low{color:var(--green)}.wm-rs-watch{color:var(--gold-bright)}.wm-rs-high{color:var(--orange)}.wm-rs-extreme{color:var(--red)}
-.wm-heat-bar{height:6px;border-radius:3px;background:rgba(255,255,255,.05);overflow:hidden;margin-bottom:9px}
-.wm-heat-fill{height:100%;border-radius:3px;transition:width .6s ease}
-.wm-hf-low{background:linear-gradient(90deg,#2e7d52,var(--green))}
-.wm-hf-watch{background:linear-gradient(90deg,var(--gold-deep),var(--gold))}
-.wm-hf-high{background:linear-gradient(90deg,#b56a1f,var(--orange))}
-.wm-hf-extreme{background:linear-gradient(90deg,#a03d3d,var(--red))}
-.wm-region-drivers{font-size:11px;color:var(--text-3);line-height:1.55}
-.wm-watch-item{display:flex;align-items:center;gap:12px;padding:9px 2px;border-bottom:1px solid rgba(38,38,47,.55);font-size:13px}
-.wm-watch-item:last-child{border-bottom:none}
-.wm-watch-name{flex:1}
-.wm-watch-status{font-size:11px;color:var(--text-3)}
-.wm-sev{font-size:11px;font-weight:600;padding:2px 9px;border-radius:4px}
-.wm-sev-h{color:var(--red);background:rgba(224,92,92,.1)}
-.wm-sev-mh{color:var(--orange);background:rgba(224,162,60,.1)}
-.wm-sev-m{color:var(--gold);background:rgba(212,175,55,.08)}
-.wm-sev-l{color:var(--green);background:rgba(76,175,114,.1)}
-.wm-note-list{font-size:12px;color:var(--text-2);line-height:1.8}
-.wm-note-list li{margin-bottom:6px;list-style:none;padding-left:14px;position:relative}
-.wm-note-list li::before{content:'·';position:absolute;left:2px;color:var(--gold)}
-.wm-foot-attr{margin-top:16px;padding:14px 18px;border-radius:10px;background:rgba(0,0,0,.25);border:1px solid var(--line);font-size:11px;color:var(--text-3);line-height:1.8}
-.wm-foot-attr a{color:var(--gold)}
-.wm-data-miss{font-size:11px;color:var(--orange);margin-top:6px}
-@media(max-width:1200px){.wm-heat{grid-template-columns:repeat(3,1fr)}}
-@media(max-width:900px){.wm-hero,.wm-grid-2{grid-template-columns:1fr}.wm-heat{grid-template-columns:repeat(2,1fr)}.wm-score-num{font-size:48px}}
+#wmContent{margin-top:2px}
+.wm-shell{display:flex;flex-direction:column;height:calc(100vh - 170px);min-height:640px;border:1px solid var(--line);border-radius:var(--r);overflow:hidden;background:#07090c}
+.wm-top{display:flex;align-items:center;gap:9px;padding:8px 12px;background:#0b0e12;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.wm-chipbtn{display:inline-flex;align-items:center;gap:6px;font-size:11px;letter-spacing:.08em;color:var(--text-2);background:#12161b;border:1px solid var(--line);border-radius:6px;padding:4px 10px;cursor:pointer;font-family:'JetBrains Mono',monospace}
+.wm-chipbtn:hover{border-color:rgba(53,224,138,.4);color:#dfffee}
+.wm-logo{font-weight:700;font-size:13px;letter-spacing:.22em;color:#eafff3;font-family:'JetBrains Mono',monospace}
+.wm-logo em{font-style:normal;color:#35e08a}
+.wm-ver{font-size:10px;color:var(--text-3);font-family:'JetBrains Mono',monospace}
+.wm-live{display:inline-flex;align-items:center;gap:6px;font-size:11px;color:#35e08a;letter-spacing:.1em;font-family:'JetBrains Mono',monospace}
+.wm-live i{width:7px;height:7px;border-radius:50%;background:#35e08a;animation:wmPulse 1.6s infinite}
+@keyframes wmPulse{0%,100%{box-shadow:0 0 0 0 rgba(53,224,138,.5)}50%{box-shadow:0 0 0 5px rgba(53,224,138,0)}}
+.wm-spacer{flex:1}
+.wm-clock{font-size:11px;color:var(--text-2);letter-spacing:.06em;font-family:'JetBrains Mono',monospace}
+.wm-defcon{font-size:11px;font-weight:700;letter-spacing:.1em;padding:4px 10px;border-radius:6px;border:1px solid;font-family:'JetBrains Mono',monospace}
+.wm-alerts{font-size:11px;color:#ffb45e;background:rgba(255,159,46,.1);border:1px solid rgba(255,159,46,.4);border-radius:6px;padding:4px 10px;font-family:'JetBrains Mono',monospace}
+.wm-sel{background:#12161b;border:1px solid var(--line);border-radius:6px;color:var(--text-2);font-size:12px;padding:4px 8px;font-family:'Noto Sans SC',sans-serif;outline:none}
+.wm-mapwrap{position:relative;flex:1;min-height:0;background:radial-gradient(1200px 500px at 50% -10%,rgba(53,224,138,.05),transparent 60%),#0a0d10}
+#wmMap{width:100%;height:100%;display:block;cursor:grab}
+#wmMap.drag{cursor:grabbing}
+.wm-ovl{position:absolute;background:rgba(9,12,15,.9);border:1px solid var(--line);border-radius:8px}
+.wm-timechips{left:10px;top:10px;display:flex;gap:4px;padding:5px}
+.wm-tc{font-size:11px;padding:3px 9px;border-radius:5px;color:var(--text-3);cursor:pointer;border:1px solid transparent;font-family:'JetBrains Mono',monospace;background:none}
+.wm-tc:hover{color:#dfffee}
+.wm-tc.on{background:#35e08a;color:#04140b;font-weight:700}
+.wm-layers{left:10px;top:52px;width:186px;padding:10px 12px}
+.wm-layers h4{font-size:11px;letter-spacing:.18em;color:var(--text-2);margin-bottom:8px;font-weight:600;font-family:'JetBrains Mono',monospace}
+.wm-lyr{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--text-2);padding:4px 0;cursor:pointer;font-family:'Noto Sans SC',sans-serif}
+.wm-lyr input{accent-color:#35e08a;width:13px;height:13px;cursor:pointer;flex-shrink:0}
+.wm-lyr:hover{color:#dfffee}
+.wm-zoom{right:10px;top:10px;display:flex;flex-direction:column;gap:4px;padding:5px}
+.wm-zoom button{width:26px;height:26px;background:#12161b;border:1px solid var(--line);border-radius:5px;color:var(--text-2);cursor:pointer;font-size:14px}
+.wm-zoom button:hover{color:#35e08a;border-color:rgba(53,224,138,.4)}
+.wm-legend{bottom:8px;left:50%;transform:translateX(-50%);display:flex;gap:14px;align-items:center;padding:6px 14px;font-size:10px;color:var(--text-2);letter-spacing:.05em;white-space:nowrap}
+.wm-lg{display:inline-flex;align-items:center;gap:5px}
+.wm-lg i{width:8px;height:8px;border-radius:50%;display:inline-block}
+.wm-lg i.sq{border-radius:2px}
+.wm-lg i.ln{width:14px;height:2px;border-radius:1px}
+.wm-tip{position:absolute;pointer-events:none;background:rgba(8,11,14,.95);border:1px solid rgba(53,224,138,.35);border-radius:6px;padding:7px 10px;font-size:11px;color:#dfffee;max-width:280px;line-height:1.5;display:none;z-index:5;font-family:'Noto Sans SC',sans-serif}
+.wm-tip b{color:#35e08a;display:block;margin-bottom:2px}
+.wm-bottom{display:grid;grid-template-columns:1.15fr 1fr 1.05fr;gap:8px;padding:8px;height:280px;flex-shrink:0}
+.wmb-p{background:#0b0e12;border:1px solid var(--line);border-radius:10px;display:flex;flex-direction:column;overflow:hidden}
+.wmb-h{display:flex;align-items:center;gap:8px;padding:8px 12px;border-bottom:1px solid var(--line);font-size:11px;letter-spacing:.16em;color:var(--text-2);font-weight:700;font-family:'JetBrains Mono',monospace}
+.wmb-h .wm-live i{width:6px;height:6px}
+.wmb-h .tag{margin-left:auto;font-size:9px;color:var(--text-3);letter-spacing:.05em;font-weight:400}
+.wmb-b{flex:1;overflow-y:auto;padding:8px 12px;font-family:'Noto Sans SC',sans-serif}
+.wm-news-it{padding:7px 2px;border-bottom:1px solid rgba(38,38,47,.5);font-size:12px;line-height:1.55;color:var(--text-2)}
+.wm-news-it:last-child{border-bottom:none}
+.wm-news-it .t{font-family:'JetBrains Mono',monospace;color:#35e08a;font-size:10px;margin-right:8px}
+.wm-mkt{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.wm-mkt-tile{background:#10141a;border:1px solid var(--line);border-radius:8px;padding:8px 10px}
+.wm-mkt-tile .n{font-size:10px;color:var(--text-3);letter-spacing:.08em;margin-bottom:4px;font-family:'Noto Sans SC',sans-serif}
+.wm-mkt-tile .v{font-family:'JetBrains Mono',monospace;font-size:15px;font-weight:700;color:#eafff3}
+.wm-mkt-tile .c{font-family:'JetBrains Mono',monospace;font-size:11px;margin-top:2px}
+.wm-rightcol{display:flex;flex-direction:column;gap:8px;min-height:0}
+.wm-rightcol .wmb-p{flex:1;min-height:0}
+.wm-insight{font-size:12px;line-height:1.75;color:var(--text-2)}
+.wm-insight b{color:#35e08a}
+.wm-post-it{display:flex;align-items:center;gap:10px;padding:6px 2px;border-bottom:1px solid rgba(38,38,47,.5);font-size:12px}
+.wm-post-it:last-child{border-bottom:none}
+.wm-post-it .nm{flex:1;color:var(--text-2);font-weight:500}
+.wm-post-it .pd{font-size:10px;color:var(--text-3);max-width:46%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.wm-crit{font-size:10px;font-weight:700;letter-spacing:.08em;padding:2px 8px;border-radius:4px;font-family:'JetBrains Mono',monospace}
+.wm-crit.crit{color:#ff4d5e;background:rgba(255,77,94,.12)}
+.wm-crit.high{color:#ff9f2e;background:rgba(255,159,46,.12)}
+.wm-crit.elev{color:#ffd166;background:rgba(255,209,102,.1)}
+.wm-info-ovl{position:absolute;inset:0;background:rgba(5,8,10,.94);z-index:9;display:none;padding:26px 30px;overflow:auto;font-family:'Noto Sans SC',sans-serif}
+.wm-info-ovl.show{display:block}
+.wm-info-ovl h3{color:#35e08a;font-size:14px;letter-spacing:.1em;margin-bottom:12px}
+.wm-info-ovl p,.wm-info-ovl li{font-size:12px;line-height:1.8;color:var(--text-2);margin-bottom:6px}
+.wm-info-ovl a{color:#35e08a}
+@media(max-width:1100px){.wm-bottom{grid-template-columns:1fr;height:auto}.wmb-p{max-height:260px}.wm-shell{height:auto}}
 </style>
 </head>
 <body>
@@ -7511,234 +7511,329 @@ function taRenderAgentCard(a){
 }
 
 /* ==================== World Monitor 全球风险实时大屏 ==================== */
-// 框架灵感: koala73/worldmonitor 开源项目 (AGPL-3.0), 完整源码见本仓库 worldmonitor/ 目录
-// 数据源: 东方财富push2delay公开接口(全球股指/商品/外汇/国债, 延迟约15分钟)
-//         + OKX/Binance/CoinGecko公共数据(加密货币, 实时) — 均复用站点既有行情管线
-// 综合风险指数GRX为市场数据衍生的量化监测指标, 区域风险为研究评估基线+市场联动修正, 均不构成投资建议
-const WM_IDX=[
-  ['100.SPX','标普500','美国'], ['100.NDX','纳斯达克100','美国'], ['100.DJIA','道琼斯工业','美国'],
-  ['100.N225','日经225','日本'], ['100.HSI','恒生指数','中国香港'], ['100.TWII','台湾加权','中国台湾'],
-  ['100.FTSE','英国富时100','英国'], ['100.SENSEX','印度SENSEX','印度'], ['100.AS51','澳洲标普200','澳大利亚'],
-  ['1.000001','上证指数','中国'],
-];
-const WM_IDX_CACHE={
-  '100.SPX':['sp500','sp500Change'], '100.NDX':['nasdaq','nasdaqChange'], '100.DJIA':['dow','dowChange'],
-  '1.000001':null,
-};
-const WM_REGIONS=[
-  {name:'中东', base:72, drivers:['地缘冲突外溢风险','原油供应扰动','航运通道安全'], live:(d,a)=>{if(d.oilChg>4)return a+12; if(d.oilChg>2)return a+8; return a;}},
-  {name:'东欧', base:68, drivers:['俄乌冲突持续消耗','能源与制裁博弈','安全架构重塑'], live:(d,a)=>d.ngChg>3?a+6:a},
-  {name:'东亚', base:55, drivers:['半岛局势','台海因素','产业链重组'], live:(d,a)=>a},
-  {name:'南亚', base:50, drivers:['边境摩擦','汇率与外储压力'], live:(d,a)=>a},
-  {name:'西欧', base:48, drivers:['能源转型成本','财政与政治碎片化'], live:(d,a)=>d.ngChg>3?a+4:a},
-  {name:'非洲', base:46, drivers:['债务可持续性','粮食安全','局部冲突'], live:(d,a)=>a},
-  {name:'北美', base:45, drivers:['政策不确定性','主权债务与利息负担','贸易壁垒'], live:(d,a)=>a},
-  {name:'拉丁美洲', base:42, drivers:['部分经济体通胀与汇率压力','治理波动'], live:(d,a)=>a},
-  {name:'东南亚', base:38, drivers:['供应链转移伴生风险','部分国家债务压力'], live:(d,a)=>a},
-  {name:'大洋洲', base:22, drivers:['总体平稳','大宗商品与贸易依存波动'], live:(d,a)=>a},
-];
-const WM_WATCH=[
-  ['俄乌冲突走向','持续中','高'], ['中东局势与原油供应','密切关注','高'],
-  ['中美经贸与科技博弈','长期变量','中高'], ['美联储政策路径与美债供给','数据依赖','中'],
-  ['日本央行利率正常化外溢','渐进中','中'], ['关键矿产与供应链重构','结构性','中'],
-  ['全球主权债务与利息负担','结构性','中'], ['AI治理与科技监管','演进中','低中'],
-];
-const WM_SEV={'高':'wm-sev-h','中高':'wm-sev-mh','中':'wm-sev-m','低中':'wm-sev-l'};
+// 指挥中心式大屏 · 框架与地理数据基于开源项目 koala73/worldmonitor (AGPL-3.0, 源码见仓库 worldmonitor/ 目录)
+// 地图底图: worldmonitor/public/data/countries-110m.json (TopoJSON预投影)
+// 图层静态数据: 冲突区域/情报热点/战略水道/军事基地/核设施/油气管线/海底光缆/航天发射场/AI数据中心 (源自其共享配置表)
+// 实时行情复用站点管线: 东方财富push2delay(延迟约15min) + OKX/Binance/CoinGecko(加密实时); 快讯: 东方财富7x24公开接口
+const WM_PX=lon=>(lon+180)*(1000/360);
+const WM_PY=lat=>(90-lat)*(500/180);
+const WM_SEV_COLOR={'High Alert':'#ff4d5e','Elevated':'#ff9f2e','Monitoring':'#ffd166'};
+const WM_BASE_COLOR={'us-nato':'#5b9bd5','russia':'#ff8080','china':'#ffb45e'};
+const WM_PIPE_COLOR={oil:'#ff6b35',gas:'#00b4d8',products:'#ffd166'};
+const WM_REGION_BB={Global:[-180,-72,180,86],'中东':[24,10,66,46],'欧洲':[-12,35,42,71],'亚太':[66,-14,154,50],'美洲':[-135,-56,-30,52],'非洲':[-18,-36,52,37]};
+const WM_LAYERS=[['hotspots','冲突事件 / 情报热点'],['zones','冲突区域'],['waterways','战略水道'],['bases','军事基地'],['nuclear','核设施'],['pipelines','油气管线'],['cables','海底光缆'],['spaceports','航天发射场'],['dcs','AI 数据中心']];
+const WM_LAYER_ON={hotspots:true,zones:true,waterways:true,bases:true,nuclear:true,pipelines:true,cables:false,spaceports:false,dcs:false};
+const WM_RANGES=[[1,'1h'],[6,'6h'],[24,'24h'],[48,'48h'],[168,'7d'],[99999,'All']];
+let wmVB={x:0,y:0,w:1000,h:500},wmRange=99999,wmAssetsOk=false,wmBusy=false,wmClockTimer=null,wmDrag=null;
 
-function wmLv(score){
-  if(score<25)return['低风险','wm-lv-low','wm-rs-low','wm-hf-low'];
-  if(score<45)return['关注','wm-lv-watch','wm-rs-watch','wm-hf-watch'];
-  if(score<65)return['较高','wm-lv-high','wm-rs-high','wm-hf-high'];
-  return['高风险','wm-lv-extreme','wm-rs-extreme','wm-hf-extreme'];
+function wmLoadAssets(){
+  if(window.WM_WORLD&&window.WM_GEO)return Promise.resolve();
+  if(wmLoadAssets.p)return wmLoadAssets.p;
+  wmLoadAssets.p=Promise.all(['wm/worldmap.js','wm/geodata.js'].map(src=>new Promise((res,rej)=>{
+    const s=document.createElement('script');s.src=src;s.onload=res;s.onerror=()=>rej(new Error('load '+src));document.head.appendChild(s);
+  })));
+  return wmLoadAssets.p;
 }
 function wmClamp(x,a,b){return Math.max(a,Math.min(b,x));}
-
+function wmLv(score){
+  if(score<25)return['低风险','low'];
+  if(score<45)return['关注','watch'];
+  if(score<65)return['较高','high'];
+  return['高风险','extreme'];
+}
+function wmDefcon(total){
+  if(total<20)return[5,'#35e08a'];
+  if(total<35)return[4,'#ffd166'];
+  if(total<50)return[3,'#ff9f2e'];
+  if(total<65)return[2,'#ff6b35'];
+  return[1,'#ff4d5e'];
+}
 // 综合风险指数 GRX (0-100): 五维市场压力加权
 function wmComputeScore(c,extra){
   const miss=[];
-  const vix=c.vixIndex;
-  const goldChg=c.goldChange, oilChg=c.oilChange, ngChg=c.natgasChange;
-  const spread=c.yieldSpread, btcChg=c.btcChange;
+  const vix=c.vixIndex,goldChg=c.goldChange,oilChg=c.oilChange,ngChg=c.natgasChange,spread=c.yieldSpread,btcChg=c.btcChange;
   const eqChgs=[];
-  WM_IDX.forEach(([sid])=>{
-    const ck=WM_IDX_CACHE[sid];
-    let chg=null;
-    if(ck&&c[ck[1]]!=null)chg=c[ck[1]];
-    else if(extra[sid]&&extra[sid].chg!=null)chg=extra[sid].chg;
-    if(chg!=null)eqChgs.push(chg);
-  });
+  [['sp500Change'],['nasdaqChange'],['dowChange']].forEach(([k])=>{if(c[k]!=null)eqChgs.push(c[k]);});
+  ['100.N225','100.HSI','100.TWII','100.FTSE','100.SENSEX','100.AS51','1.000001'].forEach(sid=>{if(extra[sid]&&extra[sid].chg!=null)eqChgs.push(extra[sid].chg);});
   const eqAvg=eqChgs.length?eqChgs.reduce((s,v)=>s+v,0)/eqChgs.length:null;
   const parts=[];
-  // ① 波动率压力 (权重30): VIX代理 12→38 区间线性映射
-  if(vix!=null){parts.push(['波动率压力(VIX)',wmClamp((vix-12)/26,0,1)*30,30]);}else{parts.push(['波动率压力(VIX)',0,30]);miss.push('VIX');}
-  // ② 股市压力 (权重25): 十大股指均值跌幅映射
-  if(eqAvg!=null){parts.push(['股市压力',wmClamp(-eqAvg/2.5,0,1)*25,25]);}else{parts.push(['股市压力',0,25]);miss.push('股指');}
-  // ③ 避险与利率 (权重20): 黄金涨幅(12) + 收益率曲线倒挂深度(8)
-  let p3=0;
-  if(goldChg!=null){p3+=wmClamp(goldChg/2,0,1)*12;}else{miss.push('黄金');}
-  if(spread!=null){p3+=wmClamp(-spread/0.5,0,1)*8;}else{miss.push('利差');}
+  parts.push(vix!=null?['波动率压力(VIX)',wmClamp((vix-12)/26,0,1)*30,30]:['波动率压力(VIX)',0,30]);
+  if(vix==null)miss.push('VIX');
+  parts.push(eqAvg!=null?['股市压力',wmClamp(-eqAvg/2.5,0,1)*25,25]:['股市压力',0,25]);
+  if(eqAvg==null)miss.push('股指');
+  let p3=0;if(goldChg!=null)p3+=wmClamp(goldChg/2,0,1)*12;if(spread!=null)p3+=wmClamp(-spread/0.5,0,1)*8;
   parts.push(['避险与利率',p3,20]);
-  // ④ 能源冲击 (权重15): 油价波动(10) + 天然气波动(5)
-  let p4=0;
-  if(oilChg!=null){p4+=wmClamp(Math.abs(oilChg)/4,0,1)*10;}else{miss.push('原油');}
-  if(ngChg!=null){p4+=wmClamp(Math.abs(ngChg)/6,0,1)*5;}else{miss.push('天然气');}
+  let p4=0;if(oilChg!=null)p4+=wmClamp(Math.abs(oilChg)/4,0,1)*10;if(ngChg!=null)p4+=wmClamp(Math.abs(ngChg)/6,0,1)*5;
   parts.push(['能源冲击',p4,15]);
-  // ⑤ 加密波动 (权重10): BTC 24h波动映射
-  if(btcChg!=null){parts.push(['加密波动(BTC)',wmClamp(Math.abs(btcChg)/8,0,1)*10,10]);}else{parts.push(['加密波动(BTC)',0,10]);miss.push('BTC');}
+  parts.push(btcChg!=null?['加密波动(BTC)',wmClamp(Math.abs(btcChg)/8,0,1)*10,10]:['加密波动(BTC)',0,10]);
   const total=Math.round(parts.reduce((s,p)=>s+p[1],0)*10)/10;
-  return {total,parts,miss,eqAvg,goldChg,oilChg,ngChg};
+  return{total,parts,miss,eqAvg,goldChg,oilChg,ngChg};
 }
-
 function wmBadgeHtml(chg){
-  if(chg==null||isNaN(chg))return'<span class="wm-badge flat">—</span>';
-  const cls=chg>0?'up':chg<0?'down':'flat';
+  if(chg==null||isNaN(chg))return'<span class="c" style="color:var(--text-3)">—</span>';
+  const col=chg>0?'var(--green)':chg<0?'var(--red)':'var(--text-3)';
   const ar=chg>0?'▲':chg<0?'▼':'■';
-  return`<span class="wm-badge ${cls}">${ar} ${Math.abs(chg).toFixed(2)}%</span>`;
+  return`<span class="c" style="color:${col}">${ar} ${Math.abs(chg).toFixed(2)}%</span>`;
+}
+function wmEsc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+
+/* ---------- 地图构建 ---------- */
+function wmPolyPath(coords){
+  return 'M'+coords.map(p=>WM_PX(p[0]).toFixed(1)+','+WM_PY(p[1]).toFixed(1)).join('L')+'Z';
+}
+function wmLinePath(pts){
+  return 'M'+pts.map(p=>WM_PX(p[0]).toFixed(1)+','+WM_PY(p[1]).toFixed(1)).join('L');
+}
+function wmHotspotNodes(range){
+  const G=window.WM_GEO;if(!G)return'';
+  let s='';
+  G.hotspots.filter(h=>h.h<=range).forEach(h=>{
+    const col=WM_SEV_COLOR[h.s]||WM_SEV_COLOR.Monitoring;
+    const r=h.s==='High Alert'?4.2:h.s==='Elevated'?3.4:2.8;
+    const x=WM_PX(h.lo).toFixed(1),y=WM_PY(h.la).toFixed(1);
+    s+=`<circle cx="${x}" cy="${y}" r="${r*2.1}" fill="${col}" opacity=".16"/>`;
+    s+=`<circle cx="${x}" cy="${y}" r="${r}" fill="${col}" stroke="#0a0d10" stroke-width=".6" data-t="${wmEsc(h.n+' · '+(h.s||''))}|${wmEsc(h.st+' — '+h.d)}"/>`;
+  });
+  return s;
+}
+function wmBuildMap(){
+  const svg=document.getElementById('wmMap');if(!svg||!window.WM_WORLD)return;
+  const W=window.WM_WORLD,G=window.WM_GEO;
+  let s=`<rect x="-200" y="-100" width="1400" height="700" fill="transparent"/>`;
+  s+='<g id="wmCountries">'+W.paths.map(d=>`<path d="${d}" fill="#161b21" stroke="#242b33" stroke-width=".5" vector-effect="non-scaling-stroke"/>`).join('')+'</g>';
+  s+='<g id="wmG_zones" style="display:'+(WM_LAYER_ON.zones?'':'none')+'">'+G.zones.map(z=>{
+    const hi=z.i==='high';
+    return`<path d="${wmPolyPath(z.c)}" fill="rgba(255,45,70,${hi?0.28:0.16})" stroke="${hi?'#ff2d46':'#ff7a68'}" stroke-width=".8" vector-effect="non-scaling-stroke" data-t="${wmEsc(z.n)}|${wmEsc((z.p||[]).join(' / ')+' — '+z.d)}"/>`;
+  }).join('')+'</g>';
+  s+='<g id="wmG_cables" style="display:'+(WM_LAYER_ON.cables?'':'none')+'">'+G.cables.map(c=>`<path d="${wmLinePath(c.pts)}" fill="none" stroke="#22d3ee" stroke-width=".6" opacity=".5" data-t="${wmEsc(c.n)}|海底光缆"/>`).join('')+'</g>';
+  s+='<g id="wmG_pipelines" style="display:'+(WM_LAYER_ON.pipelines?'':'none')+'">'+G.pipelines.map(p=>`<path d="${wmLinePath(p.pts)}" fill="none" stroke="${WM_PIPE_COLOR[p.t]||'#ffd166'}" stroke-width=".8" opacity="${p.s==='operating'?0.85:0.4}" stroke-dasharray="${p.s==='operating'?'none':'2,2'}" data-t="${wmEsc(p.n)}|${p.t==='oil'?'原油':p.t==='gas'?'天然气':'成品油'}管线 · ${p.s==='operating'?'运营中':'建设中'}"/>`).join('')+'</g>';
+  s+='<g id="wmG_waterways" style="display:'+(WM_LAYER_ON.waterways?'':'none')+'">'+G.waterways.map(w=>{
+    const x=WM_PX(w.lo),y=WM_PY(w.la);
+    return`<path d="M${x},${y-3.2}L${x+3.2},${y}L${x},${y+3.2}L${x-3.2},${y}Z" fill="none" stroke="#22d3ee" stroke-width=".9" data-t="${wmEsc(w.n)}|${wmEsc(w.d)}"/>`;
+  }).join('')+'</g>';
+  s+='<g id="wmG_bases" style="display:'+(WM_LAYER_ON.bases?'':'none')+'">'+G.bases.map(b=>{
+    const x=WM_PX(b.lo),y=WM_PY(b.la),col=WM_BASE_COLOR[b.t]||'#8a94a3';
+    return`<path d="M${x},${y-2.6}L${x+2.4},${y+1.8}L${x-2.4},${y+1.8}Z" fill="${col}" opacity=".85" data-t="${wmEsc(b.n)}|军事基地"/>`;
+  }).join('')+'</g>';
+  s+='<g id="wmG_nuclear" style="display:'+(WM_LAYER_ON.nuclear?'':'none')+'">'+G.nuclear.map(nu=>{
+    const x=WM_PX(nu.lo),y=WM_PY(nu.la),r=1.9;
+    let pts='';for(let i=0;i<6;i++){const a=Math.PI/3*i-Math.PI/6;pts+=(x+r*Math.cos(a)).toFixed(1)+','+(y+r*Math.sin(a)).toFixed(1)+' ';}
+    return`<polygon points="${pts}" fill="${nu.t==='weapons'?'#ff9f2e':'#ffd166'}" opacity=".9" data-t="${wmEsc(nu.n)}|核设施 · ${nu.t==='weapons'?'军事':'民用'}"/>`;
+  }).join('')+'</g>';
+  s+='<g id="wmG_spaceports" style="display:'+(WM_LAYER_ON.spaceports?'':'none')+'">'+G.spaceports.map(sp=>{
+    const x=WM_PX(sp.lo),y=WM_PY(sp.la);
+    return`<rect x="${x-1.8}" y="${y-1.8}" width="3.6" height="3.6" fill="#7dd3fc" transform="rotate(45 ${x} ${y})" data-t="${wmEsc(sp.n)}|航天发射场"/>`;
+  }).join('')+'</g>';
+  s+='<g id="wmG_dcs" style="display:'+(WM_LAYER_ON.dcs?'':'none')+'">'+G.dcs.map(d=>`<rect x="${(WM_PX(d.lo)-1.5).toFixed(1)}" y="${(WM_PY(d.la)-1.5).toFixed(1)}" width="3" height="3" fill="#a78bfa" opacity=".85" data-t="${wmEsc(d.n)}|AI数据中心 · ${wmEsc(d.o)}"/>`).join('')+'</g>';
+  s+='<g id="wmG_hotspots">'+wmHotspotNodes(wmRange)+'</g>';
+  svg.innerHTML=s;
+  wmApplyVB();
+}
+function wmApplyVB(){
+  const svg=document.getElementById('wmMap');if(!svg)return;
+  svg.setAttribute('viewBox',wmVB.x.toFixed(1)+' '+wmVB.y.toFixed(1)+' '+wmVB.w.toFixed(1)+' '+wmVB.h.toFixed(1));
+}
+function wmZoom(f){
+  const cx=wmVB.x+wmVB.w/2,cy=wmVB.y+wmVB.h/2;
+  wmVB.w=wmClamp(wmVB.w*f,70,1000);wmVB.h=wmVB.w/2;
+  wmVB.x=wmClamp(cx-wmVB.w/2,-100,1100-wmVB.w+100);
+  wmVB.y=wmClamp(cy-wmVB.h/2,-50,550-wmVB.h+50);
+  wmApplyVB();
+}
+function wmRegion(bb){
+  const[x0,y0,x1,y1]=bb;
+  const X0=WM_PX(x0),X1=WM_PX(x1),Y0=WM_PY(y1),Y1=WM_PY(y0);
+  let w=X1-X0,h=Y1-Y0;
+  if(w/h>2){w=h*2;}else{h=w/2;}
+  wmVB={x:wmClamp((X0+X1)/2-w/2,-50,1050-w+50),y:wmClamp((Y0+Y1)/2-h/2,-25,525-h+25),w,h};
+  wmApplyVB();
 }
 
-function wmSkeleton(){
-  const idxRows=WM_IDX.map(([sid,name,region])=>`<tr id="wmIdx_${sid.replace('.','_')}"><td><span class="idx-name">${name}</span><span class="idx-flag">${region}</span></td><td class="r mono wm-px">—</td><td class="r wm-chg">—</td></tr>`).join('');
-  const regionCards=WM_REGIONS.map((r,i)=>`<div class="wm-region"><div class="wm-region-head"><span class="wm-region-name">${r.name}</span><span class="wm-region-score wm-rs-watch" id="wmRs_${i}">—</span></div><div class="wm-heat-bar"><div class="wm-heat-fill wm-hf-watch" id="wmHf_${i}" style="width:0%"></div></div><div class="wm-region-drivers">${r.drivers.join(' · ')}</div></div>`).join('');
-  const watchRows=WM_WATCH.map(([n,s,sev])=>`<div class="wm-watch-item"><span class="wm-watch-name">${n}</span><span class="wm-watch-status">${s}</span><span class="wm-sev ${WM_SEV[sev]||'wm-sev-m'}">${sev}</span></div>`).join('');
-  return `
-  <div class="wm-hero">
-    <div class="wm-panel gold-edge">
-      <div class="wm-panel-title"><span class="wm-live-dot"></span>全球综合风险指数 <span class="wm-tag">GRX · 市场数据实时衍生</span></div>
-      <div class="wm-score-wrap">
-        <div class="wm-score-num" id="wmScoreNum">—</div>
-        <div class="wm-score-side">
-          <span class="wm-chip wm-lv-watch" id="wmLevelChip">等待数据</span>
-          <span class="wm-score-label">五维加权 · 0-100</span>
-        </div>
+/* ---------- 外壳 ---------- */
+function wmShellHtml(){
+  return`
+  <div class="wm-shell" id="wmShell">
+    <div class="wm-top">
+      <span class="wm-chipbtn on">🌐 WORLD</span>
+      <span class="wm-logo">MONITOR <em>·</em> 全球风险实时大屏</span>
+      <span class="wm-ver">v2.10 · worldmonitor</span>
+      <span class="wm-live"><i></i>LIVE</span>
+      <select class="wm-sel" id="wmRegionSel"><option>Global</option><option>中东</option><option>欧洲</option><option>亚太</option><option>美洲</option><option>非洲</option></select>
+      <span class="wm-defcon" id="wmDefcon">DEFCON 5</span>
+      <span class="wm-alerts" id="wmAlerts">⚑ —</span>
+      <span class="wm-spacer"></span>
+      <span class="wm-clock" id="wmClockU">— UTC</span>
+      <span class="wm-clock" id="wmClockB">— 北京</span>
+      <span class="wm-chipbtn on">2D</span>
+      <button class="wm-chipbtn" id="wmFsBtn" title="全屏">⛶</button>
+    </div>
+    <div class="wm-mapwrap" id="wmMapWrap">
+      <svg id="wmMap" viewBox="0 0 1000 500" preserveAspectRatio="xMidYMid slice"></svg>
+      <div class="wm-ovl wm-timechips" id="wmTimeChips">${WM_RANGES.map(([h,l])=>`<button class="wm-tc${h===99999?' on':''}" data-h="${h}">${l}</button>`).join('')}</div>
+      <div class="wm-ovl wm-layers"><h4>LAYERS 图层</h4>${WM_LAYERS.map(([k,l])=>`<label class="wm-lyr"><input type="checkbox" data-lyr="${k}" ${WM_LAYER_ON[k]?'checked':''}>${l}</label>`).join('')}</div>
+      <div class="wm-ovl wm-zoom"><button id="wmZin">+</button><button id="wmZout">−</button><button id="wmZhome">⌂</button><button id="wmInfoBtn" title="口径与说明">?</button></div>
+      <div class="wm-ovl wm-legend"><span class="wm-lg"><i style="background:#ff4d5e"></i>高危</span><span class="wm-lg"><i style="background:#ff9f2e"></i>升级</span><span class="wm-lg"><i style="background:#ffd166"></i>监测</span><span class="wm-lg"><i style="background:#5b9bd5;clip-path:polygon(50% 0,100% 100%,0 100%)"></i>基地</span><span class="wm-lg"><i class="sq" style="background:#ffd166"></i>核设施</span><span class="wm-lg"><i class="sq" style="background:#a78bfa"></i>AI数据中心</span><span class="wm-lg"><i class="ln" style="background:#ff6b35"></i>油管</span><span class="wm-lg"><i class="ln" style="background:#00b4d8"></i>气管</span><span class="wm-lg"><i class="ln" style="background:#22d3ee"></i>光缆</span></div>
+      <div class="wm-tip" id="wmTip"></div>
+      <div class="wm-info-ovl" id="wmInfoOvl">
+        <button class="wm-chipbtn wm-info-close" id="wmInfoClose">✕ 关闭</button>
+        <h3>口径与说明 METHODOLOGY</h3>
+        <p>· GRX综合风险指数(0-100)由五维市场压力实时加权：波动率(30, VIX代理) · 股市(25, 十大股指均值跌幅) · 避险与利率(20, 黄金涨幅+2s10s倒挂深度) · 能源(15, 油/气绝对波动) · 加密(10, BTC 24h波动)。DEFCON映射：&lt;20→5 … ≥65→1。</p>
+        <p>· 地图底图与图层静态数据(冲突区域、情报热点、军事基地、核设施、管线、光缆、水道、发射场、AI数据中心)来自开源项目 World Monitor 的共享配置表，为研究性基线数据；热点"更新时间"为研究估算，用于时间范围筛选。</p>
+        <p>· 实时行情：东方财富公开延迟接口(约15分钟)；BTC/ETH：OKX/Binance/CoinGecko 实时；LIVE NEWS：东方财富7x24快讯。</p>
+        <p>· 模块框架基于 <a href="https://github.com/koala73/worldmonitor" target="_blank">koala73/worldmonitor</a> (AGPL-3.0)，完整源码收录于本站仓库 <a href="https://github.com/danniallcc-creator/zaiyu-horizon-pc/tree/main/worldmonitor" target="_blank">worldmonitor/ 目录</a>。</p>
+        <p>风险提示：本页全部数据与评估仅供研究参考，不构成任何投资建议。市场有风险，投资需谨慎。</p>
       </div>
-      <div class="wm-meter"><div class="wm-meter-pin" id="wmMeterPin" style="left:0%"></div></div>
-      <div class="wm-meta-row"><span>更新 <b id="wmUpdateTime">—</b></span><span>停留本页自动 <b>60s</b> 刷新</span><span id="wmMissNote"></span></div>
     </div>
-    <div class="wm-panel">
-      <div class="wm-panel-title">风险贡献分解 <span class="wm-tag">权重 30/25/20/15/10</span></div>
-      <div id="wmParts">${['波动率压力(VIX)','股市压力','避险与利率','能源冲击','加密波动(BTC)'].map((n,i)=>`<div class="wm-part"><span class="wm-part-name">${n}</span><div class="wm-part-bar"><div class="wm-part-fill" id="wmPf_${i}" style="width:0%"></div></div><span class="wm-part-val" id="wmPv_${i}">—</span></div>`).join('')}</div>
-    </div>
-  </div>
-  <div class="wm-grid-2">
-    <div class="wm-panel">
-      <div class="wm-panel-title">全球股市实时联动 <span class="wm-tag">延迟约15分钟</span></div>
-      <table class="wm-table"><thead><tr><th>指数</th><th class="r">最新</th><th class="r">涨跌幅</th></tr></thead><tbody>${idxRows}</tbody></table>
-    </div>
-    <div class="wm-panel">
-      <div class="wm-panel-title">市场压力仪表 <span class="wm-tag">避险 · 利率 · 能源 · 加密</span></div>
-      <table class="wm-table"><thead><tr><th>指标</th><th class="r">最新</th><th class="r">变动</th></tr></thead><tbody id="wmStressTbody"></tbody></table>
-      <div class="wm-stress-note">VIX为VIXY/VXX/UVXY三源融合代理估算(与真实VIX或有偏差) · 加密为24h实时变动 · 其余为当日涨跌</div>
-    </div>
-  </div>
-  <div class="wm-panel" style="margin-bottom:16px">
-    <div class="wm-panel-title">区域风险热力 <span class="wm-tag">研究评估基线(2026-08-15) + 市场联动修正</span></div>
-    <div class="wm-heat">${regionCards}</div>
-  </div>
-  <div class="wm-grid-2">
-    <div class="wm-panel">
-      <div class="wm-panel-title">地缘风险关注清单 <span class="wm-tag">研究评估 · 2026-08 更新</span></div>
-      ${watchRows}
-    </div>
-    <div class="wm-panel">
-      <div class="wm-panel-title">口径与说明</div>
-      <ul class="wm-note-list">
-        <li>GRX综合风险指数由五维市场压力实时加权合成：波动率(30) 以VIX代理衡量，股市(25) 取十大股指均值跌幅，避险与利率(20) 取黄金涨幅与2s10s利差倒挂深度，能源(15) 取油价/气价绝对波动，加密(10) 取BTC 24h波动。</li>
-        <li>分级：&lt;25 低风险 · 25-45 关注 · 45-65 较高 · ≥65 高风险；区域热力分值=研究基线+大宗商品联动修正，全球避险模式(金涨+股跌)触发整体上调。</li>
-        <li>股指/商品/外汇/国债行情来自东方财富公开延迟接口(约15分钟延迟)；BTC/ETH为OKX/Binance/CoinGecko实时公共数据。</li>
-      </ul>
-      <div class="wm-foot-attr">模块框架基于开源项目 <a href="https://github.com/koala73/worldmonitor" target="_blank">World Monitor</a> (koala73/worldmonitor, AGPL-3.0)，完整源码已收录于本站仓库 <a href="https://github.com/danniallcc-creator/zaiyu-horizon-pc/tree/main/worldmonitor" target="_blank">worldmonitor/ 目录</a>。<br>风险提示：本页全部数据与评估仅供研究参考，不构成任何投资建议。市场有风险，投资需谨慎。</div>
+    <div class="wm-bottom">
+      <div class="wmb-p"><div class="wmb-h"><span class="wm-live"><i></i>LIVE NEWS</span>实时快讯<span class="tag" id="wmNewsTag">东方财富 7x24</span></div><div class="wmb-b" id="wmNewsBody"><div style="color:var(--text-3);font-size:12px;padding:10px">正在接入快讯流…</div></div></div>
+      <div class="wmb-p"><div class="wmb-h"><span class="wm-live"><i></i>LIVE MARKETS</span>实时行情脉冲<span class="tag">延迟约15min · 加密实时</span></div><div class="wmb-b"><div class="wm-mkt" id="wmMktGrid"></div></div></div>
+      <div class="wm-rightcol">
+        <div class="wmb-p"><div class="wmb-h"><span class="wm-live"><i></i>AI INSIGHTS</span>全球态势摘要</div><div class="wmb-b"><div class="wm-insight" id="wmInsight">正在生成…</div></div></div>
+        <div class="wmb-p"><div class="wmb-h">AI STRATEGIC POSTURE<span class="tag" id="wmPostTag">战区态势</span></div><div class="wmb-b" id="wmPosture"></div></div>
+      </div>
     </div>
   </div>`;
 }
 
-function renderWorldMonitor(){
-  document.getElementById('wmContent').innerHTML=wmSkeleton();
-  wmRefresh(false);
+function wmBindShell(){
+  const $=id=>document.getElementById(id);
+  $('wmZin').onclick=()=>wmZoom(0.75);
+  $('wmZout').onclick=()=>wmZoom(1/0.75);
+  $('wmZhome').onclick=()=>{wmVB={x:0,y:0,w:1000,h:500};wmApplyVB();$('wmRegionSel').value='Global';};
+  $('wmRegionSel').onchange=e=>wmRegion(WM_REGION_BB[e.target.value]||WM_REGION_BB.Global);
+  $('wmFsBtn').onclick=()=>{const sh=$('wmShell');if(document.fullscreenElement)document.exitFullscreen();else sh.requestFullscreen&&sh.requestFullscreen();};
+  $('wmInfoBtn').onclick=()=>$('wmInfoOvl').classList.add('show');
+  $('wmInfoClose').onclick=()=>$('wmInfoOvl').classList.remove('show');
+  document.querySelectorAll('#wmTimeChips .wm-tc').forEach(b=>b.onclick=()=>{
+    document.querySelectorAll('#wmTimeChips .wm-tc').forEach(x=>x.classList.remove('on'));b.classList.add('on');
+    wmRange=+b.dataset.h;
+    const g=document.getElementById('wmG_hotspots');if(g)g.innerHTML=wmHotspotNodes(wmRange);
+    wmUpdateAlerts();
+  });
+  document.querySelectorAll('[data-lyr]').forEach(cb=>cb.onchange=()=>{
+    const g=document.getElementById('wmG_'+cb.dataset.lyr);
+    if(g)g.style.display=cb.checked?'':'none';
+    WM_LAYER_ON[cb.dataset.lyr]=cb.checked;
+  });
+  // 拖拽平移
+  const svg=$('wmMap');
+  svg.addEventListener('pointerdown',e=>{wmDrag={x:e.clientX,y:e.clientY,vx:wmVB.x,vy:wmVB.y};svg.classList.add('drag');svg.setPointerCapture(e.pointerId);});
+  svg.addEventListener('pointermove',e=>{
+    const tip=$('wmTip');
+    const t=e.target.closest?e.target.closest('[data-t]'):null;
+    if(t&&!wmDrag){
+      const[tt,dd]=t.getAttribute('data-t').split('|');
+      tip.innerHTML='<b>'+wmEsc(tt)+'</b>'+wmEsc(dd||'');
+      const r=$('wmMapWrap').getBoundingClientRect();
+      tip.style.display='block';
+      tip.style.left=wmClamp(e.clientX-r.left+14,0,r.width-290)+'px';
+      tip.style.top=wmClamp(e.clientY-r.top+12,0,r.height-90)+'px';
+    }else tip.style.display='none';
+    if(!wmDrag)return;
+    const k=wmVB.w/svg.clientWidth;
+    wmVB.x=wmClamp(wmDrag.vx-(e.clientX-wmDrag.x)*k,-100,1100-wmVB.w+100);
+    wmVB.y=wmClamp(wmDrag.vy-(e.clientY-wmDrag.y)*k,-50,550-wmVB.h+50);
+    wmApplyVB();
+  });
+  svg.addEventListener('pointerup',()=>{wmDrag=null;svg.classList.remove('drag');});
+  svg.addEventListener('pointerleave',()=>{$('wmTip').style.display='none';});
+  // 时钟
+  if(!wmClockTimer){
+    wmClockTimer=setInterval(()=>{
+      if(!rendered.worldmonitor||!document.querySelector('.nav-item.active[data-view="worldmonitor"]'))return;
+      const d=new Date();
+      const u=$('wmClockU'),b=$('wmClockB');if(!u)return;
+      u.textContent=d.toISOString().slice(0,19).replace('T',' ')+' UTC';
+      b.textContent=d.toLocaleDateString('zh-CN',{month:'2-digit',day:'2-digit'})+' '+d.toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false})+' 北京';
+    },1000);
+  }
+}
+function wmUpdateAlerts(){
+  const el=document.getElementById('wmAlerts');if(!el||!window.WM_GEO)return;
+  const n=window.WM_GEO.hotspots.filter(h=>h.h<=wmRange&&(h.s==='High Alert'||h.s==='Elevated')).length;
+  el.textContent='⚑ '+n;
 }
 
-let wmBusy=false;
+/* ---------- 数据刷新 ---------- */
 async function wmRefresh(silent){
-  if(wmBusy)return; wmBusy=true;
-  const el=document.getElementById('wmContent');
+  if(wmBusy)return;wmBusy=true;
   try{
-    if(!document.getElementById('wmScoreNum')){el.innerHTML=wmSkeleton();}
     const c=cache||{};
     let extra={};
-    try{extra=await emQuote('100.N225,100.HSI,100.TWII,100.FTSE,100.SENSEX,100.AS51,1.000001');}
-    catch(e){console.warn('WM全球股指增量获取失败',e);}
-    wmPaint(c,extra||{});
-  }catch(e){
-    console.error('全球风险大屏渲染异常',e);
-    if(!silent)el.innerHTML='<div class="data-loading" style="color:#e0a23c">风险数据加载失败，请点击右上角 ↻ 重试</div>';
-  }finally{wmBusy=false;}
+    try{extra=await emQuote('100.N225,100.HSI,100.TWII,100.FTSE,100.SENSEX,100.AS51,1.000001');}catch(e){}
+    const sc=wmComputeScore(c,extra);
+    // DEFCON
+    const[dn,dc]=wmDefcon(sc.total);
+    const de=document.getElementById('wmDefcon');
+    if(de){de.textContent='DEFCON '+dn+' · GRX '+sc.total.toFixed(1);de.style.color=dc;de.style.borderColor=dc;de.style.background=dc+'1a';}
+    wmUpdateAlerts();
+    // 行情脉冲
+    const mg=document.getElementById('wmMktGrid');
+    if(mg){
+      const tiles=[
+        ['伦敦金现',c.goldPrice,c.goldChange],['WTI原油',c.oil,c.oilChange],
+        ['BTC比特币',c.btcPrice,c.btcChange],['标普500',c.sp500,c.sp500Change],
+        ['美元指数',c.dxyIndex,c.dxyChange],['VIX代理',c.vixIndex!=null?c.vixIndex.toFixed(1):null,c.vixChange],
+      ];
+      mg.innerHTML=tiles.map(([n,v,ch])=>`<div class="wm-mkt-tile"><div class="n">${n}</div><div class="v">${v!=null?v:'—'}</div>${wmBadgeHtml(ch)}</div>`).join('');
+    }
+    // AI 洞察
+    const ins=document.getElementById('wmInsight');
+    if(ins){
+      const[lvTxt]=wmLv(sc.total);
+      const top=sc.parts.slice().sort((a,b)=>(b[2]?b[1]/b[2]:0)-(a[2]?a[1]/a[2]:0))[0];
+      const hiZ=(window.WM_GEO?WM_GEO.zones.filter(z=>z.i==='high'):[]).map(z=>z.n).slice(0,2);
+      let txt=`当前全球综合风险水平为<b>${lvTxt}</b>（GRX ${sc.total.toFixed(1)}/100），首要压力源为<b>${top[0]}</b>（贡献 ${top[1].toFixed(1)}/${top[2]}）。`;
+      if(c.goldChange!=null&&c.oilChange!=null)txt+=`黄金 ${c.goldChange>=0?'+':''}${c.goldChange.toFixed(2)}%、原油 ${c.oilChange>=0?'+':''}${c.oilChange.toFixed(2)}%，`;
+      if(c.yieldSpread!=null)txt+=`2s10s利差 ${c.yieldSpread.toFixed(2)}%（${c.yieldSpread<0?'倒挂':'正常'}）。`;
+      if(hiZ.length)txt+=`高强度冲突战区：<b>${hiZ.join('、')}</b>，关注外溢与能源/航运通道风险。`;
+      else txt+='当前无高强度冲突战区，关注潜在升级信号。';
+      ins.innerHTML=txt;
+    }
+    // 战区态势
+    const po=document.getElementById('wmPosture');
+    if(po&&window.WM_GEO){
+      po.innerHTML=WM_GEO.zones.slice(0,6).map(z=>{
+        const cls=z.i==='high'?'crit':z.i==='medium'?'high':'elev';
+        const lb=z.i==='high'?'CRIT':z.i==='medium'?'HIGH':'ELEV';
+        return`<div class="wm-post-it"><span class="nm">${wmEsc(z.n)}</span><span class="pd">${wmEsc((z.p||[]).slice(0,2).join(' / '))}</span><span class="wm-crit ${cls}">${lb}</span></div>`;
+      }).join('');
+    }
+  }catch(e){console.error('全球风险大屏刷新异常',e);}
+  finally{wmBusy=false;}
 }
 
-function wmPaint(c,extra){
-  // ---- 综合风险指数 ----
-  const sc=wmComputeScore(c,extra);
-  const [lvTxt,lvCls]=wmLv(sc.total);
-  const numEl=document.getElementById('wmScoreNum');
-  if(numEl){numEl.textContent=sc.total.toFixed(1);numEl.className='wm-score-num '+wmLv(sc.total)[2];}
-  const chip=document.getElementById('wmLevelChip');
-  if(chip){chip.textContent=lvTxt;chip.className='wm-chip '+lvCls;}
-  const pin=document.getElementById('wmMeterPin');
-  if(pin)pin.style.left=wmClamp(sc.total,0,100)+'%';
-  const ut=document.getElementById('wmUpdateTime');
-  if(ut)ut.textContent=new Date().toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false});
-  const mn=document.getElementById('wmMissNote');
-  if(mn)mn.innerHTML=sc.miss.length?('<span class="wm-data-miss">部分数据缺失: '+sc.miss.join('、')+'</span>'):'';
-  sc.parts.forEach((p,i)=>{
-    const f=document.getElementById('wmPf_'+i),v=document.getElementById('wmPv_'+i);
-    if(f)f.style.width=(p[2]?wmClamp(p[1]/p[2],0,1)*100:0)+'%';
-    if(v)v.textContent=p[1].toFixed(1)+'/'+p[2];
-  });
-  // ---- 全球股指表 ----
-  WM_IDX.forEach(([sid,name])=>{
-    const tr=document.getElementById('wmIdx_'+sid.replace('.','_'));
-    if(!tr)return;
-    const ck=WM_IDX_CACHE[sid];
-    let px=null,chg=null;
-    if(ck){px=c[ck[0]]||null;chg=(c[ck[1]]!=null)?c[ck[1]]:null;}
-    else if(extra[sid]){px=extra[sid].price!=null?nf(extra[sid].price,2):null;chg=extra[sid].chg;}
-    tr.querySelector('.wm-px').textContent=px!=null?px:'—';
-    tr.querySelector('.wm-chg').innerHTML=wmBadgeHtml(chg);
-  });
-  // ---- 市场压力仪表 ----
-  const stress=[
-    ['VIX恐慌指数 <span class="idx-flag">代理估算</span>', c.vixIndex!=null?c.vixIndex.toFixed(1):null, c.vixChange],
-    ['美债2s10s利差', c.yieldSpread!=null?c.yieldSpread.toFixed(3)+'%':null, null, c.yieldSpread<0?'倒挂':null],
-    ['美元指数 DXY', c.dxyIndex||null, c.dxyChange],
-    ['伦敦金现(黄金)', c.goldPrice||null, c.goldChange],
-    ['白银', c.silver||null, c.silverChange],
-    ['WTI原油', c.oil||null, c.oilChange],
-    ['天然气', c.natgas||null, c.natgasChange],
-    ['BTC比特币 <span class="idx-flag">实时'+(c.cryptoSource?' · '+c.cryptoSource:'')+'</span>', c.btcPrice||null, c.btcChange],
-    ['ETH以太坊', c.eth||null, c.ethChange],
-  ];
-  const stb=document.getElementById('wmStressTbody');
-  if(stb){
-    stb.innerHTML=stress.map(([nm,val,chg,tag])=>{
-      let chgHtml;
-      if(tag==='倒挂'){chgHtml='<span class="wm-badge down">倒挂</span>';}
-      else if(nm.indexOf('利差')>=0&&val!=null){chgHtml='<span class="wm-badge '+(parseFloat(val)>=0?'up':'flat')+'">'+(parseFloat(val)>=0?'正常':'')+'</span>';}
-      else{chgHtml=wmBadgeHtml(chg);}
-      return`<tr><td>${nm}</td><td class="r mono">${val!=null?val:'—'}</td><td class="r">${chgHtml}</td></tr>`;
+async function wmLoadNews(){
+  const body=document.getElementById('wmNewsBody');if(!body)return;
+  try{
+    const r=await fetch('https://np-listapi.eastmoney.com/comm/web/getFastNewsList?client=web&biz=web_724&fastColumn=102&sortEnd=&pageSize=14&req_trace='+Date.now());
+    const j=await r.json();
+    const list=(j.data&&j.data.fastNewsList)||[];
+    if(!list.length)throw new Error('empty');
+    body.innerHTML=list.map(it=>{
+      const tm=(it.showTime||'').slice(11,16);
+      return`<div class="wm-news-it"><span class="t">${tm}</span>${wmEsc(it.title||it.summary||'').slice(0,80)}</div>`;
     }).join('');
+    const tag=document.getElementById('wmNewsTag');if(tag)tag.textContent='7x24 · '+new Date().toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit',hour12:false});
+  }catch(e){
+    if(body&&!body.querySelector('.wm-news-it'))body.innerHTML='<div style="color:var(--text-3);font-size:12px;padding:10px">快讯流暂不可达，等待下次刷新…</div>';
   }
-  // ---- 区域热力 ----
-  const riskOff=(sc.goldChg>1&&sc.eqAvg!=null&&sc.eqAvg<-0.8);
-  WM_REGIONS.forEach((r,i)=>{
-    let a=r.base;
-    try{a=r.live({oilChg:sc.oilChg,ngChg:sc.ngChg},a);}catch(e){}
-    if(riskOff)a+=3;
-    a=Math.round(wmClamp(a,0,95));
-    const [,,rsCls,hfCls]=wmLv(a);
-    const rs=document.getElementById('wmRs_'+i),hf=document.getElementById('wmHf_'+i);
-    if(rs){rs.textContent=a;rs.className='wm-region-score '+rsCls;}
-    if(hf){hf.style.width=a+'%';hf.className='wm-heat-fill '+hfCls;}
-  });
 }
 
+function renderWorldMonitor(){
+  const el=document.getElementById('wmContent');
+  el.innerHTML=wmShellHtml();
+  wmBindShell();
+  wmLoadAssets().then(()=>{
+    wmAssetsOk=true;
+    wmBuildMap();
+    wmRefresh(false);
+    wmLoadNews();
+  }).catch(e=>{
+    console.error('地图资产加载失败',e);
+    document.getElementById('wmMapWrap').insertAdjacentHTML('beforeend','<div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#e0a23c;font-size:13px">地图资产加载失败，请点击右上角 ↻ 或刷新页面重试</div>');
+  });
+}
 </script>
 </body>
 </html>
