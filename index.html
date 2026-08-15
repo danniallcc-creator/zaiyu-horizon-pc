@@ -911,6 +911,79 @@ a{color:inherit;text-decoration:none}
 .ta-stock-head .sh-chg.down{background:rgba(224,92,92,.15);color:var(--red)}
 .ta-stock-head .sh-chg.flat{color:var(--text-3)}
 @media(max-width:700px){.ta-debate-round{grid-template-columns:1fr}.ta-risk-cards{grid-template-columns:1fr}.ta-pm-breakdown{grid-template-columns:repeat(3,1fr)}.ta-agent-grid{grid-template-columns:1fr}.ta-trader-box .tb-grid{grid-template-columns:repeat(2,1fr)}.ta-pipe-steps{flex-wrap:wrap}.ta-pipe-step{flex:none;width:33.3%}}
+
+/* ============ World Monitor 全球风险实时大屏 ============ */
+.wm-hero{display:grid;grid-template-columns:minmax(320px,1.2fr) 1fr;gap:16px;margin-bottom:16px}
+.wm-panel{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:20px 22px;position:relative;overflow:hidden}
+.wm-panel.gold-edge{border-color:var(--line-gold)}
+.wm-panel-title{font-size:13px;font-weight:600;color:var(--gold-pale);letter-spacing:.08em;margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.wm-panel-title .wm-tag{font-size:10px;font-weight:400;color:var(--text-3);border:1px solid var(--line);border-radius:4px;padding:1px 7px;letter-spacing:.05em}
+.wm-live-dot{width:7px;height:7px;border-radius:50%;background:var(--green);display:inline-block;animation:wmPulse 1.6s infinite}
+@keyframes wmPulse{0%,100%{box-shadow:0 0 0 0 rgba(76,175,114,.5)}50%{box-shadow:0 0 0 5px rgba(76,175,114,0)}}
+.wm-score-wrap{display:flex;align-items:flex-end;gap:18px;margin-bottom:14px}
+.wm-score-num{font-family:'JetBrains Mono',monospace;font-size:62px;font-weight:700;line-height:.95;letter-spacing:-.02em}
+.wm-score-side{display:flex;flex-direction:column;gap:7px;padding-bottom:6px}
+.wm-score-label{font-size:12px;color:var(--text-2)}
+.wm-chip{display:inline-block;font-size:12px;font-weight:600;padding:3px 12px;border-radius:20px;letter-spacing:.06em}
+.wm-lv-low{color:var(--green);background:rgba(76,175,114,.12);border:1px solid rgba(76,175,114,.35)}
+.wm-lv-watch{color:var(--gold-bright);background:rgba(212,175,55,.10);border:1px solid rgba(212,175,55,.4)}
+.wm-lv-high{color:var(--orange);background:rgba(224,162,60,.12);border:1px solid rgba(224,162,60,.4)}
+.wm-lv-extreme{color:var(--red);background:rgba(224,92,92,.12);border:1px solid rgba(224,92,92,.45)}
+.wm-meter{height:10px;border-radius:5px;background:linear-gradient(90deg,rgba(76,175,114,.55) 0%,rgba(212,175,55,.55) 35%,rgba(224,162,60,.6) 65%,rgba(224,92,92,.65) 100%);position:relative;margin-bottom:12px}
+.wm-meter-pin{position:absolute;top:-4px;width:3px;height:18px;border-radius:2px;background:#fff;box-shadow:0 0 8px rgba(255,255,255,.8);transform:translateX(-50%)}
+.wm-meta-row{display:flex;gap:16px;font-size:11px;color:var(--text-3);flex-wrap:wrap}
+.wm-meta-row b{color:var(--text-2);font-weight:500}
+.wm-part{display:grid;grid-template-columns:112px 1fr 52px;align-items:center;gap:10px;margin-bottom:9px;font-size:12px}
+.wm-part:last-child{margin-bottom:0}
+.wm-part-name{color:var(--text-2)}
+.wm-part-bar{height:7px;border-radius:4px;background:rgba(255,255,255,.05);overflow:hidden}
+.wm-part-fill{height:100%;border-radius:4px;background:linear-gradient(90deg,var(--gold-deep),var(--gold));transition:width .6s ease}
+.wm-part-val{font-family:'JetBrains Mono',monospace;color:var(--gold-pale);text-align:right}
+.wm-grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}
+.wm-table{width:100%;border-collapse:collapse;font-size:13px}
+.wm-table th{font-size:11px;font-weight:500;color:var(--text-3);text-align:left;padding:0 10px 8px;border-bottom:1px solid var(--line);letter-spacing:.05em}
+.wm-table th.r,.wm-table td.r{text-align:right}
+.wm-table td{padding:8px 10px;border-bottom:1px solid rgba(38,38,47,.55)}
+.wm-table tr:last-child td{border-bottom:none}
+.wm-table .idx-name{font-weight:500}
+.wm-table .idx-flag{color:var(--text-3);font-size:11px;margin-left:6px}
+.wm-table .mono{font-family:'JetBrains Mono',monospace}
+.wm-badge{display:inline-block;font-family:'JetBrains Mono',monospace;font-size:12px;padding:2px 8px;border-radius:5px;min-width:64px;text-align:center}
+.wm-badge.up{background:rgba(76,175,114,.12);color:var(--green)}
+.wm-badge.down{background:rgba(224,92,92,.12);color:var(--red)}
+.wm-badge.flat{background:rgba(255,255,255,.04);color:var(--text-3)}
+.wm-stress-note{font-size:10px;color:var(--text-3);margin-top:10px}
+.wm-heat{display:grid;grid-template-columns:repeat(5,1fr);gap:12px}
+.wm-region{background:var(--panel-2);border:1px solid var(--line);border-radius:12px;padding:14px 15px;transition:border-color .3s}
+.wm-region:hover{border-color:var(--line-gold)}
+.wm-region-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:9px}
+.wm-region-name{font-size:14px;font-weight:600;font-family:'Noto Serif SC',serif}
+.wm-region-score{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:700}
+.wm-rs-low{color:var(--green)}.wm-rs-watch{color:var(--gold-bright)}.wm-rs-high{color:var(--orange)}.wm-rs-extreme{color:var(--red)}
+.wm-heat-bar{height:6px;border-radius:3px;background:rgba(255,255,255,.05);overflow:hidden;margin-bottom:9px}
+.wm-heat-fill{height:100%;border-radius:3px;transition:width .6s ease}
+.wm-hf-low{background:linear-gradient(90deg,#2e7d52,var(--green))}
+.wm-hf-watch{background:linear-gradient(90deg,var(--gold-deep),var(--gold))}
+.wm-hf-high{background:linear-gradient(90deg,#b56a1f,var(--orange))}
+.wm-hf-extreme{background:linear-gradient(90deg,#a03d3d,var(--red))}
+.wm-region-drivers{font-size:11px;color:var(--text-3);line-height:1.55}
+.wm-watch-item{display:flex;align-items:center;gap:12px;padding:9px 2px;border-bottom:1px solid rgba(38,38,47,.55);font-size:13px}
+.wm-watch-item:last-child{border-bottom:none}
+.wm-watch-name{flex:1}
+.wm-watch-status{font-size:11px;color:var(--text-3)}
+.wm-sev{font-size:11px;font-weight:600;padding:2px 9px;border-radius:4px}
+.wm-sev-h{color:var(--red);background:rgba(224,92,92,.1)}
+.wm-sev-mh{color:var(--orange);background:rgba(224,162,60,.1)}
+.wm-sev-m{color:var(--gold);background:rgba(212,175,55,.08)}
+.wm-sev-l{color:var(--green);background:rgba(76,175,114,.1)}
+.wm-note-list{font-size:12px;color:var(--text-2);line-height:1.8}
+.wm-note-list li{margin-bottom:6px;list-style:none;padding-left:14px;position:relative}
+.wm-note-list li::before{content:'·';position:absolute;left:2px;color:var(--gold)}
+.wm-foot-attr{margin-top:16px;padding:14px 18px;border-radius:10px;background:rgba(0,0,0,.25);border:1px solid var(--line);font-size:11px;color:var(--text-3);line-height:1.8}
+.wm-foot-attr a{color:var(--gold)}
+.wm-data-miss{font-size:11px;color:var(--orange);margin-top:6px}
+@media(max-width:1200px){.wm-heat{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:900px){.wm-hero,.wm-grid-2{grid-template-columns:1fr}.wm-heat{grid-template-columns:repeat(2,1fr)}.wm-score-num{font-size:48px}}
 </style>
 </head>
 <body>
@@ -943,6 +1016,7 @@ a{color:inherit;text-decoration:none}
       <div class="nav-item" data-view="qdd"><span class="ic">📉</span>量化回撤分析</div>
       <div class="nav-item" data-view="hedgefund"><span class="ic">♜</span>AI对冲建议</div>
       <div class="nav-item" data-view="tradingagents"><span class="ic">⚔</span>交易代理师</div>
+      <div class="nav-item" data-view="worldmonitor"><span class="ic">◎</span>全球风险实时大屏</div>
     </nav>
     <div class="sidebar-foot">
       数据仅供参考 · 不构成投资建议<br>
@@ -1086,6 +1160,15 @@ a{color:inherit;text-decoration:none}
         <p class="page-sub">5维分析师团队 · 多空辩论 · 交易员提案 · 三方风控博弈 · 组合经理终审决策</p>
       </div>
       <div id="taContent"><div class="ta-empty"><div class="em-icon">⚔</div><div class="em-title">多Agent交易决策引擎</div><div class="em-desc">基于TradingAgents开源框架，模拟真实交易公司的组织架构：<br>分析师团队 → 研究员辩论 → 交易员提案 → 风控博弈 → 组合经理终审<br><br>输入股票代码或关键词开始分析</div></div></div>
+    </section>
+
+    <section class="view" id="view-worldmonitor">
+      <div class="page-head">
+        <div class="page-kicker">World Monitor · Global Risk Situational Awareness</div>
+        <h1 class="page-title">全球风险<span class="gold">实时大屏</span></h1>
+        <p class="page-sub">综合风险指数 · 市场压力仪表 · 全球股市联动 · 区域风险热力 · 地缘关注清单</p>
+      </div>
+      <div id="wmContent"><div class="data-loading"><span class="spin"></span> 正在接入全球风险数据流…</div></div>
     </section>
 
     <div class="view-foot"></div>
@@ -6058,7 +6141,7 @@ function renderHedgeFund(){loadHedgeFund(false);}
 /* ==================== APP CONTROL ==================== */
 // [FIX] cache 已在脚本前部声明, 此处仅重置赋值, 避免 let 重复声明报错
 cache=null;
-const rendered={dashboard:false,crisis:false,cycle:false,masters:false,scenario:false,camps:false,stocks:false,dsa:false,qdd:false,hedgefund:false,quant:false,tradingagents:false};
+const rendered={dashboard:false,crisis:false,cycle:false,masters:false,scenario:false,camps:false,stocks:false,dsa:false,qdd:false,hedgefund:false,quant:false,tradingagents:false,worldmonitor:false};
 function renderView(v){
   if(v==='crisis'&&!rendered.crisis){renderCrisis();rendered.crisis=true}
   if(v==='cycle'&&!rendered.cycle){renderCycles();rendered.cycle=true}
@@ -6071,6 +6154,7 @@ function renderView(v){
   if(v==='hedgefund'&&!rendered.hedgefund){renderHedgeFund();rendered.hedgefund=true}
   if(v==='quant'&&!rendered.quant){renderQuantTrading();rendered.quant=true}
   if(v==='tradingagents'&&!rendered.tradingagents){renderTradingAgents();rendered.tradingagents=true}
+  if(v==='worldmonitor'&&!rendered.worldmonitor){renderWorldMonitor();rendered.worldmonitor=true}
 }
 async function loadStocks(silent){
   const el=document.getElementById('stocksContent');
@@ -6128,6 +6212,7 @@ async function loadAll(){
   if(rendered.crisis) renderCrisis();
   if(rendered.stocks&&!document.querySelector('.stk-detail')) loadStocks(true);
   if(rendered.hedgefund) loadHedgeFund(true);
+  if(rendered.worldmonitor) wmRefresh(true);
   const ts=new Date().toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit'});
   if(ok>=2){setStatus('live','实时·外汇/国债同步·美股商品延迟约15min · '+ts);_loadRetryCount=0;}
   else if(ok===1){setStatus('offline','部分数据源不可用('+failed.join('、')+') · 下次自动重试');_loadRetryCount=0;}
@@ -6164,8 +6249,9 @@ let _refreshTimer=null;
 function _scheduleRefresh(){
   if(_refreshTimer){clearInterval(_refreshTimer);_refreshTimer=null;}
   const onDash=rendered.dashboard&&document.querySelector('.nav-item.active[data-view="dashboard"]');
+  const onWm=rendered.worldmonitor&&document.querySelector('.nav-item.active[data-view="worldmonitor"]');
   const visible=document.visibilityState==='visible';
-  const interval=(onDash&&visible)?60000:300000; // 60s/300s
+  const interval=((onDash||onWm)&&visible)?60000:300000; // 60s/300s
   _refreshTimer=setInterval(loadAll,interval);
 }
 _scheduleRefresh();
@@ -7422,6 +7508,235 @@ function taRenderAgentCard(a){
     <div class="rs">${a.points.map(p=>'▸ '+p).join('<br>')}</div>
     ${metricsHtml?'<div class="metrics">'+metricsHtml+'</div>':''}
   </div>`;
+}
+
+/* ==================== World Monitor 全球风险实时大屏 ==================== */
+// 框架灵感: koala73/worldmonitor 开源项目 (AGPL-3.0), 完整源码见本仓库 worldmonitor/ 目录
+// 数据源: 东方财富push2delay公开接口(全球股指/商品/外汇/国债, 延迟约15分钟)
+//         + OKX/Binance/CoinGecko公共数据(加密货币, 实时) — 均复用站点既有行情管线
+// 综合风险指数GRX为市场数据衍生的量化监测指标, 区域风险为研究评估基线+市场联动修正, 均不构成投资建议
+const WM_IDX=[
+  ['100.SPX','标普500','美国'], ['100.NDX','纳斯达克100','美国'], ['100.DJIA','道琼斯工业','美国'],
+  ['100.N225','日经225','日本'], ['100.HSI','恒生指数','中国香港'], ['100.TWII','台湾加权','中国台湾'],
+  ['100.FTSE','英国富时100','英国'], ['100.SENSEX','印度SENSEX','印度'], ['100.AS51','澳洲标普200','澳大利亚'],
+  ['1.000001','上证指数','中国'],
+];
+const WM_IDX_CACHE={
+  '100.SPX':['sp500','sp500Change'], '100.NDX':['nasdaq','nasdaqChange'], '100.DJIA':['dow','dowChange'],
+  '1.000001':null,
+};
+const WM_REGIONS=[
+  {name:'中东', base:72, drivers:['地缘冲突外溢风险','原油供应扰动','航运通道安全'], live:(d,a)=>{if(d.oilChg>4)return a+12; if(d.oilChg>2)return a+8; return a;}},
+  {name:'东欧', base:68, drivers:['俄乌冲突持续消耗','能源与制裁博弈','安全架构重塑'], live:(d,a)=>d.ngChg>3?a+6:a},
+  {name:'东亚', base:55, drivers:['半岛局势','台海因素','产业链重组'], live:(d,a)=>a},
+  {name:'南亚', base:50, drivers:['边境摩擦','汇率与外储压力'], live:(d,a)=>a},
+  {name:'西欧', base:48, drivers:['能源转型成本','财政与政治碎片化'], live:(d,a)=>d.ngChg>3?a+4:a},
+  {name:'非洲', base:46, drivers:['债务可持续性','粮食安全','局部冲突'], live:(d,a)=>a},
+  {name:'北美', base:45, drivers:['政策不确定性','主权债务与利息负担','贸易壁垒'], live:(d,a)=>a},
+  {name:'拉丁美洲', base:42, drivers:['部分经济体通胀与汇率压力','治理波动'], live:(d,a)=>a},
+  {name:'东南亚', base:38, drivers:['供应链转移伴生风险','部分国家债务压力'], live:(d,a)=>a},
+  {name:'大洋洲', base:22, drivers:['总体平稳','大宗商品与贸易依存波动'], live:(d,a)=>a},
+];
+const WM_WATCH=[
+  ['俄乌冲突走向','持续中','高'], ['中东局势与原油供应','密切关注','高'],
+  ['中美经贸与科技博弈','长期变量','中高'], ['美联储政策路径与美债供给','数据依赖','中'],
+  ['日本央行利率正常化外溢','渐进中','中'], ['关键矿产与供应链重构','结构性','中'],
+  ['全球主权债务与利息负担','结构性','中'], ['AI治理与科技监管','演进中','低中'],
+];
+const WM_SEV={'高':'wm-sev-h','中高':'wm-sev-mh','中':'wm-sev-m','低中':'wm-sev-l'};
+
+function wmLv(score){
+  if(score<25)return['低风险','wm-lv-low','wm-rs-low','wm-hf-low'];
+  if(score<45)return['关注','wm-lv-watch','wm-rs-watch','wm-hf-watch'];
+  if(score<65)return['较高','wm-lv-high','wm-rs-high','wm-hf-high'];
+  return['高风险','wm-lv-extreme','wm-rs-extreme','wm-hf-extreme'];
+}
+function wmClamp(x,a,b){return Math.max(a,Math.min(b,x));}
+
+// 综合风险指数 GRX (0-100): 五维市场压力加权
+function wmComputeScore(c,extra){
+  const miss=[];
+  const vix=c.vixIndex;
+  const goldChg=c.goldChange, oilChg=c.oilChange, ngChg=c.natgasChange;
+  const spread=c.yieldSpread, btcChg=c.btcChange;
+  const eqChgs=[];
+  WM_IDX.forEach(([sid])=>{
+    const ck=WM_IDX_CACHE[sid];
+    let chg=null;
+    if(ck&&c[ck[1]]!=null)chg=c[ck[1]];
+    else if(extra[sid]&&extra[sid].chg!=null)chg=extra[sid].chg;
+    if(chg!=null)eqChgs.push(chg);
+  });
+  const eqAvg=eqChgs.length?eqChgs.reduce((s,v)=>s+v,0)/eqChgs.length:null;
+  const parts=[];
+  // ① 波动率压力 (权重30): VIX代理 12→38 区间线性映射
+  if(vix!=null){parts.push(['波动率压力(VIX)',wmClamp((vix-12)/26,0,1)*30,30]);}else{parts.push(['波动率压力(VIX)',0,30]);miss.push('VIX');}
+  // ② 股市压力 (权重25): 十大股指均值跌幅映射
+  if(eqAvg!=null){parts.push(['股市压力',wmClamp(-eqAvg/2.5,0,1)*25,25]);}else{parts.push(['股市压力',0,25]);miss.push('股指');}
+  // ③ 避险与利率 (权重20): 黄金涨幅(12) + 收益率曲线倒挂深度(8)
+  let p3=0;
+  if(goldChg!=null){p3+=wmClamp(goldChg/2,0,1)*12;}else{miss.push('黄金');}
+  if(spread!=null){p3+=wmClamp(-spread/0.5,0,1)*8;}else{miss.push('利差');}
+  parts.push(['避险与利率',p3,20]);
+  // ④ 能源冲击 (权重15): 油价波动(10) + 天然气波动(5)
+  let p4=0;
+  if(oilChg!=null){p4+=wmClamp(Math.abs(oilChg)/4,0,1)*10;}else{miss.push('原油');}
+  if(ngChg!=null){p4+=wmClamp(Math.abs(ngChg)/6,0,1)*5;}else{miss.push('天然气');}
+  parts.push(['能源冲击',p4,15]);
+  // ⑤ 加密波动 (权重10): BTC 24h波动映射
+  if(btcChg!=null){parts.push(['加密波动(BTC)',wmClamp(Math.abs(btcChg)/8,0,1)*10,10]);}else{parts.push(['加密波动(BTC)',0,10]);miss.push('BTC');}
+  const total=Math.round(parts.reduce((s,p)=>s+p[1],0)*10)/10;
+  return {total,parts,miss,eqAvg,goldChg,oilChg,ngChg};
+}
+
+function wmBadgeHtml(chg){
+  if(chg==null||isNaN(chg))return'<span class="wm-badge flat">—</span>';
+  const cls=chg>0?'up':chg<0?'down':'flat';
+  const ar=chg>0?'▲':chg<0?'▼':'■';
+  return`<span class="wm-badge ${cls}">${ar} ${Math.abs(chg).toFixed(2)}%</span>`;
+}
+
+function wmSkeleton(){
+  const idxRows=WM_IDX.map(([sid,name,region])=>`<tr id="wmIdx_${sid.replace('.','_')}"><td><span class="idx-name">${name}</span><span class="idx-flag">${region}</span></td><td class="r mono wm-px">—</td><td class="r wm-chg">—</td></tr>`).join('');
+  const regionCards=WM_REGIONS.map((r,i)=>`<div class="wm-region"><div class="wm-region-head"><span class="wm-region-name">${r.name}</span><span class="wm-region-score wm-rs-watch" id="wmRs_${i}">—</span></div><div class="wm-heat-bar"><div class="wm-heat-fill wm-hf-watch" id="wmHf_${i}" style="width:0%"></div></div><div class="wm-region-drivers">${r.drivers.join(' · ')}</div></div>`).join('');
+  const watchRows=WM_WATCH.map(([n,s,sev])=>`<div class="wm-watch-item"><span class="wm-watch-name">${n}</span><span class="wm-watch-status">${s}</span><span class="wm-sev ${WM_SEV[sev]||'wm-sev-m'}">${sev}</span></div>`).join('');
+  return `
+  <div class="wm-hero">
+    <div class="wm-panel gold-edge">
+      <div class="wm-panel-title"><span class="wm-live-dot"></span>全球综合风险指数 <span class="wm-tag">GRX · 市场数据实时衍生</span></div>
+      <div class="wm-score-wrap">
+        <div class="wm-score-num" id="wmScoreNum">—</div>
+        <div class="wm-score-side">
+          <span class="wm-chip wm-lv-watch" id="wmLevelChip">等待数据</span>
+          <span class="wm-score-label">五维加权 · 0-100</span>
+        </div>
+      </div>
+      <div class="wm-meter"><div class="wm-meter-pin" id="wmMeterPin" style="left:0%"></div></div>
+      <div class="wm-meta-row"><span>更新 <b id="wmUpdateTime">—</b></span><span>停留本页自动 <b>60s</b> 刷新</span><span id="wmMissNote"></span></div>
+    </div>
+    <div class="wm-panel">
+      <div class="wm-panel-title">风险贡献分解 <span class="wm-tag">权重 30/25/20/15/10</span></div>
+      <div id="wmParts">${['波动率压力(VIX)','股市压力','避险与利率','能源冲击','加密波动(BTC)'].map((n,i)=>`<div class="wm-part"><span class="wm-part-name">${n}</span><div class="wm-part-bar"><div class="wm-part-fill" id="wmPf_${i}" style="width:0%"></div></div><span class="wm-part-val" id="wmPv_${i}">—</span></div>`).join('')}</div>
+    </div>
+  </div>
+  <div class="wm-grid-2">
+    <div class="wm-panel">
+      <div class="wm-panel-title">全球股市实时联动 <span class="wm-tag">延迟约15分钟</span></div>
+      <table class="wm-table"><thead><tr><th>指数</th><th class="r">最新</th><th class="r">涨跌幅</th></tr></thead><tbody>${idxRows}</tbody></table>
+    </div>
+    <div class="wm-panel">
+      <div class="wm-panel-title">市场压力仪表 <span class="wm-tag">避险 · 利率 · 能源 · 加密</span></div>
+      <table class="wm-table"><thead><tr><th>指标</th><th class="r">最新</th><th class="r">变动</th></tr></thead><tbody id="wmStressTbody"></tbody></table>
+      <div class="wm-stress-note">VIX为VIXY/VXX/UVXY三源融合代理估算(与真实VIX或有偏差) · 加密为24h实时变动 · 其余为当日涨跌</div>
+    </div>
+  </div>
+  <div class="wm-panel" style="margin-bottom:16px">
+    <div class="wm-panel-title">区域风险热力 <span class="wm-tag">研究评估基线(2026-08-15) + 市场联动修正</span></div>
+    <div class="wm-heat">${regionCards}</div>
+  </div>
+  <div class="wm-grid-2">
+    <div class="wm-panel">
+      <div class="wm-panel-title">地缘风险关注清单 <span class="wm-tag">研究评估 · 2026-08 更新</span></div>
+      ${watchRows}
+    </div>
+    <div class="wm-panel">
+      <div class="wm-panel-title">口径与说明</div>
+      <ul class="wm-note-list">
+        <li>GRX综合风险指数由五维市场压力实时加权合成：波动率(30) 以VIX代理衡量，股市(25) 取十大股指均值跌幅，避险与利率(20) 取黄金涨幅与2s10s利差倒挂深度，能源(15) 取油价/气价绝对波动，加密(10) 取BTC 24h波动。</li>
+        <li>分级：&lt;25 低风险 · 25-45 关注 · 45-65 较高 · ≥65 高风险；区域热力分值=研究基线+大宗商品联动修正，全球避险模式(金涨+股跌)触发整体上调。</li>
+        <li>股指/商品/外汇/国债行情来自东方财富公开延迟接口(约15分钟延迟)；BTC/ETH为OKX/Binance/CoinGecko实时公共数据。</li>
+      </ul>
+      <div class="wm-foot-attr">模块框架基于开源项目 <a href="https://github.com/koala73/worldmonitor" target="_blank">World Monitor</a> (koala73/worldmonitor, AGPL-3.0)，完整源码已收录于本站仓库 <a href="https://github.com/danniallcc-creator/zaiyu-horizon-pc/tree/main/worldmonitor" target="_blank">worldmonitor/ 目录</a>。<br>风险提示：本页全部数据与评估仅供研究参考，不构成任何投资建议。市场有风险，投资需谨慎。</div>
+    </div>
+  </div>`;
+}
+
+function renderWorldMonitor(){
+  document.getElementById('wmContent').innerHTML=wmSkeleton();
+  wmRefresh(false);
+}
+
+let wmBusy=false;
+async function wmRefresh(silent){
+  if(wmBusy)return; wmBusy=true;
+  const el=document.getElementById('wmContent');
+  try{
+    if(!document.getElementById('wmScoreNum')){el.innerHTML=wmSkeleton();}
+    const c=cache||{};
+    let extra={};
+    try{extra=await emQuote('100.N225,100.HSI,100.TWII,100.FTSE,100.SENSEX,100.AS51,1.000001');}
+    catch(e){console.warn('WM全球股指增量获取失败',e);}
+    wmPaint(c,extra||{});
+  }catch(e){
+    console.error('全球风险大屏渲染异常',e);
+    if(!silent)el.innerHTML='<div class="data-loading" style="color:#e0a23c">风险数据加载失败，请点击右上角 ↻ 重试</div>';
+  }finally{wmBusy=false;}
+}
+
+function wmPaint(c,extra){
+  // ---- 综合风险指数 ----
+  const sc=wmComputeScore(c,extra);
+  const [lvTxt,lvCls]=wmLv(sc.total);
+  const numEl=document.getElementById('wmScoreNum');
+  if(numEl){numEl.textContent=sc.total.toFixed(1);numEl.className='wm-score-num '+wmLv(sc.total)[2];}
+  const chip=document.getElementById('wmLevelChip');
+  if(chip){chip.textContent=lvTxt;chip.className='wm-chip '+lvCls;}
+  const pin=document.getElementById('wmMeterPin');
+  if(pin)pin.style.left=wmClamp(sc.total,0,100)+'%';
+  const ut=document.getElementById('wmUpdateTime');
+  if(ut)ut.textContent=new Date().toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false});
+  const mn=document.getElementById('wmMissNote');
+  if(mn)mn.innerHTML=sc.miss.length?('<span class="wm-data-miss">部分数据缺失: '+sc.miss.join('、')+'</span>'):'';
+  sc.parts.forEach((p,i)=>{
+    const f=document.getElementById('wmPf_'+i),v=document.getElementById('wmPv_'+i);
+    if(f)f.style.width=(p[2]?wmClamp(p[1]/p[2],0,1)*100:0)+'%';
+    if(v)v.textContent=p[1].toFixed(1)+'/'+p[2];
+  });
+  // ---- 全球股指表 ----
+  WM_IDX.forEach(([sid,name])=>{
+    const tr=document.getElementById('wmIdx_'+sid.replace('.','_'));
+    if(!tr)return;
+    const ck=WM_IDX_CACHE[sid];
+    let px=null,chg=null;
+    if(ck){px=c[ck[0]]||null;chg=(c[ck[1]]!=null)?c[ck[1]]:null;}
+    else if(extra[sid]){px=extra[sid].price!=null?nf(extra[sid].price,2):null;chg=extra[sid].chg;}
+    tr.querySelector('.wm-px').textContent=px!=null?px:'—';
+    tr.querySelector('.wm-chg').innerHTML=wmBadgeHtml(chg);
+  });
+  // ---- 市场压力仪表 ----
+  const stress=[
+    ['VIX恐慌指数 <span class="idx-flag">代理估算</span>', c.vixIndex!=null?c.vixIndex.toFixed(1):null, c.vixChange],
+    ['美债2s10s利差', c.yieldSpread!=null?c.yieldSpread.toFixed(3)+'%':null, null, c.yieldSpread<0?'倒挂':null],
+    ['美元指数 DXY', c.dxyIndex||null, c.dxyChange],
+    ['伦敦金现(黄金)', c.goldPrice||null, c.goldChange],
+    ['白银', c.silver||null, c.silverChange],
+    ['WTI原油', c.oil||null, c.oilChange],
+    ['天然气', c.natgas||null, c.natgasChange],
+    ['BTC比特币 <span class="idx-flag">实时'+(c.cryptoSource?' · '+c.cryptoSource:'')+'</span>', c.btcPrice||null, c.btcChange],
+    ['ETH以太坊', c.eth||null, c.ethChange],
+  ];
+  const stb=document.getElementById('wmStressTbody');
+  if(stb){
+    stb.innerHTML=stress.map(([nm,val,chg,tag])=>{
+      let chgHtml;
+      if(tag==='倒挂'){chgHtml='<span class="wm-badge down">倒挂</span>';}
+      else if(nm.indexOf('利差')>=0&&val!=null){chgHtml='<span class="wm-badge '+(parseFloat(val)>=0?'up':'flat')+'">'+(parseFloat(val)>=0?'正常':'')+'</span>';}
+      else{chgHtml=wmBadgeHtml(chg);}
+      return`<tr><td>${nm}</td><td class="r mono">${val!=null?val:'—'}</td><td class="r">${chgHtml}</td></tr>`;
+    }).join('');
+  }
+  // ---- 区域热力 ----
+  const riskOff=(sc.goldChg>1&&sc.eqAvg!=null&&sc.eqAvg<-0.8);
+  WM_REGIONS.forEach((r,i)=>{
+    let a=r.base;
+    try{a=r.live({oilChg:sc.oilChg,ngChg:sc.ngChg},a);}catch(e){}
+    if(riskOff)a+=3;
+    a=Math.round(wmClamp(a,0,95));
+    const [,,rsCls,hfCls]=wmLv(a);
+    const rs=document.getElementById('wmRs_'+i),hf=document.getElementById('wmHf_'+i);
+    if(rs){rs.textContent=a;rs.className='wm-region-score '+rsCls;}
+    if(hf){hf.style.width=a+'%';hf.className='wm-heat-fill '+hfCls;}
+  });
 }
 
 </script>
