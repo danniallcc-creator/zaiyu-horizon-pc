@@ -125,8 +125,27 @@ function derivedYoYSnapshot(id = 'SP500_YOY') {
   m.value = (m.inputs[0].value / m.inputs[1].value - 1) * 100;
   return snapshot;
 }
-const productionSnapshot = () => JSON.parse(readFileSync(new URL('data/crisis-daily.json', root), 'utf8'));
-const productionState = snapshot => model.compute(snapshot, {now: snapshot.generatedAt});
+function contractSnapshot() {
+  // Safety contracts must not depend on daily source availability or the live snapshot.
+  const snapshot = fixture();
+  for (const id of model.METRIC_IDS.filter(id => id.endsWith('_YOY'))) {
+    snapshot.metrics[id] = derivedYoYSnapshot(id).metrics[id];
+  }
+  const debtMillions = 20_800_000, gdpBillions = 32_000;
+  const observationDate = '2026-04-01', fetchedAt = snapshot.generatedAt;
+  Object.assign(snapshot.metrics.CORP_DEBT_GDP, {
+    kind: 'derived', observationDate, periodEnd: '2026-06-30', fetchedAt,
+    unit: 'percent of GDP (debt in millions / GDP in billions, SAAR)',
+    source: {name: 'FRED debt securities/loans (millions) / GDP (billions, SAAR)', url: 'https://fred.stlouisfed.org/graph/fredgraph.csv?id=BCNSDODNS,GDP'},
+    inputs: [
+      inputMetadata(observationDate, fetchedAt, debtMillions, {name: 'FRED BCNSDODNS', url: 'https://fred.stlouisfed.org/graph/fredgraph.csv?id=BCNSDODNS'}),
+      inputMetadata(observationDate, fetchedAt, gdpBillions, {name: 'FRED GDP', url: 'https://fred.stlouisfed.org/graph/fredgraph.csv?id=GDP'})
+    ],
+    value: debtMillions / 1000 / gdpBillions * 100
+  });
+  return snapshot;
+}
+const contractState = snapshot => model.compute(snapshot, {now: snapshot.generatedAt});
 
 test('daily/monthly/quarterly grace boundaries are aged from real ended periods, not fetch dates', () => {
   for (const [id, observationDate, periodEnd, days] of [
@@ -446,47 +465,82 @@ test('every derived YoY ID enforces its same-source formula and positive, exact 
   }
 });
 
-test('real production snapshot retains all 28 usable metrics including 9 derived, but forged inputs fail', () => {
-  const snapshot = productionSnapshot(), result = productionState(snapshot);
+test('contract fixture全部有效包括推导；篡改输入仍拒绝', () => {
+  const snapshot = contractSnapshot(), result = contractState(snapshot);
+  const expectedCount = model.METRIC_IDS.length;
+  const expectedDerived = model.METRIC_IDS.filter(id => snapshot.metrics[id].kind === 'derived');
   const usable = model.METRIC_IDS.filter(id => result.metrics[id].usable);
   const derived = usable.filter(id => snapshot.metrics[id].kind === 'derived');
-  assert.equal(usable.length, 28);
-  assert.equal(derived.length, 9);
+  assert.equal(usable.length, expectedCount);
+  assert.equal(derived.length, expectedDerived.length);
+  assert.deepEqual(usable, model.METRIC_IDS);
+  assert.deepEqual(derived, expectedDerived);
   assert.deepEqual(usable, model.METRIC_IDS.filter(id => snapshot.metrics[id].status === 'ok'));
   for (const id of derived) {
-    const forged = productionSnapshot();
+    const forged = contractSnapshot();
     forged.metrics[id].inputs[1].value += 1;
-    assert.equal(productionState(forged).metrics[id].usable, false, id);
-    assert.match(productionState(forged).metrics[id].reason, /公式/, id);
+    assert.equal(contractState(forged).metrics[id].usable, false, id);
+    assert.match(contractState(forged).metrics[id].reason, /公式/, id);
   }
 });
 
+test('stored snapshot statuses match frontend usability at generatedAt without availability targets', () => {
+  // Only this compatibility check reads live data; safety contracts above use fixed fixtures.
+  const stored = JSON.parse(readFileSync(new URL('data/crisis-daily.json', root), 'utf8'));
+  const check = snapshot => {
+    const result = model.compute(snapshot, {now: snapshot.generatedAt});
+    for (const id of model.METRIC_IDS) {
+      const status = snapshot.metrics?.[id]?.status;
+      const expectedUsable = snapshot.runStatus !== 'failed' && status === 'ok';
+      assert.equal(result.metrics[id].usable, expectedUsable, id + '/' + status);
+      if (status !== 'ok') assert.equal(result.metrics[id].usable, false, id);
+    }
+    if (snapshot.runStatus === 'failed' || Object.values(result.metrics).every(m => !m.usable)) {
+      assert.deepEqual(scoreList(result), [null, null, null, null]);
+      assert.ok(result.dimensions.every(d => d.score === null));
+      assert.ok(result.benchmarks.every(b => b.score === null && b.sensitivity.score === null));
+      assert.equal(result.earnings.base, null);
+      assert.deepEqual(result.earnings.projections, []);
+    }
+  };
+  check(stored);
+  // Exercise degraded states even when the stored run happens to be healthy.
+  const partial = contractSnapshot();
+  partial.runStatus = 'partial';
+  partial.metrics.SP500.status = 'stale';
+  partial.metrics.NASDAQ.status = 'error';
+  delete partial.metrics.EPS_TTM;
+  check(partial);
+  check({...fixture({}), runStatus: 'failed'});
+  check({...contractSnapshot(), runStatus: 'failed'});
+});
+
 test('debt/GDP accepts distinct FRED debt and GDP sources only for the metric quarter and converted formula', () => {
-  const snapshot = productionSnapshot(), m = snapshot.metrics.CORP_DEBT_GDP;
+  const snapshot = contractSnapshot(), m = snapshot.metrics.CORP_DEBT_GDP;
   assert.notEqual(m.inputs[0].source.name, m.inputs[1].source.name);
   assert.notEqual(m.inputs[0].source.url, m.inputs[1].source.url);
-  assert.equal(productionState(snapshot).metrics.CORP_DEBT_GDP.usable, true);
+  assert.equal(contractState(snapshot).metrics.CORP_DEBT_GDP.usable, true);
   close(m.value, m.inputs[0].value / 1000 / m.inputs[1].value * 100);
   for (const index of [0, 1]) {
-    const wrongQuarter = productionSnapshot();
+    const wrongQuarter = contractSnapshot();
     wrongQuarter.metrics.CORP_DEBT_GDP.inputs[index].observationDate = '2026-01-01';
-    assert.match(productionState(wrongQuarter).metrics.CORP_DEBT_GDP.reason, /观测季度/);
+    assert.match(contractState(wrongQuarter).metrics.CORP_DEBT_GDP.reason, /观测季度/);
   }
-  const bothWrong = productionSnapshot();
+  const bothWrong = contractSnapshot();
   bothWrong.metrics.CORP_DEBT_GDP.inputs.forEach(input => { input.observationDate = '2026-01-01'; });
-  assert.match(productionState(bothWrong).metrics.CORP_DEBT_GDP.reason, /观测季度/);
+  assert.match(contractState(bothWrong).metrics.CORP_DEBT_GDP.reason, /观测季度/);
   for (const mutate of [
     m => { m.value = m.inputs[0].value / m.inputs[1].value * 100; },
     m => { m.inputs[0].value += 1000; }, m => { m.inputs[1].value += 100; }
   ]) {
-    const forged = productionSnapshot();
+    const forged = contractSnapshot();
     mutate(forged.metrics.CORP_DEBT_GDP);
-    assert.match(productionState(forged).metrics.CORP_DEBT_GDP.reason, /公式/);
+    assert.match(contractState(forged).metrics.CORP_DEBT_GDP.reason, /公式/);
   }
   for (const delta of [-2e-6, -.5e-6, .5e-6, 2e-6]) {
-    const rounded = productionSnapshot();
+    const rounded = contractSnapshot();
     rounded.metrics.CORP_DEBT_GDP.value += delta;
-    assert.equal(productionState(rounded).metrics.CORP_DEBT_GDP.usable, Math.abs(delta) <= 1e-6);
+    assert.equal(contractState(rounded).metrics.CORP_DEBT_GDP.usable, Math.abs(delta) <= 1e-6);
   }
 });
 
@@ -501,24 +555,24 @@ test('debt/GDP rejects wrong series names, URL identities, reordered or extra in
     ['metric', {url: 'https://fred.stlouisfed.org/graph/fredgraph.csv?id=BCNSDODNS,CP'}],
     ['metric', {url: 'https://other.example.org/graph/fredgraph.csv?id=BCNSDODNS,GDP'}]
   ]) {
-    const snapshot = productionSnapshot(), m = snapshot.metrics.CORP_DEBT_GDP;
+    const snapshot = contractSnapshot(), m = snapshot.metrics.CORP_DEBT_GDP;
     Object.assign(location === 'metric' ? m.source : m.inputs[location].source, patch);
-    assert.match(productionState(snapshot).metrics.CORP_DEBT_GDP.reason, /来源或series ID/);
+    assert.match(contractState(snapshot).metrics.CORP_DEBT_GDP.reason, /来源或series ID/);
   }
   for (const mutate of [m => { m.inputs.reverse(); }, m => { m.inputs.push({...m.inputs[1]}); }]) {
-    const snapshot = productionSnapshot();
+    const snapshot = contractSnapshot();
     mutate(snapshot.metrics.CORP_DEBT_GDP);
-    assert.match(productionState(snapshot).metrics.CORP_DEBT_GDP.reason, /来源或series ID/);
+    assert.match(contractState(snapshot).metrics.CORP_DEBT_GDP.reason, /来源或series ID/);
   }
 });
 
 test('debt/GDP permits zero debt but requires a nonnegative numerator and positive denominator', () => {
   for (const [debt, gdp, usable] of [[0, 100, true], [-1, 100, false], [1000, 0, false], [1000, -100, false]]) {
-    const snapshot = productionSnapshot(), m = snapshot.metrics.CORP_DEBT_GDP;
+    const snapshot = contractSnapshot(), m = snapshot.metrics.CORP_DEBT_GDP;
     m.inputs[0].value = debt; m.inputs[1].value = gdp;
     m.value = gdp > 0 ? debt / 1000 / gdp * 100 : 0;
-    assert.equal(productionState(snapshot).metrics.CORP_DEBT_GDP.usable, usable);
-    if (!usable) assert.match(productionState(snapshot).metrics.CORP_DEBT_GDP.reason, /分子或分母/);
+    assert.equal(contractState(snapshot).metrics.CORP_DEBT_GDP.usable, usable);
+    if (!usable) assert.match(contractState(snapshot).metrics.CORP_DEBT_GDP.reason, /分子或分母/);
   }
 });
 
