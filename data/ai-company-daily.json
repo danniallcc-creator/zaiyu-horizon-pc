@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-11-09T11:36:54.664Z",
+  "generatedAt": "2026-11-10T01:42:25.935Z",
   "lastSuccessfulAt": null,
   "runStatus": "failed",
   "companies": [
@@ -23,7 +23,7 @@
           "url": "https://stockanalysis.com/stocks/nvda/financials/?p=quarterly"
         }
       },
-      "reason": "集团as-reported财务仅为company proxy，非AI收入、订单或归因毛利；未披露不等于零。 SEC collection failed: HTTP 403 previously observed; initial Node transport inherited disabled TLS; source remains unverifiable and was not retried"
+      "reason": "集团as-reported财务仅为company proxy，非AI收入、订单或归因毛利；未披露不等于零。 SEC collection failed: HTTP 403"
     },
     {
       "id": "AMD",
@@ -44,7 +44,7 @@
           "url": "https://stockanalysis.com/stocks/amd/financials/?p=quarterly"
         }
       },
-      "reason": "集团as-reported财务仅为company proxy，非AI收入、订单或归因毛利；未披露不等于零。 SEC collection failed: HTTP 403 previously observed; initial Node transport inherited disabled TLS; source remains unverifiable and was not retried"
+      "reason": "集团as-reported财务仅为company proxy，非AI收入、订单或归因毛利；未披露不等于零。 SEC collection failed: HTTP 403"
     },
     {
       "id": "TSM",
@@ -65,7 +65,7 @@
           "url": "https://stockanalysis.com/stocks/tsm/financials/?p=quarterly"
         }
       },
-      "reason": "集团as-reported财务仅为company proxy，非AI收入、订单或归因毛利；未披露不等于零。 SEC collection failed: HTTP 403 previously observed; initial Node transport inherited disabled TLS; source remains unverifiable and was not retried"
+      "reason": "集团as-reported财务仅为company proxy，非AI收入、订单或归因毛利；未披露不等于零。 SEC collection failed: HTTP 403"
     },
     {
       "id": "SAMSUNG",
@@ -89,7 +89,7 @@
       "name": "SK海力士",
       "role": "memory",
       "status": "unavailable",
-      "fetchedAt": "2026-11-09T11:36:54.664Z",
+      "fetchedAt": "2026-11-10T01:42:25.935Z",
       "source": {
         "name": "Official IR / disclosure only",
         "url": "https://news.skhynix.com/"
@@ -146,7 +146,7 @@
           "url": "https://stockanalysis.com/stocks/mu/financials/?p=quarterly"
         }
       },
-      "reason": "集团as-reported财务仅为company proxy，非AI收入、订单或归因毛利；未披露不等于零。 SEC collection failed: HTTP 403 previously observed; initial Node transport inherited disabled TLS; source remains unverifiable and was not retried"
+      "reason": "集团as-reported财务仅为company proxy，非AI收入、订单或归因毛利；未披露不等于零。 SEC collection failed: HTTP 403"
     },
     {
       "id": "MSFT",
@@ -167,7 +167,7 @@
           "url": "https://stockanalysis.com/stocks/msft/financials/?p=quarterly"
         }
       },
-      "reason": "集团as-reported财务仅为company proxy，非AI收入、订单或归因毛利；未披露不等于零。 SEC collection failed: HTTP 403 previously observed; initial Node transport inherited disabled TLS; source remains unverifiable and was not retried"
+      "reason": "集团as-reported财务仅为company proxy，非AI收入、订单或归因毛利；未披露不等于零。 SEC collection failed: HTTP 403"
     },
     {
       "id": "AMZN",
@@ -188,7 +188,7 @@
           "url": "https://stockanalysis.com/stocks/amzn/financials/?p=quarterly"
         }
       },
-      "reason": "集团as-reported财务仅为company proxy，非AI收入、订单或归因毛利；未披露不等于零。 SEC collection failed: HTTP 403 previously observed; initial Node transport inherited disabled TLS; source remains unverifiable and was not retried"
+      "reason": "集团as-reported财务仅为company proxy，非AI收入、订单或归因毛利；未披露不等于零。 SEC collection failed: HTTP 403"
     },
     {
       "id": "GOOG",
@@ -209,7 +209,7 @@
           "url": "https://stockanalysis.com/stocks/goog/financials/?p=quarterly"
         }
       },
-      "reason": "集团as-reported财务仅为company proxy，非AI收入、订单或归因毛利；未披露不等于零。 SEC collection failed: HTTP 403 previously observed; initial Node transport inherited disabled TLS; source remains unverifiable and was not retried"
+      "reason": "集团as-reported财务仅为company proxy，非AI收入、订单或归因毛利；未披露不等于零。 SEC collection failed: HTTP 403"
     },
     {
       "id": "META",
@@ -230,7 +230,7 @@
           "url": "https://stockanalysis.com/stocks/meta/financials/?p=quarterly"
         }
       },
-      "reason": "集团as-reported财务仅为company proxy，非AI收入、订单或归因毛利；未披露不等于零。 SEC collection failed: HTTP 403 previously observed; initial Node transport inherited disabled TLS; source remains unverifiable and was not retried"
+      "reason": "集团as-reported财务仅为company proxy，非AI收入、订单或归因毛利；未披露不等于零。 SEC collection failed: HTTP 403"
     }
   ],
   "evidence": [],
@@ -242,7 +242,7 @@
         "name": "SEC Company Facts / company proxy",
         "url": "https://data.sec.gov/api/xbrl/companyfacts/CIK0001045810.json"
       },
-      "message": "SEC collection failed: HTTP 403 previously observed; initial Node transport inherited disabled TLS; source remains unverifiable and was not retried"
+      "message": "SEC collection failed: HTTP 403"
     },
     {
       "companyId": "AMD",
@@ -251,7 +251,7 @@
         "name": "SEC Company Facts / company proxy",
         "url": "https://data.sec.gov/api/xbrl/companyfacts/CIK0000002488.json"
       },
-      "message": "SEC collection failed: HTTP 403 previously observed; initial Node transport inherited disabled TLS; source remains unverifiable and was not retried"
+      "message": "SEC collection failed: HTTP 403"
     },
     {
       "companyId": "TSM",
@@ -260,7 +260,7 @@
         "name": "SEC Company Facts / company proxy",
         "url": "https://data.sec.gov/api/xbrl/companyfacts/CIK0001046179.json"
       },
-      "message": "SEC collection failed: HTTP 403 previously observed; initial Node transport inherited disabled TLS; source remains unverifiable and was not retried"
+      "message": "SEC collection failed: HTTP 403"
     },
     {
       "companyId": "MU",
@@ -269,7 +269,7 @@
         "name": "SEC Company Facts / company proxy",
         "url": "https://data.sec.gov/api/xbrl/companyfacts/CIK0000723125.json"
       },
-      "message": "SEC collection failed: HTTP 403 previously observed; initial Node transport inherited disabled TLS; source remains unverifiable and was not retried"
+      "message": "SEC collection failed: HTTP 403"
     },
     {
       "companyId": "MSFT",
@@ -278,7 +278,7 @@
         "name": "SEC Company Facts / company proxy",
         "url": "https://data.sec.gov/api/xbrl/companyfacts/CIK0000789019.json"
       },
-      "message": "SEC collection failed: HTTP 403 previously observed; initial Node transport inherited disabled TLS; source remains unverifiable and was not retried"
+      "message": "SEC collection failed: HTTP 403"
     },
     {
       "companyId": "AMZN",
@@ -287,7 +287,7 @@
         "name": "SEC Company Facts / company proxy",
         "url": "https://data.sec.gov/api/xbrl/companyfacts/CIK0001018724.json"
       },
-      "message": "SEC collection failed: HTTP 403 previously observed; initial Node transport inherited disabled TLS; source remains unverifiable and was not retried"
+      "message": "SEC collection failed: HTTP 403"
     },
     {
       "companyId": "GOOG",
@@ -296,7 +296,7 @@
         "name": "SEC Company Facts / company proxy",
         "url": "https://data.sec.gov/api/xbrl/companyfacts/CIK0001652044.json"
       },
-      "message": "SEC collection failed: HTTP 403 previously observed; initial Node transport inherited disabled TLS; source remains unverifiable and was not retried"
+      "message": "SEC collection failed: HTTP 403"
     },
     {
       "companyId": "META",
@@ -305,7 +305,7 @@
         "name": "SEC Company Facts / company proxy",
         "url": "https://data.sec.gov/api/xbrl/companyfacts/CIK0001326801.json"
       },
-      "message": "SEC collection failed: HTTP 403 previously observed; initial Node transport inherited disabled TLS; source remains unverifiable and was not retried"
+      "message": "SEC collection failed: HTTP 403"
     },
     {
       "companyId": "NVDA",
