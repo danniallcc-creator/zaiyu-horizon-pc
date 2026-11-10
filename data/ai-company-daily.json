@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-11-10T01:42:25.935Z",
+  "generatedAt": "2026-11-10T03:21:01.470Z",
   "lastSuccessfulAt": null,
   "runStatus": "failed",
   "companies": [
@@ -89,7 +89,7 @@
       "name": "SK海力士",
       "role": "memory",
       "status": "unavailable",
-      "fetchedAt": "2026-11-10T01:42:25.935Z",
+      "fetchedAt": "2026-11-10T03:21:01.470Z",
       "source": {
         "name": "Official IR / disclosure only",
         "url": "https://news.skhynix.com/"
