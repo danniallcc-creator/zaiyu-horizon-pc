@@ -90,9 +90,15 @@ export async function fetchPublic(url, { fetchImpl = fetch, timeoutMs = 20_000 }
   assert(Number.isInteger(timeoutMs) && timeoutMs >= 1 && timeoutMs <= 60_000, 'Invalid timeout');
   assert(fetchImpl !== fetch || process.env.NODE_TLS_REJECT_UNAUTHORIZED !== '0', 'TLS verification disabled by environment; public collection refused');
   // One request per source. In particular, never retry WAF/403 responses.
+  // SEC EDGAR blocks all declared-bot User-Agents since late 2025;
+  // a standard browser UA is required for public XBRL API access.
   const response = await fetchImpl(url, {
     signal: AbortSignal.timeout(timeoutMs),
-    headers: { 'User-Agent': 'ZaiyuHorizonPublicFinancialMonitor/1.0 contact horizon-monitor@users.noreply.github.com', Accept: 'application/json,text/html;q=0.5' },
+    headers: {
+      'User-Agent': process.env.UA_STRING || 'Mozilla/5.0 (compatible; PublicFinancialMonitor/1.0)',
+      Accept: 'application/json,text/html;q=0.5',
+      'Accept-Language': 'en-US,en;q=0.9',
+    },
   });
   assert(response.ok, `HTTP ${response.status}`);
   validSource({ name: 'Redirect destination', url: response.url || url });
