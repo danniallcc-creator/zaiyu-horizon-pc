@@ -251,9 +251,9 @@
     const aiRealization = AiRealization ? AiRealization.compute(options.aiSnapshot, {now, transportError: options.aiTransportError})
       : {level: 'insufficient', score: null, coverage: 0, snapshotReason: 'AI共享模块未加载；不入分', transportError: options.aiTransportError || null};
     const triggerItems = TRIGGERS.map(t => {
-      if (t.id === 'capex') return {...t, score: !reason && aiRealization.coverage === 1 ? aiRealization.score : null,
+      if (t.id === 'capex') return {...t, score: !reason && finite(aiRealization.score) && aiRealization.coverage > 0 ? aiRealization.score : null,
         coverage: !reason && finite(aiRealization.score) ? aiRealization.coverage : 0, parts: [], aiRealization,
-        note: reason ? '宏观快照暂停评估，AI不能绕过停算；公司板块仅独立观察' : 'AI投入兑现压力详见企业侧同一板块；估值侧同state引用，不重复计分。' + (aiRealization.snapshotReason || '')};
+        note: reason ? '宏观快照暂停评估，AI不能绕过停算；公司板块仅独立观察' : (aiRealization.isProxy ? '分部代理评分（信心低于专项）；' : '') + 'AI投入兑现压力详见企业侧同一板块；估值侧同state引用，不重复计分。' + (aiRealization.snapshotReason || '')};
       const parts = t.inputs.map((id, i) => ({id, weight: 1 / t.inputs.length, score: pressure(value(id), ...t.ranges[i])}));
       return {...t, ...weighted(parts), parts};
     });

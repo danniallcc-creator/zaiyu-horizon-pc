@@ -18,6 +18,51 @@ export const COMPANIES = [
 ];
 export const METRIC_KEYS = ['revenue', 'costOfRevenue', 'grossMargin', 'inventory', 'capex', 'operatingCashFlow'];
 export const MAX_QUARTER_AGE_DAYS = 200;
+// AI-relevant segment revenue from SEC 8-K / earnings releases. These are segment-level
+// disclosures, not AI-specific revenue; scored as proxy with lower confidence than
+// direct AI evidence. Updated quarterly after each earnings season.
+// Sources: NVDA 8-K Data Center, AMD 8-K Data Center, GOOG 8-K Google Cloud,
+// MSFT press release Intelligent Cloud, AMZN 8-K AWS, MU 8-K DRAM (HBM not broken out).
+export const SEGMENT_PROXY_DATA = {
+  NVDA: { role: 'designer', segment: 'Data Center', quarters: [
+    { start: '2024-01-29', end: '2024-04-28', revenue: 22563 },
+    { start: '2024-04-29', end: '2024-07-28', revenue: 26272 },
+    { start: '2024-07-29', end: '2024-10-27', revenue: 30771 },
+    { start: '2024-10-28', end: '2025-01-26', revenue: 35580 },
+    { start: '2025-01-27', end: '2025-04-27', revenue: 39100 },
+  ]},
+  AMD: { role: 'designer', segment: 'Data Center', quarters: [
+    { start: '2023-12-31', end: '2024-03-30', revenue: 2337 },
+    { start: '2024-03-31', end: '2024-06-29', revenue: 2834 },
+    { start: '2024-06-30', end: '2024-09-28', revenue: 3549 },
+    { start: '2024-09-29', end: '2024-12-28', revenue: 3859 },
+    { start: '2024-12-29', end: '2025-03-29', revenue: 3674 },
+  ]},
+  MU: { role: 'memory', segment: 'DRAM', quarters: [
+    { start: '2024-06-03', end: '2024-08-29', revenue: 5326 },
+    { start: '2024-09-02', end: '2024-11-28', revenue: 6400 },
+    { start: '2024-12-02', end: '2025-02-27', revenue: 6123 },
+  ]},
+  MSFT: { role: 'buyer', segment: 'Intelligent Cloud', quarters: [
+    { start: '2024-07-01', end: '2024-09-30', revenue: 24092 },
+    { start: '2024-10-01', end: '2024-12-31', revenue: 25544 },
+    { start: '2025-01-01', end: '2025-03-31', revenue: 26751 },
+  ]},
+  AMZN: { role: 'buyer', segment: 'AWS', quarters: [
+    { start: '2024-01-01', end: '2024-03-31', revenue: 25037 },
+    { start: '2024-04-01', end: '2024-06-30', revenue: 26281 },
+    { start: '2024-07-01', end: '2024-09-30', revenue: 27452 },
+    { start: '2024-10-01', end: '2024-12-31', revenue: 28786 },
+    { start: '2025-01-01', end: '2025-03-31', revenue: 29267 },
+  ]},
+  GOOG: { role: 'buyer', segment: 'Google Cloud', quarters: [
+    { start: '2024-01-01', end: '2024-03-31', revenue: 9574 },
+    { start: '2024-04-01', end: '2024-06-30', revenue: 10347 },
+    { start: '2024-07-01', end: '2024-09-30', revenue: 11353 },
+    { start: '2024-10-01', end: '2024-12-31', revenue: 11955 },
+    { start: '2025-01-01', end: '2025-03-31', revenue: 12260 },
+  ]},
+};
 const DAY = 86_400_000;
 const TAGS = {
   revenue: ['RevenueFromContractWithCustomerExcludingAssessedTax', 'Revenues', 'SalesRevenueNet'],
@@ -394,7 +439,8 @@ export function freshCompanyIds(snapshot) {
     && (Date.parse(snapshot.generatedAt) - Date.parse(company.quarters.at(-1).end)) / DAY <= MAX_QUARTER_AGE_DAYS).map((company) => company.id);
 }
 export function validateSnapshot(snapshot, now = new Date()) {
-  assert(snapshot?.schemaVersion === 1 && Array.isArray(snapshot.companies) && Array.isArray(snapshot.errors) && Array.isArray(snapshot.evidence), 'Snapshot schema invalid');
+  assert(snapshot?.schemaVersion === 1 && Array.isArray(snapshot.companies) && Array.isArray(snapshot.errors) && Array.isArray(snapshot.evidence)
+    && (snapshot.segmentProxy === undefined || typeof snapshot.segmentProxy === 'object'), 'Snapshot schema invalid');
   validTimestamp(snapshot.generatedAt, now);
   if (snapshot.lastSuccessfulAt !== null) { validTimestamp(snapshot.lastSuccessfulAt, now); assert(snapshot.lastSuccessfulAt <= snapshot.generatedAt, 'Success after generation'); }
   assert(snapshot.companies.length === COMPANIES.length && snapshot.companies.every((company, index) => company.id === COMPANIES[index].id), 'Company coverage/order invalid');
@@ -458,7 +504,7 @@ export async function collectAICompanies({ now = () => new Date(), fetchImpl = f
     errors.push({ companyId: id, stage: 'crossCheck', source: company.crossCheck.source, message: company.crossCheck.reason });
   }
   for (const company of companies) if (['stale', 'unavailable'].includes(company.status)) errors.push({ companyId: company.id, stage: 'coverage', source: company.source, message: company.reason });
-  const snapshot = { schemaVersion: 1, generatedAt, lastSuccessfulAt: null, runStatus: 'failed', companies, evidence, errors };
+  const snapshot = { schemaVersion: 1, generatedAt, lastSuccessfulAt: null, runStatus: 'failed', companies, evidence, errors, segmentProxy: SEGMENT_PROXY_DATA };
   const fresh = freshCompanyIds(snapshot);
   if (fresh.length) { snapshot.lastSuccessfulAt = generatedAt; snapshot.runStatus = 'partial'; }
   else {

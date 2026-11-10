@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-11-10T03:24:37.371Z",
-  "lastSuccessfulAt": "2026-11-10T03:24:37.371Z",
+  "generatedAt": "2026-11-10T04:21:08.709Z",
+  "lastSuccessfulAt": "2026-11-10T04:21:08.709Z",
   "runStatus": "partial",
   "companies": [
     {
@@ -9,7 +9,7 @@
       "name": "英伟达",
       "role": "designer",
       "status": "partial",
-      "fetchedAt": "2026-11-10T03:24:37.371Z",
+      "fetchedAt": "2026-11-10T04:21:08.709Z",
       "source": {
         "name": "SEC Company Facts / company proxy",
         "url": "https://data.sec.gov/api/xbrl/companyfacts/CIK0001045810.json"
@@ -2880,7 +2880,7 @@
       "name": "超威半导体（AMD）",
       "role": "designer",
       "status": "partial",
-      "fetchedAt": "2026-11-10T03:24:37.371Z",
+      "fetchedAt": "2026-11-10T04:21:08.709Z",
       "source": {
         "name": "SEC Company Facts / company proxy",
         "url": "https://data.sec.gov/api/xbrl/companyfacts/CIK0000002488.json"
@@ -5649,7 +5649,7 @@
       "name": "台积电",
       "role": "foundry",
       "status": "stale",
-      "fetchedAt": "2026-11-10T03:24:37.371Z",
+      "fetchedAt": "2026-11-10T04:21:08.709Z",
       "source": {
         "name": "SEC Company Facts / company proxy",
         "url": "https://data.sec.gov/api/xbrl/companyfacts/CIK0001046179.json"
@@ -5687,7 +5687,7 @@
       "name": "SK海力士",
       "role": "memory",
       "status": "unavailable",
-      "fetchedAt": "2026-11-10T03:24:37.371Z",
+      "fetchedAt": "2026-11-10T04:21:08.709Z",
       "source": {
         "name": "Official IR / disclosure only",
         "url": "https://news.skhynix.com/"
@@ -5730,7 +5730,7 @@
       "name": "美光",
       "role": "memory",
       "status": "partial",
-      "fetchedAt": "2026-11-10T03:24:37.371Z",
+      "fetchedAt": "2026-11-10T04:21:08.709Z",
       "source": {
         "name": "SEC Company Facts / company proxy",
         "url": "https://data.sec.gov/api/xbrl/companyfacts/CIK0000723125.json"
@@ -8489,7 +8489,7 @@
       "name": "微软",
       "role": "buyer",
       "status": "partial",
-      "fetchedAt": "2026-11-10T03:24:37.371Z",
+      "fetchedAt": "2026-11-10T04:21:08.709Z",
       "source": {
         "name": "SEC Company Facts / company proxy",
         "url": "https://data.sec.gov/api/xbrl/companyfacts/CIK0000789019.json"
@@ -10442,7 +10442,7 @@
       "name": "亚马逊",
       "role": "buyer",
       "status": "partial",
-      "fetchedAt": "2026-11-10T03:24:37.371Z",
+      "fetchedAt": "2026-11-10T04:21:08.709Z",
       "source": {
         "name": "SEC Company Facts / company proxy",
         "url": "https://data.sec.gov/api/xbrl/companyfacts/CIK0001018724.json"
@@ -12700,7 +12700,7 @@
       "name": "谷歌",
       "role": "buyer",
       "status": "partial",
-      "fetchedAt": "2026-11-10T03:24:37.371Z",
+      "fetchedAt": "2026-11-10T04:21:08.709Z",
       "source": {
         "name": "SEC Company Facts / company proxy",
         "url": "https://data.sec.gov/api/xbrl/companyfacts/CIK0001652044.json"
@@ -14849,7 +14849,7 @@
       "name": "Meta",
       "role": "buyer",
       "status": "partial",
-      "fetchedAt": "2026-11-10T03:24:37.371Z",
+      "fetchedAt": "2026-11-10T04:21:08.709Z",
       "source": {
         "name": "SEC Company Facts / company proxy",
         "url": "https://data.sec.gov/api/xbrl/companyfacts/CIK0001326801.json"
@@ -17328,5 +17328,173 @@
       },
       "message": "集团as-reported财务仅为company proxy，非AI收入、订单或归因毛利；未披露不等于零。 官方IR缺少支持严格日期/口径验证的机器季度指标；链接保留供人工核验。 新闻仅为disclosure待人工核验；不抽取财务、不regex计分。"
     }
-  ]
+  ],
+  "segmentProxy": {
+    "NVDA": {
+      "role": "designer",
+      "segment": "Data Center",
+      "quarters": [
+        {
+          "start": "2024-01-29",
+          "end": "2024-04-28",
+          "revenue": 22563
+        },
+        {
+          "start": "2024-04-29",
+          "end": "2024-07-28",
+          "revenue": 26272
+        },
+        {
+          "start": "2024-07-29",
+          "end": "2024-10-27",
+          "revenue": 30771
+        },
+        {
+          "start": "2024-10-28",
+          "end": "2025-01-26",
+          "revenue": 35580
+        },
+        {
+          "start": "2025-01-27",
+          "end": "2025-04-27",
+          "revenue": 39100
+        }
+      ]
+    },
+    "AMD": {
+      "role": "designer",
+      "segment": "Data Center",
+      "quarters": [
+        {
+          "start": "2023-12-31",
+          "end": "2024-03-30",
+          "revenue": 2337
+        },
+        {
+          "start": "2024-03-31",
+          "end": "2024-06-29",
+          "revenue": 2834
+        },
+        {
+          "start": "2024-06-30",
+          "end": "2024-09-28",
+          "revenue": 3549
+        },
+        {
+          "start": "2024-09-29",
+          "end": "2024-12-28",
+          "revenue": 3859
+        },
+        {
+          "start": "2024-12-29",
+          "end": "2025-03-29",
+          "revenue": 3674
+        }
+      ]
+    },
+    "MU": {
+      "role": "memory",
+      "segment": "DRAM",
+      "quarters": [
+        {
+          "start": "2024-06-03",
+          "end": "2024-08-29",
+          "revenue": 5326
+        },
+        {
+          "start": "2024-09-02",
+          "end": "2024-11-28",
+          "revenue": 6400
+        },
+        {
+          "start": "2024-12-02",
+          "end": "2025-02-27",
+          "revenue": 6123
+        }
+      ]
+    },
+    "MSFT": {
+      "role": "buyer",
+      "segment": "Intelligent Cloud",
+      "quarters": [
+        {
+          "start": "2024-07-01",
+          "end": "2024-09-30",
+          "revenue": 24092
+        },
+        {
+          "start": "2024-10-01",
+          "end": "2024-12-31",
+          "revenue": 25544
+        },
+        {
+          "start": "2025-01-01",
+          "end": "2025-03-31",
+          "revenue": 26751
+        }
+      ]
+    },
+    "AMZN": {
+      "role": "buyer",
+      "segment": "AWS",
+      "quarters": [
+        {
+          "start": "2024-01-01",
+          "end": "2024-03-31",
+          "revenue": 25037
+        },
+        {
+          "start": "2024-04-01",
+          "end": "2024-06-30",
+          "revenue": 26281
+        },
+        {
+          "start": "2024-07-01",
+          "end": "2024-09-30",
+          "revenue": 27452
+        },
+        {
+          "start": "2024-10-01",
+          "end": "2024-12-31",
+          "revenue": 28786
+        },
+        {
+          "start": "2025-01-01",
+          "end": "2025-03-31",
+          "revenue": 29267
+        }
+      ]
+    },
+    "GOOG": {
+      "role": "buyer",
+      "segment": "Google Cloud",
+      "quarters": [
+        {
+          "start": "2024-01-01",
+          "end": "2024-03-31",
+          "revenue": 9574
+        },
+        {
+          "start": "2024-04-01",
+          "end": "2024-06-30",
+          "revenue": 10347
+        },
+        {
+          "start": "2024-07-01",
+          "end": "2024-09-30",
+          "revenue": 11353
+        },
+        {
+          "start": "2024-10-01",
+          "end": "2024-12-31",
+          "revenue": 11955
+        },
+        {
+          "start": "2025-01-01",
+          "end": "2025-03-31",
+          "revenue": 12260
+        }
+      ]
+    }
+  }
 }

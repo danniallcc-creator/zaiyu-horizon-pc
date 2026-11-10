@@ -288,14 +288,48 @@
     const ends = groups.map(g => date(g.latestEnd));
     const aligned = ends.every(Number.isFinite) && Math.max(...ends) - Math.min(...ends) <= 45 * DAY;
     const complete = !reason && groups.every(g => g.sufficient) && aligned;
-    const count = groups.filter(g => g.deteriorating).length, score = complete ? [0, 35, 65, 85][count] : null;
-    const level = score === null ? 'insufficient' : score >= 85 ? 'high' : score >= 65 ? 'elevated' : score >= 35 ? 'watch' : 'low';
+    const count = groups.filter(g => g.deteriorating).length;
+    let score = complete ? [0, 35, 65, 85][count] : null;
+    let level = score === null ? 'insufficient' : score >= 85 ? 'high' : score >= 65 ? 'elevated' : score >= 35 ? 'watch' : 'low';
+    let coverage = complete ? 1 : 0;
+    let proxyScore = null, proxySegments = [], proxyDeteriorating = 0;
+    if (!complete && s.segmentProxy && typeof s.segmentProxy === 'object') {
+      const proxyRoles = {designer: [], memory: [], buyer: []};
+      for (const [companyId, data] of Object.entries(s.segmentProxy)) {
+        if (!TRACKED[companyId] || !Array.isArray(data.quarters) || data.quarters.length < 2) continue;
+        const qs = data.quarters.filter(q => finite(q.revenue) && q.revenue > 0 && date(q.end) > 0)
+          .sort((a, b) => date(a.end) - date(b.end));
+        if (qs.length < 2) continue;
+        const latest = qs.at(-1), prior = qs.at(-2);
+        const qoq = prior.revenue > 0 ? (latest.revenue / prior.revenue - 1) * 100 : null;
+        if (!finite(qoq)) continue;
+        const role = data.role || TRACKED[companyId];
+        if (!proxyRoles[role]) continue;
+        proxyRoles[role].push({companyId, segment: data.segment, qoq, latestEnd: latest.end, revenue: latest.revenue});
+      }
+      proxyDeteriorating = 0;
+      proxySegments = Object.entries(proxyRoles).filter(([, items]) => items.length > 0).map(([role, items]) => {
+        const deteriorating = items.some(i => i.qoq < 0);
+        if (deteriorating) proxyDeteriorating++;
+        return {role, items, deteriorating};
+      });
+      if (proxySegments.length > 0) {
+        proxyScore = [0, 25, 50, 70][Math.min(proxyDeteriorating, 3)];
+        score = proxyScore;
+        coverage = 0.8;
+        level = proxyScore >= 70 ? 'high' : proxyScore >= 50 ? 'elevated' : proxyScore >= 25 ? 'watch' : 'low';
+      }
+    }
+    const isProxy = proxyScore !== null && !complete;
+    const summaryFull = complete ? ['专项证据稳定/改善，当前连续压力未确认', '一环节连续恶化', '两环节连续恶化', '三环节连续恶化，AI投入兑现压力高'][count]
+      : groups.filter(g => g.deteriorating).length === 2 ? '两环节共振确认，应用兑现尚待核验；三段未齐仍不计分' : '专项直接证据不足，不推断低风险或高压';
+    const summaryProxy = isProxy ? (['分部营收环比稳定/增长，AI兑现压力未确认', '一分部环比下滑', '两分部环比下滑', '三分部环比下滑，AI兑现压力偏高'][Math.min(proxyDeteriorating, 3)] + '（分部代理，信心低于专项）') : '';
     return {schemaVersion: 1, generatedAt: s.generatedAt || null, lastSuccessfulAt: s.lastSuccessfulAt || null, evaluatedAt: Number.isFinite(now) ? new Date(now).toISOString() : null,
-      runStatus: s.runStatus || 'unavailable', snapshotReason: reason, score, level, coverage: complete ? 1 : 0, evidenceCoverage: groups.reduce((sum, g) => sum + (g.sufficient ? g.weight : 0), 0),
+      runStatus: s.runStatus || 'unavailable', snapshotReason: reason, score, level, coverage, evidenceCoverage: groups.reduce((sum, g) => sum + (g.sufficient ? g.weight : 0), 0),
       groups, aligned, companies: companies(s, now, generated), diagnostics,
       errors: Array.isArray(s.errors) ? s.errors.map(e => typeof e === 'string' ? e : JSON.stringify(e)) : [],
-      summary: complete ? ['专项证据稳定/改善，当前连续压力未确认', '一环节连续恶化', '两环节连续恶化', '三环节连续恶化，AI投入兑现压力高'][count]
-        : groups.filter(g => g.deteriorating).length === 2 ? '两环节共振确认，应用兑现尚待核验；三段未齐仍不计分' : '专项直接证据不足，不推断低风险或高压', transportError: options.transportError || null};
+      summary: isProxy ? summaryProxy : summaryFull,
+      isProxy, proxySegments, transportError: options.transportError || null};
   }
   const fmt = n => finite(n) ? n.toLocaleString('en-US', {maximumFractionDigits: 2}) : 'N/A';
   function link(s) { const u = httpsURL(s?.url); return u ? `<a href="${escapeHTML(u)}" target="_blank" rel="noopener noreferrer">${escapeHTML(s.name || '来源')}</a>` : escapeHTML(s?.name || '无有效HTTPS来源'); }
@@ -312,10 +346,14 @@
     const diagnostics = s.diagnostics.map(d => `<li>${escapeHTML(d.id)}：${escapeHTML(d.reason)}</li>`).join('');
     const rawSources = s.companies.map(c => `<details><summary>${escapeHTML(c.id)} 原始季度/指标来源与诊断</summary><p>抓取 ${escapeHTML(c.fetchedAt || 'N/A')} · ${link(c.source)} / 副源 ${link(c.crossCheck.source)} · ${escapeHTML(c.crossCheck.reason || '')} · ${escapeHTML(c.reason || '')}</p>${c.quarters.map(q => `<p>${escapeHTML(q.start)} – ${escapeHTML(q.end)} · 披露 ${escapeHTML(q.filed)} · accession ${escapeHTML(q.accession || 'N/A')}</p>${Object.entries(q.metrics).map(([id, m]) => `<small>${escapeHTML(id)}: ${id === 'grossMargin' ? fmt(m.value) + '%' : money(m)} · ${escapeHTML(m.reason || m.kind)} · ${link(m.source)}</small>`).join('')}`).join('')}${c.disclosures.map(d => `<p>${escapeHTML(d.publishedAt)} · ${escapeHTML(d.title)} · ${link(d.source)}</p>`).join('')}</details>`).join('');
     const evidence = s.groups.flatMap(g => g.records).map(r => `<li>${escapeHTML(r.companyId)} / ${escapeHTML(r.chainId)} / ${escapeHTML(r.metric)} · ${escapeHTML(r.periodStart)} – ${escapeHTML(r.periodEnd)} · ${fmt(r.value)} vs ${fmt(r.baseline)} ${escapeHTML(r.unit)} · ${escapeHTML(r.summary)} · 人工复核 ${escapeHTML(r.reviewedAt)}<br>${r.sources.map(link).join(' / ')}</li>`).join('');
+    const proxyHTML = s.isProxy && Array.isArray(s.proxySegments) && s.proxySegments.length > 0
+      ? `<div class="ar-card" style="border-top-color:#0C8B94"><b>分部营收代理（8-K/Earnings Release，非XBRL标签）</b><p>以下为财报披露的业务分部营收环比变化，不等于AI-specific收入；分部含非AI业务，信心低于专项直接证据。</p><div class="ar-chain">${s.proxySegments.map(seg => `<article class="ar-card" style="border-top-color:${seg.deteriorating ? '#E7674A' : '#0C8B94'}"><b>${({'designer':'设计商','memory':'存储','buyer':'采购/应用方'})[seg.role] || seg.role}${seg.deteriorating ? ' · 环比下滑' : ' · 稳定/增长'}</b>${seg.items.map(i => `<p><b>${escapeHTML(i.companyId)}</b> · ${escapeHTML(i.segment)} · 最新季度截至 ${escapeHTML(i.latestEnd)}<br>分部营收 ${fmt(i.revenue / 1000)} B USD · 环比 ${fmt(i.qoq)}%</p>`).join('')}</article>`).join('')}</div><small>分部代理评分 [0, 25, 50, 70]，低于专项 [0, 35, 65, 85]；覆盖 0.8 触发 capex 联动。分部营收来自 SEC 8-K 与业绩公告手工摘录，非 XBRL 自动抓取。</small></div>`
+      : '';
     return `<section class="ai-realization" aria-label="AI投入兑现压力" data-ai-level="${escapeHTML(s.level)}">
       <style>.ai-realization{color:var(--text-1,#eae6df);line-height:1.7;font-size:13px;min-width:0}.ai-realization h3,.ai-realization h4{color:var(--gold-bright,#f5d574)}.ai-realization h3{margin:26px 0 12px;font-size:17px}.ai-realization .ar-card{background:var(--panel,#16171e);border:1px solid var(--line,#26262f);border-top:2px solid var(--gold,#d4af37);border-radius:12px;padding:16px;min-width:0}.ai-realization .ar-score{font-size:30px;color:var(--gold,#d4af37);display:block;font-family:monospace}.ai-realization .ar-chain{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:14px 0}.ai-realization small{display:block;color:var(--text-2,#b9b4ab);font-size:11px;overflow-wrap:anywhere}.ai-realization .ar-table{max-width:100%;overflow-x:auto;overscroll-behavior-x:contain}.ai-realization table{border-collapse:collapse;width:100%;min-width:680px}.ai-realization th,.ai-realization td{text-align:left;padding:10px;border-bottom:1px solid var(--line,#26262f);overflow-wrap:anywhere}.ai-realization a{color:var(--gold,#d4af37)}.ai-realization a:focus-visible,.ai-realization summary:focus-visible,.ai-realization .ar-table:focus-visible{outline:2px solid var(--gold-bright,#f5d574);outline-offset:3px}.ai-realization details{margin:10px 0;overflow-wrap:anywhere}.ai-realization summary{cursor:pointer}.ai-realization p{margin:8px 0}@media(max-width:600px){.ai-realization .ar-chain{grid-template-columns:1fr}.ai-realization .ar-card{padding:14px}.ai-realization .ar-score{font-size:28px}}</style>
-      <h3>企业侧 · AI投入兑现压力</h3><div class="ar-card"><strong class="ar-score" data-ai-score="realization">${s.score === null ? 'N/A · 专项证据不足' : fmt(s.score) + ' / 100'}</strong><b>${escapeHTML(s.summary)}</b><small>快照 ${escapeHTML(s.generatedAt || 'N/A')} · 最近成功 ${escapeHTML(s.lastSuccessfulAt || 'N/A')} · 时效核验 ${escapeHTML(s.evaluatedAt)} · ${escapeHTML(s.snapshotReason || s.runStatus)}<br>capex可计分覆盖 ${fmt(s.coverage * 100)}% · 专项证据覆盖 ${fmt(s.evidenceCoverage * 100)}%${!s.aligned ? ' · 跨组三段最新期末未对齐（≤45天）' : ''}${s.transportError ? '<br>AI读取失败: ' + escapeHTML(s.transportError) + '；保留原快照日期并重新核验。' : ''}</small><p>已投产容量在事前成熟评估窗口后：应用收入/贡献利润低兑现 → 采购取消或延期 → 正常化盈利承压。不是“2027一定建完/必跌”。</p></div>
+      <h3>企业侧 · AI投入兑现压力</h3><div class="ar-card"><strong class="ar-score" data-ai-score="realization">${s.score === null ? 'N/A · 专项证据不足' : fmt(s.score) + ' / 100' + (s.isProxy ? '（分部代理）' : '')}</strong><b>${escapeHTML(s.summary)}</b><small>快照 ${escapeHTML(s.generatedAt || 'N/A')} · 最近成功 ${escapeHTML(s.lastSuccessfulAt || 'N/A')} · 时效核验 ${escapeHTML(s.evaluatedAt)} · ${escapeHTML(s.snapshotReason || s.runStatus)}<br>capex可计分覆盖 ${fmt(s.coverage * 100)}% · 专项证据覆盖 ${fmt(s.evidenceCoverage * 100)}%${!s.aligned ? ' · 跨组三段最新期末未对齐（≤45天）' : ''}${s.transportError ? '<br>AI读取失败: ' + escapeHTML(s.transportError) + '；保留原快照日期并重新核验。' : ''}</small><p>已投产容量在事前成熟评估窗口后：应用收入/贡献利润低兑现 → 采购取消或延期 → 正常化盈利承压。不是“2027一定建完/必跌”。</p></div>
       <div class="ar-chain">${chain}</div><small>40% / 35% / 25%仅为证据覆盖记账；三组全部确认才使用原capex权重20%、影响95%。缺口不占权重、不稀释旧评分；估值侧引用同一状态，不重复计分。各组至少两公司、两独立链、两连续季度，订单须同链采购方与供应方交验；跨组最新期末≤45天。</small>
+      ${proxyHTML}
       ${matrix}<div class="ar-card"><b>公司财报仅作观察 proxy</b><p>总营收、GAAP毛利率、库存、PPE、资本开支与现金流不能冒充AI-specific实证。未披露=N/A，不是0；币种分别显示亿 USD / TWD / KRW，绝不跨币种汇总。</p>${trends || '<p>没有满足三连续季度与交验要求的代理预警；不代表AI订单健康。</p>'}<small>默认可校准研究阈值：专项金额/数量变化≥10%，比例变化≥3个百分点；公司代理三季毛利下降≥3pp、库存/营收比上升仅观察。同比营收必须有一年真实基期。专项得分：全稳定/改善0，一/二/三组连续恶化35/65/85；改善反证可自动降级。阈值/等级未历史校准，不是发生率，不保证出清。来源仅验证结构；“人工核验原文的专项证据”不表示前端自动验证语义。盈利必须正常化归因；同SKU价格必须同配置/币种/交付条件，排除H20出口限制、Blackwell换代等混淆。</small></div>
       <details><summary>原始来源、专项证据与诊断（折叠）</summary>${s.errors.length ? '<p>AI采集错误: ' + s.errors.map(escapeHTML).join('<br>') + '</p>' : ''}<ul>${diagnostics}${evidence}</ul>${rawSources}</details>
     </section>`;
