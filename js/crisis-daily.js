@@ -1,9 +1,11 @@
 /* Shared daily assessment. Browser quotes are deliberately not scoring inputs. */
 (function (root, factory) {
-  const api = factory();
+  const ai = typeof module === 'object' && module.exports && typeof require === 'function'
+    ? require('./ai-realization.js') : root && root.AiRealization;
+  const api = factory(ai);
   if (typeof module === 'object' && module.exports) module.exports = api;
   if (root) root.CrisisDaily = api;
-})(typeof window !== 'undefined' ? window : null, function () {
+})(typeof window !== 'undefined' ? window : null, function (AiRealization) {
   'use strict';
   const DAY = 86400000;
   const VERSION = 'daily-1.0';
@@ -66,7 +68,7 @@
   ]);
   const TRIGGERS = Object.freeze([
     {id: 't10y5', label: '10Y接近5%阈值', weight: .18, impact: .95, inputs: ['DGS10'], note: '10Y单日接近程度，不代表已突破并维持', ranges: [[3, 5]]},
-    {id: 'capex', label: 'AI资本开支回报', weight: .20, impact: .95, inputs: [], note: '无可验证资本开支/回报序列，待数据'},
+    {id: 'capex', label: 'AI投入兑现压力', weight: .20, impact: .95, inputs: [], note: '三段专项直接证据不足时N/A；公司财报代理不入分'},
     {id: 'ipo', label: '大型AI IPO表现', weight: .14, impact: .75, inputs: [], note: '无IPO表现序列，待数据'},
     {id: 'credit', label: '信用压力（HY代理）', weight: .14, impact: .95, inputs: ['BAMLH0A0HYM2'], note: '高收益债OAS代理，非数据中心或私募信贷违约监测', ranges: [[2, 8]]},
     {id: 'oil100', label: 'WTI接近100美元', weight: .08, impact: .55, inputs: ['WTI'], note: 'WTI现值接近阈值，不是Brent或地缘事件判断', ranges: [[60, 100]]},
@@ -246,7 +248,12 @@
       return {...c, value: v, score: normalized == null ? null : c.lower ? 100 - normalized : normalized};
     });
     const system = {...weighted(systemItems, MIN_COVERAGE), items: systemItems};
+    const aiRealization = AiRealization ? AiRealization.compute(options.aiSnapshot, {now, transportError: options.aiTransportError})
+      : {level: 'insufficient', score: null, coverage: 0, snapshotReason: 'AI共享模块未加载；不入分', transportError: options.aiTransportError || null};
     const triggerItems = TRIGGERS.map(t => {
+      if (t.id === 'capex') return {...t, score: !reason && aiRealization.coverage === 1 ? aiRealization.score : null,
+        coverage: !reason && finite(aiRealization.score) ? aiRealization.coverage : 0, parts: [], aiRealization,
+        note: reason ? '宏观快照暂停评估，AI不能绕过停算；公司板块仅独立观察' : 'AI投入兑现压力详见企业侧同一板块；估值侧同state引用，不重复计分。' + (aiRealization.snapshotReason || '')};
       const parts = t.inputs.map((id, i) => ({id, weight: 1 / t.inputs.length, score: pressure(value(id), ...t.ranges[i])}));
       return {...t, ...weighted(parts), parts};
     });
@@ -282,6 +289,7 @@
       snapshotReason: reason, metrics, benchmarks, dimensions: benchmarks[0].dimensions,
       historical: {score: historicalScore, coverage: historicalCoverage}, system,
       triggers: {items: triggerItems, ...triggerPressure}, composite: {score: compositeScore, coverage: Math.min(historicalCoverage, triggerPressure.coverage), verdict},
+      aiRealization,
       anomalies, truth, earnings: {base: eps, observationDate: metrics.EPS_TTM.observationDate, projections}, masters,
       scenarios: {...SCENARIOS, windows: SCENARIOS.windows.map(w => ({...w, expired: Number.isFinite(now) && now >= Date.parse(w.end + 'T00:00:00Z') + DAY}))},
       errors: Array.isArray(s.errors) ? s.errors : []};
@@ -304,7 +312,7 @@
     const badge = (label, group, key) => card(`<div>${escapeHTML(label)}</div><strong class="cd-score" data-score="${key}">${scoreText(group.score)}</strong>${barHTML(group.score)}<small>加权覆盖率 ${coverageText(group.coverage)}${group.coverage < 1 ? ' · 部分覆盖/缺失' : ''}</small>`);
     const signalText = signal => ({missing: '待数据 / 不可判断', watch: '规则触发 · 需关注', 'not-triggered': '规则未触发（不等于安全）'}[signal]);
     const rules = items => items.map(r => card(`<b>${escapeHTML(r.name)}</b><p>${signalText(r.signal)}</p><small>${escapeHTML(r.note)}</small>${r.inputs.map(id => metricHTML(s, id)).join('')}`)).join('');
-    const dims = s.dimensions.map(d => card(`<b>${escapeHTML(d.name)} · 权重 ${coverageText(d.weight)}</b><p data-dimension="${d.id}">${d.applicable ? '2000相似度 ' + scoreText(d.score) + ' · 覆盖 ' + coverageText(d.coverage) : 'N/A历史无资产 · 不计覆盖分母'}</p>${barHTML(d.score)}${d.parts.map(p => `<div class="cd-reference">历史框架 ${escapeHTML(LABELS[p.id])}: ${p.applicable ? finite(p.reference) ? fmt(p.reference, 2) : '历史参照缺失' : 'N/A历史无资产'} · 分项相似度 ${p.applicable ? scoreText(p.score) : 'N/A历史无资产'} · 子权重 ${coverageText(p.weight)}</div>${metricHTML(s, p.id)}`).join('')}${d.context.map(id => metricHTML(s, id)).join('')}`)).join('');
+    const dims = s.dimensions.map(d => card(`<b>${escapeHTML(d.name)} · 权重 ${coverageText(d.weight)}</b><p data-dimension="${d.id}">${d.applicable ? '2000相似度 ' + scoreText(d.score) + ' · 覆盖 ' + coverageText(d.coverage) : 'N/A历史无资产 · 不计覆盖分母'}</p>${barHTML(d.score)}${d.id === 'earn' ? '<p>AI兑现压力 ' + scoreText(s.aiRealization.score) + ' · ' + escapeHTML(s.aiRealization.level) + '</p><small>兑现压力详见同一板块；不重复计分（仅原capex计分）。</small>' : ''}${d.parts.map(p => `<div class="cd-reference">历史框架 ${escapeHTML(LABELS[p.id])}: ${p.applicable ? finite(p.reference) ? fmt(p.reference, 2) : '历史参照缺失' : 'N/A历史无资产'} · 分项相似度 ${p.applicable ? scoreText(p.score) : 'N/A历史无资产'} · 子权重 ${coverageText(p.weight)}</div>${metricHTML(s, p.id)}`).join('')}${d.context.map(id => metricHTML(s, id)).join('')}`)).join('');
     const benchRows = s.benchmarks.map(b => `<tr><td>${escapeHTML(b.label)}</td><td>${coverageText(b.weight)}</td><td data-benchmark="${b.id}">${scoreText(b.score)}</td><td>${coverageText(b.coverage)}</td><td>${scoreText(b.sensitivity.score)}<br><small>仅敏感性排除: ${escapeHTML(b.sensitivity.removed.join('、') || '无')} · ${b.sensitivity.kept}/${b.sensitivity.total}</small></td></tr>`).join('');
     const triggers = s.triggers.items.map(t => card(`<b>${escapeHTML(t.label)}</b><p data-trigger="${t.id}">${t.score == null ? '待数据 / 不可估算' : '信号强度 ' + scoreText(t.score)}</p>${barHTML(t.score)}<small>观测覆盖 ${coverageText(t.coverage)} · 影响参数 ${coverageText(t.impact)} · 权重 ${coverageText(t.weight)}<br>${escapeHTML(t.note)}</small>${t.inputs.map(id => metricHTML(s, id)).join('')}`)).join('');
     const systemItems = s.system.items.map(c => card(`${metricHTML(s, c.id)}<p data-system="${c.id}">风险分项 ${scoreText(c.score)} · 权重 ${coverageText(c.weight)}</p>${barHTML(c.score)}`)).join('');
@@ -318,8 +326,10 @@
       ${card(`<b style="color:${s.composite.verdict.color}">${escapeHTML(s.composite.verdict.label)}</b><p>${escapeHTML(s.composite.verdict.advice)}</p><small>综合 = 历史相似度 × 50% + 触发器压力 × 50%。历史/系统覆盖低于60%暂停；触发覆盖低于50%暂停。触发压力 = Σ(信号强度×影响参数×有效权重)/Σ有效权重，无平方根放大。所有强度均未校准，不是实际发生概率或损失估计。历史相似度不等于危机风险。</small>`)}
       ${title('四基准 · 主分保留全部有证据维度')}${card(`<div class="cd-table"><table><thead><tr><th>历史基准</th><th>组合权重</th><th>主相似度</th><th>覆盖率</th><th>IQR敏感性（非主分）</th></tr></thead><tbody>${benchRows}</tbody></table></div><small>相似度 = 100×max(0,1−|最新值−基准|/max(|基准|,尺度))；缺失子指标按可用权重归一化，覆盖率仍按适用原权重计；2000/2008的BTC为N/A历史无资产，仅从适用覆盖分母剔除，不改实际有效权重归一化。零/负收益使用绝对基准与尺度。分母尺度：股票同比20、CAPE17、PE15、集中度20、利率1、美元50、黄金/BTC100、原油200、通胀2、利润10。历史数值/口径是原框架锚点，不冒充同日观测或精确统计校准；不强制剔除最低项。</small>`)}
       ${title('九维对比 · 同一模型状态')}<div class="cd-grid">${dims}</div>
+      ${AiRealization ? AiRealization.renderHTML(s.aiRealization) : card('<b>企业侧 · AI投入兑现压力</b><p>N/A · AI共享模块未加载；仅观察，不计分。</p><small>' + escapeHTML(s.aiRealization.transportError || '') + '</small>')}
+      ${s.snapshotReason ? card('<small>宏观快照已停算；AI企业板块独立显示，不绕过宏观停算给capex或综合分。</small>') : ''}
       ${title('系统性风险 · 8指标')}<div class="cd-grid">${systemItems}</div>${card('<small>沿用原框架线性区间：利差−1至3（反向）、VIX10至80、失业3至15、信心40至110（反向）、拖欠1.5至7、房价同比−5至20、HY 2至12、股票同比−40至40（反向）。信用/房价方向沿用原框架，存在经济解释争议；不是校准后的危机发生率。</small>')}
-      ${title('8触发器 · 未校准信号强度')}<div class="cd-grid">${triggers}</div>${card('<small>压力阈值参数：10Y 3–5%，HY 2–8%，WTI 60–100美元，就业3.5–6.5%；政策代理等权使用CPI 2–6%、核心PCE 2–5%、Fed目标上下限各2–6%。无观测的capex/IPO/监管不入分；五项完全可用时覆盖58%，仍为部分覆盖。</small>')}
+      ${title('8触发器 · 未校准信号强度')}<div class="cd-grid">${triggers}</div>${card('<small>压力阈值参数：10Y 3–5%，HY 2–8%，WTI 60–100美元，就业3.5–6.5%；政策代理等权使用CPI 2–6%、核心PCE 2–5%、Fed目标上下限各2–6%。无专项证据的capex、无观测的IPO/监管不入分；原五项完全可用时覆盖58%，AI三段齐且宏观有效时覆盖78%，仍为部分覆盖。</small>')}
       ${title('异常与真假繁荣 · 模型规则，不指定政治因果')}<div class="cd-grid">${rules(s.anomalies)}</div>${title('真假繁荣 · 证据边界')}<div class="cd-grid">${rules(s.truth)}</div>
       ${title('统一EPS情景投影 · 非机构盈利预测')}${card(`${metricHTML(s, 'EPS_TTM')}<small>EPS(n) = 有效EPS_TTM × (1+假设增长率)^n。基点来自Multpl独立12月真实通胀调整盈利序列，并非SP500/PE倒算；单位按来源最新CPI重定价，基期随来源变化。n年值均为同基期实际购买力情景，不是名义EPS预测。−10%/4%/7%为模型情景参数，不是Goldman/FactSet共识；基点是观测日期而非今日。BEA全美企业利润不能替代Mag7盈利，暂无Mag7专属观测。</small>`)}<div class="cd-grid">${earnings}</div>
       ${title('大师框架启发 · 模型生成')}<div class="cd-grid">${s.masters.map(m => card(`<b>${escapeHTML(m.name)}</b><small>${escapeHTML(m.framework)}</small><p>${escapeHTML(m.advice)}</p><small>根据当前综合分切换的框架启发，不是真实言论/持仓，不承诺收益。</small>`)).join('')}</div>
@@ -330,30 +340,62 @@
     </section>`;
   }
   let snapshot = null;
+  let acceptedAISnapshot = null;
   let currentState = compute(null);
   let transportError = null;
+  let aiTransportError = null;
   let loading = null;
-  function getState(options) { currentState = compute(snapshot, options); return currentState; }
-  function setSnapshot(next, options) { snapshot = next; transportError = null; currentState = compute(next, options); return currentState; }
+  function getState(options = {}) {
+    const aiSnapshot = Object.hasOwn(options, 'aiSnapshot') ? options.aiSnapshot : acceptedAISnapshot;
+    currentState = compute(snapshot, {...options, aiSnapshot, aiTransportError});
+    currentState.acceptedAISnapshot = aiSnapshot;
+    return currentState;
+  }
+  function setSnapshot(next, options = {}) {
+    snapshot = next; transportError = null;
+    if (Object.hasOwn(options, 'aiSnapshot')) { acceptedAISnapshot = options.aiSnapshot; aiTransportError = null; }
+    return getState(options);
+  }
+  async function requestJSON(options) {
+    if (AiRealization) return AiRealization.requestSnapshot(options);
+    const fetcher = options.fetch || ((...args) => globalThis.fetch(...args));
+    const controller = typeof AbortController !== 'undefined' ? new AbortController() : null;
+    let timer;
+    const timeout = new Promise((_, reject) => { timer = setTimeout(() => { if (controller) controller.abort(); reject(new Error('读取超时（12秒）')); }, 12000); });
+    try {
+      return await Promise.race([(async () => {
+        const response = await fetcher(options.url, {cache: 'no-store', ...(controller ? {signal: controller.signal} : {})});
+        if (!response.ok) throw new Error('HTTP ' + response.status);
+        return await response.json();
+      })(), timeout]);
+    } finally { clearTimeout(timer); }
+  }
   async function load(options = {}) {
     if (loading) return loading;
     loading = (async () => {
-      const fetcher = options.fetch || ((...args) => globalThis.fetch(...args));
-      const controller = typeof AbortController !== 'undefined' ? new AbortController() : null;
-      const timer = controller ? setTimeout(() => controller.abort(), 12000) : null;
-      try {
-        const response = await fetcher(options.url || 'data/crisis-daily.json', {cache: 'no-store', ...(controller ? {signal: controller.signal} : {})});
-        if (!response.ok) throw new Error('HTTP ' + response.status);
-        const next = await response.json();
-        const receivedAt = options.now == null ? Date.now() : +new Date(options.now);
-        const generatedAt = isoTime(next?.generatedAt);
-        if (next?.schemaVersion !== 1 || !next.metrics || !Number.isFinite(generatedAt) || !Number.isFinite(receivedAt)) throw new Error('无效每日快照');
-        if (generatedAt > receivedAt) throw new Error('快照生成时间在未来，拒绝覆盖有效数据');
-        // An older response must never overwrite an already accepted newer assessment.
-        if (!snapshot || generatedAt >= isoTime(snapshot.generatedAt)) setSnapshot(next, options);
-        transportError = null;
-      } catch (error) { transportError = String(error.message || error); }
-      finally { if (timer) clearTimeout(timer); }
+      const macroTask = (async () => {
+        try {
+          const next = await requestJSON({...options, url: options.url || 'data/crisis-daily.json'});
+          const receivedAt = options.now == null ? Date.now() : +new Date(options.now), generatedAt = isoTime(next?.generatedAt);
+          if (next?.schemaVersion !== 1 || !next.metrics || !Number.isFinite(generatedAt) || !Number.isFinite(receivedAt)) throw new Error('无效每日快照');
+          if (generatedAt > receivedAt) throw new Error('快照生成时间在未来，拒绝覆盖有效数据');
+          if (snapshot && generatedAt < isoTime(snapshot.generatedAt)) throw new Error('快照生成时间倒退，拒绝覆盖有效数据');
+          snapshot = next; transportError = null;
+        } catch (error) { transportError = String(error.message || error); }
+      })();
+      // Legacy callers request macro only. Production pages explicitly supply the AI URL.
+      const aiTask = options.aiUrl ? (async () => {
+        try {
+          const next = await requestJSON({...options, url: options.aiUrl});
+          const receivedAt = options.now == null ? Date.now() : +new Date(options.now);
+          if (!AiRealization) throw new Error('AI共享模块未加载');
+          const reason = AiRealization.snapshotReason(next, receivedAt);
+          if (reason && !['AI本次采集失败，专项证据暂停入分', 'AI每日快照超过48小时；保留原始日期，暂停入分'].includes(reason)) throw new Error(reason);
+          if (acceptedAISnapshot && isoTime(next.generatedAt) < isoTime(acceptedAISnapshot.generatedAt)) throw new Error('AI快照生成时间倒退，拒绝覆盖');
+          acceptedAISnapshot = next; aiTransportError = null;
+        } catch (error) { aiTransportError = String(error.message || error); }
+      })() : Promise.resolve();
+      await Promise.all([macroTask, aiTask]);
       return getState(options);
     })();
     try { return await loading; } finally { loading = null; }

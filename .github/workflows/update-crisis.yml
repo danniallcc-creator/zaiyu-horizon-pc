@@ -8,6 +8,9 @@ on:
     branches: [main]
     paths:
       - scripts/update-crisis.mjs
+      - scripts/update-ai-companies.mjs
+      - data/ai-evidence-input.json
+      - tests/ai-*.test.mjs
       - tests/crisis-fetch.test.mjs
       - tests/crisis-model.test.mjs
       - .github/workflows/update-crisis.yml
@@ -38,41 +41,53 @@ jobs:
         with:
           node-version: '22'
       - name: Test parsers, calculations, frontend model and failure handling
-        run: node --test tests/crisis-*.test.mjs
+        run: node --test tests/crisis-*.test.mjs tests/ai-*.test.mjs
       - name: Collect actual public observations
         id: collect
         continue-on-error: true
         run: node scripts/update-crisis.mjs
+      - name: Collect company financial proxies and reviewed AI evidence
+        id: companies
+        continue-on-error: true
+        run: node scripts/update-ai-companies.mjs
       - name: Upload collection diagnostics (including all-source failures)
-        if: always() && steps.collect.outcome != 'skipped'
+        if: always() && (steps.collect.outcome != 'skipped' || steps.companies.outcome != 'skipped')
         uses: actions/upload-artifact@v4
         with:
           name: crisis-daily-diagnostics
-          path: data/crisis-daily.json
+          path: |
+            data/crisis-daily.json
+            data/ai-company-daily.json
           if-no-files-found: warn
           retention-days: 7
       - name: Fail visibly if no source succeeded
         if: steps.collect.outcome == 'failure'
         run: |
           node --input-type=module -e 'console.error("::error::Crisis collection failed; inspect crisis-daily-diagnostics. No data committed or site deployed."); process.exit(1)'
-      - name: Commit only the daily data file
+      - name: Commit only the two daily data files
         id: commit
         if: steps.collect.outcome == 'success'
         env:
-          DATA_FILE: data/crisis-daily.json
           GIT_AUTHOR_NAME: github-actions[bot]
           GIT_AUTHOR_EMAIL: 41898282+github-actions[bot]@users.noreply.github.com
           GIT_COMMITTER_NAME: github-actions[bot]
           GIT_COMMITTER_EMAIL: 41898282+github-actions[bot]@users.noreply.github.com
         run: |
           set -euo pipefail
-          git add -- "$DATA_FILE"
-          if git diff --cached --quiet -- "$DATA_FILE"; then
+          DATA_FILES=(data/crisis-daily.json data/ai-company-daily.json)
+          git add -- "${DATA_FILES[@]}"
+          mapfile -t STAGED_FILES < <(git diff --cached --name-only)
+          for staged in "${STAGED_FILES[@]}"; do
+            case "$staged" in
+              data/crisis-daily.json|data/ai-company-daily.json) ;;
+              *) printf 'Refusing unexpected staged file: %s\n' "$staged" >&2; exit 1 ;;
+            esac
+          done
+          if git diff --cached --quiet -- "${DATA_FILES[@]}"; then
             printf 'changed=false\n' >> "$GITHUB_OUTPUT"
           else
-            test "$(git diff --cached --name-only)" = "$DATA_FILE"
             git commit -m "$(cat <<'EOF'
-          chore: refresh real daily crisis observations
+          chore: refresh real daily crisis and company observations
           EOF
           )"
             git push origin HEAD:main

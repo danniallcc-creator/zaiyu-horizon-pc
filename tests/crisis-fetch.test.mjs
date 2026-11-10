@@ -412,15 +412,24 @@ test('workflow tests before collection, fails after diagnostics, commits only da
   assert.match(yaml, /node-version: '22'/);
   assert.ok(yaml.indexOf('node --test') < yaml.indexOf('node scripts/update-crisis.mjs'));
   assert.ok(yaml.indexOf('actions/upload-artifact@v4') < yaml.indexOf('Fail visibly'));
-  assert.match(yaml, /git add -- "\$DATA_FILE"/);
-  assert.match(yaml, /DATA_FILE: data\/crisis-daily.json/);
+  assert.match(yaml, /DATA_FILES=\(data\/crisis-daily\.json data\/ai-company-daily\.json\)/);
+  assert.match(yaml, /git add -- "\$\{DATA_FILES\[@\]\}"/);
+  assert.match(yaml, /mapfile -t STAGED_FILES < <\(git diff --cached --name-only\)/);
+  assert.match(yaml, /data\/crisis-daily\.json\|data\/ai-company-daily\.json\) ;;/);
+  assert.match(yaml, /Refusing unexpected staged file:[\s\S]*exit 1/);
+  assert.ok(yaml.indexOf('Refusing unexpected staged file:') < yaml.indexOf('git commit'));
+  assert.match(yaml, /id: companies\n        continue-on-error: true\n        run: node scripts\/update-ai-companies\.mjs/);
+  assert.match(yaml, /path: \|\n            data\/crisis-daily\.json\n            data\/ai-company-daily\.json/);
+  assert.ok(yaml.indexOf('node --test') < yaml.indexOf('node scripts/update-ai-companies.mjs'));
+  assert.match(yaml, /name: Commit only the two daily data files\n        id: commit\n        if: steps\.collect\.outcome == 'success'/);
+  assert.doesNotMatch(yaml, /if: steps\.companies\.outcome == 'failure'/);
   assert.doesNotMatch(yaml, /git add (?:\.|-A)|git push .*--force|--no-verify/);
   assert.match(yaml, /for asset in index.html m wm js data \.nojekyll/);
   assert.match(yaml, /actions\/upload-pages-artifact@v3/);
   assert.match(yaml, /actions\/deploy-pages@v4/);
   assert.match(yaml, /pages: write\n      id-token: write/);
   assert.match(yaml, /cancel-in-progress: false/);
-  assert.match(yaml, /node --test tests\/crisis-\*\.test\.mjs/);
+  assert.match(yaml, /run: node --test tests\/crisis-\*\.test\.mjs tests\/ai-\*\.test\.mjs\n/);
   assert.match(yaml, /GIT_AUTHOR_NAME: github-actions\[bot\]/);
   assert.match(yaml, /GIT_AUTHOR_EMAIL:/);
   assert.match(yaml, /GIT_COMMITTER_NAME: github-actions\[bot\]/);
@@ -429,8 +438,8 @@ test('workflow tests before collection, fails after diagnostics, commits only da
   const globalPermissions = yaml.split('\npermissions:\n')[1].split('\n\n')[0];
   assert.equal(globalPermissions.trim(), 'contents: write');
   const pushPaths = yaml.split('    paths:\n')[1].split('\n\n')[0];
-  for (const entry of ['index.html', 'm/**', 'js/**', 'wm/**', 'tests/crisis-model.test.mjs']) assert.ok(pushPaths.includes(`- ${entry}`));
-  assert.doesNotMatch(pushPaths, /data\/|worldmonitor/);
+  for (const entry of ['index.html', 'm/**', 'js/**', 'wm/**', 'tests/crisis-model.test.mjs', 'scripts/update-ai-companies.mjs', 'data/ai-evidence-input.json', 'tests/ai-*.test.mjs']) assert.ok(pushPaths.includes(`- ${entry}`));
+  assert.doesNotMatch(pushPaths, /data\/(?:crisis-daily|ai-company-daily)\.json|worldmonitor/);
 });
 
 test('pure period-end aging uses shared limits, leap month ends and distinct EPS convention', () => {

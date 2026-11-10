@@ -703,7 +703,7 @@ test('historic scenario windows are explicitly dated/expired and never alter dai
   assert.match(model.renderHTML(old), /已过期/);
 });
 
-function browserModel() {
+function browserModel(withAI = false) {
   class FrozenDate extends Date {
     constructor(...args) { super(...(args.length ? args : [NOW])); }
     static now() { return NOW; }
@@ -711,6 +711,7 @@ function browserModel() {
   const nodes = new Map();
   const document = {getElementById(id) { if (!nodes.has(id)) nodes.set(id, {innerHTML: ''}); return nodes.get(id); }, querySelector() { return null; }};
   const context = vm.createContext({window: {}, Date: FrozenDate, document, console, URL, AbortController, setTimeout, clearTimeout});
+  if (withAI) vm.runInContext(readFileSync(new URL('js/ai-realization.js', root), 'utf8'), context);
   vm.runInContext(sharedSource, context);
   context.CrisisDaily = context.window.CrisisDaily;
   return {context, nodes};
@@ -727,10 +728,14 @@ test('PC/mobile scripts parse, module precedes app, paths resolve to same snapsh
     for (const [i, script] of scripts.entries()) new vm.Script(script[1], {filename: file + '/script-' + i});
     const modulePath = mobile ? '../js/crisis-daily.js' : 'js/crisis-daily.js';
     const dataPath = mobile ? '../data/crisis-daily.json' : 'data/crisis-daily.json';
+    const aiPath = mobile ? '../data/ai-company-daily.json' : 'data/ai-company-daily.json';
+    const aiModulePath = mobile ? '../js/ai-realization.js' : 'js/ai-realization.js';
     assert.equal(new URL(modulePath, new URL(file, root)).href, new URL('js/crisis-daily.js', root).href);
     assert.equal(new URL(dataPath, new URL(file, root)).href, new URL('data/crisis-daily.json', root).href);
+    assert.equal(new URL(aiPath, new URL(file, root)).href, new URL('data/ai-company-daily.json', root).href);
+    assert.ok(html.indexOf(`src="${aiModulePath}"`) < html.indexOf(`src="${modulePath}"`));
     assert.ok(html.indexOf(`src="${modulePath}"`) < html.indexOf('/* ==================== CONFIG'));
-    const {context, nodes} = browserModel();
+    const {context, nodes} = browserModel(true);
     const section = html.match(/const BUBBLE_2000=[\s\S]*?let CW_SCORE=cwCalcScore\(\);/);
     assert.ok(section, 'historical anchors and shared score initialization exist');
     vm.runInContext(section[0], context);
@@ -747,7 +752,8 @@ test('PC/mobile scripts parse, module precedes app, paths resolve to same snapsh
       ${mobile ? 'let cache=null;' : ''}`, context);
     const urls = [];
     let supplied = fixture();
-    context.fetch = async (url, options) => { urls.push({url, options}); return {ok: true, json: async () => supplied}; };
+    let suppliedAI = aiFixture(false);
+    context.fetch = async (url, options) => { urls.push({url, options}); return {ok: true, json: async () => url === aiPath ? suppliedAI : supplied}; };
     // globalThis.fetch is used by the shared browser module.
     const crisisId = mobile ? 'v-crisis' : 'crisisContent';
     context.document.getElementById('cycleCrisisDaily').innerHTML = 'old';
@@ -765,12 +771,20 @@ test('PC/mobile scripts parse, module precedes app, paths resolve to same snapsh
     const previousScore = vm.runInContext('CW_SCORE', context);
     assert.equal(urls[0].url, dataPath);
     assert.equal(urls[0].options.cache, 'no-store');
+    assert.deepEqual(urls.map(r => r.url), [dataPath, aiPath]);
+    assert.equal(urls[1].options.cache, 'no-store');
+    assert.equal(consumerStates[0].acceptedAISnapshot, suppliedAI);
+    assert.equal(consumerStates[0].aiRealization.score, 0);
     assert.match(before, /6,100\.00/);
     assert.doesNotMatch(before, /999,999|9,999/);
     assert.equal(cycle.innerHTML, before);
     const oldElement = cycle;
     supplied = fixture(VALUES_B, '2026-07-02T11:00:00Z');
+    suppliedAI = aiFixture(true, supplied.generatedAt);
     await context.loadAll();
+    assert.deepEqual(urls.map(r => r.url), [dataPath, aiPath, dataPath, aiPath]);
+    assert.equal(consumerStates[2], consumerStates[3]);
+    assert.equal(consumerStates[2].aiRealization.score, 85);
     assert.notEqual(vm.runInContext('CW_SCORE', context), previousScore);
     assert.notEqual(nodes.get(crisisId).innerHTML, before);
     assert.equal(cycle, oldElement, 'cycle wrapper is updated without replacing charts');
@@ -822,4 +836,88 @@ test('Financial Accounts Q2 remains valid before its longer December publication
   assert.equal(result.metrics.CORP_DEBT_GDP.usable, true);
   assert.equal(result.metrics.CORP_DEBT_GDP.maxAgeDays, 180);
   assert.ok(result.metrics.CORP_DEBT_GDP.ageDays > 160);
+});
+
+// Synthetic direct evidence only; never written into production data.
+function aiFixture(high = true, generatedAt = '2026-07-02T10:00:00Z') {
+  const evidence = [];
+  for (const [group, ids, metric] of [
+    ['application', ['MSFT', 'GOOG'], 'aiRevenue'],
+    ['orders', ['MSFT', 'NVDA', 'GOOG', 'AMD'], 'newOrders'],
+    ['profit', ['NVDA', 'AMD'], 'normalizedGrossMargin']
+  ]) for (const companyId of ids) for (const [periodStart, periodEnd] of [['2026-01-01', '2026-03-31'], ['2026-04-01', '2026-06-30']]) {
+    evidence.push({id: `${group}-${companyId}-${periodEnd}`, group, companyId, chainId: ['MSFT', 'NVDA'].includes(companyId) ? 'a' : 'b',
+      periodStart, periodEnd, publishedAt: generatedAt, reviewedAt: generatedAt, reviewed: true, kind: 'direct', scope: 'AI', direction: high ? 'deteriorating' : 'stable',
+      sources: [{name: 'Test official', url: `https://${companyId.toLowerCase()}.example.org/${group}/${periodEnd}`, publisher: companyId, type: 'official'},
+        {name: 'Test independent', url: `https://independent.example.net/${companyId}/${group}/${periodEnd}`, publisher: 'Independent', type: 'independent'}],
+      summary: 'Test-only reviewed direct evidence', metric, value: group === 'profit' ? high ? 55 : 60 : high ? 80 : 100,
+      baseline: group === 'profit' ? 60 : 100, unit: group === 'profit' ? '%' : group === 'orders' ? 'count' : 'USD',
+      normalizationReviewed: true, confounders: [],
+      ...(group === 'application' ? {deploymentDate: '2024-01-01', evaluationWindowQuarters: 4} : {}),
+      ...(group === 'orders' ? {procurementSide: ['MSFT', 'GOOG'].includes(companyId) ? 'buyer' : 'supplier'} : {})});
+  }
+  return {schemaVersion: 1, generatedAt, lastSuccessfulAt: generatedAt, runStatus: 'ok', companies: [], evidence, errors: []};
+}
+
+test('AI A/B changes only existing capex/composite, never four benchmarks or nine dimension formulas', () => {
+  const macro = fixture(), base = state(macro);
+  const a = model.compute(macro, {now: NOW, aiSnapshot: aiFixture(false)}), b = model.compute(macro, {now: NOW, aiSnapshot: aiFixture(true)});
+  for (const result of [a, b]) {
+    assert.deepEqual(result.benchmarks, base.benchmarks); assert.deepEqual(result.dimensions, base.dimensions);
+    assert.deepEqual(result.historical, base.historical); assert.deepEqual(result.system, base.system); assert.deepEqual(result.earnings, base.earnings);
+    close(result.triggers.coverage, .78);
+    const t = result.triggers.items.find(t => t.id === 'capex'); assert.equal(t.aiRealization, result.aiRealization); assert.equal(t.weight, .20); assert.equal(t.impact, .95);
+    for (const other of base.triggers.items.filter(t => t.id !== 'capex')) assert.deepEqual(result.triggers.items.find(t => t.id === other.id), other);
+    close(result.triggers.score, (base.triggers.score * .58 + t.score * .95 * .20) / .78);
+    close(result.composite.score, (base.historical.score + result.triggers.score) / 2);
+  }
+  assert.equal(a.aiRealization.score, 0); assert.equal(b.aiRealization.score, 85); assert.notEqual(a.composite.score, b.composite.score);
+  assert.match(model.renderHTML(b), /兑现压力详见同一板块；不重复计分/);
+  assert.ok(model.renderHTML(b).indexOf('企业侧 · AI投入兑现压力') < model.renderHTML(b).indexOf('系统性风险 · 8指标'));
+});
+test('AI evidence gaps never take .20 weight or dilute existing risk', () => {
+  const s = aiFixture(); s.evidence = s.evidence.filter(r => r.group !== 'application');
+  const base = state(fixture(VALUES_B)), result = model.compute(fixture(VALUES_B), {now: NOW, aiSnapshot: s});
+  assert.equal(result.aiRealization.score, null); close(result.triggers.coverage, .58); assert.deepEqual(scoreList(result), scoreList(base));
+});
+test('AI cannot bypass a failed/stale/missing macro assessment', () => {
+  for (const macro of [null, {...fixture(), runStatus: 'failed'}, {...fixture(), generatedAt: '2026-06-01T10:00:00Z'}]) {
+    const result = model.compute(macro, {now: NOW, aiSnapshot: aiFixture()}); assert.equal(result.aiRealization.score, 85);
+    assert.equal(result.triggers.items.find(t => t.id === 'capex').score, null); assert.equal(result.composite.score, null); assert.equal(result.triggers.coverage, 0);
+  }
+});
+test('legacy macro-only loader makes exactly one request and absent AI VM remains safe', async () => {
+  const {context} = browserModel(), urls = [];
+  const result = await context.CrisisDaily.load({fetch: async url => { urls.push(url); return {ok: true, json: async () => fixture()}; }});
+  assert.deepEqual(urls, ['data/crisis-daily.json']); assert.equal(result.aiRealization.score, null); close(result.triggers.coverage, .58);
+  assert.match(context.CrisisDaily.renderHTML(result), /AI共享模块未加载/);
+});
+test('macro and AI reads start in parallel and produce one consistent accepted snapshot', async () => {
+  const {context} = browserModel(true), api = context.CrisisDaily, starts = [], resolvers = new Map();
+  const macro = fixture(), ai = aiFixture();
+  const pending = api.load({url: 'data/crisis-daily.json', aiUrl: 'data/ai-company-daily.json', fetch: url => {
+    starts.push(url); return new Promise(resolve => resolvers.set(url, resolve));
+  }});
+  assert.deepEqual(starts, ['data/crisis-daily.json', 'data/ai-company-daily.json']);
+  resolvers.get(starts[1])({ok: true, json: async () => ai}); resolvers.get(starts[0])({ok: true, json: async () => macro});
+  const result = await pending; assert.equal(result.acceptedAISnapshot, ai); assert.equal(result.aiRealization.score, 85);
+  const refreshed = api.getState(); assert.equal(refreshed.acceptedAISnapshot, ai);
+  assert.deepEqual(JSON.parse(JSON.stringify(refreshed.aiRealization)), JSON.parse(JSON.stringify(result.aiRealization)));
+  assert.equal(result.triggers.items.find(t => t.id === 'capex').aiRealization, result.aiRealization);
+});
+test('AI fetch failures/future/decreased timestamps retain original date without contaminating macro', async () => {
+  const {context} = browserModel(true), api = context.CrisisDaily, accepted = aiFixture(true, '2026-07-02T11:00:00Z');
+  api.setSnapshot(fixture(), {aiSnapshot: accepted});
+  for (const generatedAt of [null, '2026-07-02T09:00:00Z', '2027-07-02T10:00:00Z']) {
+    const next = aiFixture(false, generatedAt || '2026-07-02T10:00:00Z');
+    const result = await api.load({aiUrl: 'data/ai-company-daily.json', fetch: async url => {
+      if (url.includes('ai-company')) { if (!generatedAt) throw new Error('<b>AI offline</b>'); return {ok: true, json: async () => next}; }
+      return {ok: true, json: async () => fixture(VALUES_B)};
+    }});
+    assert.equal(result.acceptedAISnapshot, accepted); assert.equal(result.aiRealization.generatedAt, accepted.generatedAt);
+    assert.equal(result.metrics.SP500.value, VALUES_B.SP500); assert.ok(result.aiRealization.transportError);
+    assert.doesNotMatch(api.renderHTML(result), /<b>AI offline<\/b>/);
+  }
+  const old = api.getState({now: NOW + 4 * 86400000}); assert.equal(old.aiRealization.score, null); assert.equal(old.composite.score, null);
+  assert.equal(old.aiRealization.generatedAt, accepted.generatedAt);
 });

@@ -349,6 +349,7 @@ body{font-family:'Noto Sans SC',system-ui,-apple-system,sans-serif;background:va
   <div class="tab" data-v="hedgefund"><div class="ic">♜</div>对冲</div>
 </nav>
 
+<script src="../js/ai-realization.js"></script>
 <script src="../js/crisis-daily.js"></script>
 <script>
 /* ========== DATA + COMPUTATION (extracted from PC version) ========== */
@@ -2394,12 +2395,12 @@ async function loadAll(){
   setStatus('loading','加载中…');
   const md=Object.assign({},CURATED);
   try{
-    const results=await Promise.allSettled([fetchFX(),fetchMarket(),fetchMacro(),CrisisDaily.load({url:'../data/crisis-daily.json'})]);
+    const results=await Promise.allSettled([fetchFX(),fetchMarket(),fetchMacro(),CrisisDaily.load({url:'../data/crisis-daily.json',aiUrl:'../data/ai-company-daily.json'})]);
     if(results[0].status==='fulfilled')Object.assign(md,results[0].value);
     if(results[1].status==='fulfilled')Object.assign(md,results[1].value);
     if(results[2].status==='fulfilled')Object.assign(md,results[2].value);
     cache=md;
-    const crisisState=CrisisDaily.getState();
+    const crisisState=results[3].status==='fulfilled'?results[3].value:CrisisDaily.getState();
     CW_SCORE=cwCalcScore(crisisState);
     if(viewRendered.crisis) renderCrisis(crisisState);
     if(viewRendered.cycle) CrisisDaily.render('cycleCrisisDaily',crisisState);

@@ -1,0 +1,347 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-11-09T11:36:54.664Z",
+  "lastSuccessfulAt": null,
+  "runStatus": "failed",
+  "companies": [
+    {
+      "id": "NVDA",
+      "name": "英伟达",
+      "role": "designer",
+      "status": "error",
+      "fetchedAt": null,
+      "source": {
+        "name": "SEC Company Facts / company proxy",
+        "url": "https://data.sec.gov/api/xbrl/companyfacts/CIK0001045810.json"
+      },
+      "quarters": [],
+      "crossCheck": {
+        "status": "unavailable",
+        "reason": "unverified_single_source: 独立副源本次探测：HTTP 200，但精确季度日期/财务单位解析未支持；不使用近似数值。；其余公司未重复探测同站点。",
+        "source": {
+          "name": "Stock Analysis quarterly / independent (not verified)",
+          "url": "https://stockanalysis.com/stocks/nvda/financials/?p=quarterly"
+        }
+      },
+      "reason": "集团as-reported财务仅为company proxy，非AI收入、订单或归因毛利；未披露不等于零。 SEC collection failed: HTTP 403 previously observed; initial Node transport inherited disabled TLS; source remains unverifiable and was not retried"
+    },
+    {
+      "id": "AMD",
+      "name": "超威半导体（AMD）",
+      "role": "designer",
+      "status": "error",
+      "fetchedAt": null,
+      "source": {
+        "name": "SEC Company Facts / company proxy",
+        "url": "https://data.sec.gov/api/xbrl/companyfacts/CIK0000002488.json"
+      },
+      "quarters": [],
+      "crossCheck": {
+        "status": "unavailable",
+        "reason": "unverified_single_source: 独立副源本次探测：HTTP 200，但精确季度日期/财务单位解析未支持；不使用近似数值。；其余公司未重复探测同站点。",
+        "source": {
+          "name": "Stock Analysis quarterly / independent (not verified)",
+          "url": "https://stockanalysis.com/stocks/amd/financials/?p=quarterly"
+        }
+      },
+      "reason": "集团as-reported财务仅为company proxy，非AI收入、订单或归因毛利；未披露不等于零。 SEC collection failed: HTTP 403 previously observed; initial Node transport inherited disabled TLS; source remains unverifiable and was not retried"
+    },
+    {
+      "id": "TSM",
+      "name": "台积电",
+      "role": "foundry",
+      "status": "error",
+      "fetchedAt": null,
+      "source": {
+        "name": "SEC Company Facts / company proxy",
+        "url": "https://data.sec.gov/api/xbrl/companyfacts/CIK0001046179.json"
+      },
+      "quarters": [],
+      "crossCheck": {
+        "status": "unavailable",
+        "reason": "unverified_single_source: 精确的独立季度解析不可用；SEC API与SEC filing属于同一来源。",
+        "source": {
+          "name": "Stock Analysis quarterly / independent (not verified)",
+          "url": "https://stockanalysis.com/stocks/tsm/financials/?p=quarterly"
+        }
+      },
+      "reason": "集团as-reported财务仅为company proxy，非AI收入、订单或归因毛利；未披露不等于零。 SEC collection failed: HTTP 403 previously observed; initial Node transport inherited disabled TLS; source remains unverifiable and was not retried"
+    },
+    {
+      "id": "SAMSUNG",
+      "name": "三星",
+      "role": "memory",
+      "status": "unavailable",
+      "fetchedAt": null,
+      "source": {
+        "name": "Official IR / disclosure only",
+        "url": "https://www.samsung.com/global/ir/financial-information/earnings-release/"
+      },
+      "quarters": [],
+      "crossCheck": {
+        "status": "unavailable",
+        "reason": "unverified_single_source: 精确的独立季度解析不可用；SEC API与SEC filing属于同一来源。"
+      },
+      "reason": "集团as-reported财务仅为company proxy，非AI收入、订单或归因毛利；未披露不等于零。 官方IR缺少支持严格日期/口径验证的机器季度指标；链接保留供人工核验。"
+    },
+    {
+      "id": "SKHYNIX",
+      "name": "SK海力士",
+      "role": "memory",
+      "status": "unavailable",
+      "fetchedAt": "2026-11-09T11:36:54.664Z",
+      "source": {
+        "name": "Official IR / disclosure only",
+        "url": "https://news.skhynix.com/"
+      },
+      "quarters": [],
+      "crossCheck": {
+        "status": "unavailable",
+        "reason": "unverified_single_source: 精确的独立季度解析不可用；SEC API与SEC filing属于同一来源。"
+      },
+      "reason": "集团as-reported财务仅为company proxy，非AI收入、订单或归因毛利；未披露不等于零。 官方IR缺少支持严格日期/口径验证的机器季度指标；链接保留供人工核验。 新闻仅为disclosure待人工核验；不抽取财务、不regex计分。",
+      "disclosures": [
+        {
+          "publishedAt": "2026-10-28T00:01:48Z",
+          "source": {
+            "name": "SK hynix official newsroom / disclosure待人工核验",
+            "url": "https://news.skhynix.com/en/q3-2026-earnings-conference-call/"
+          },
+          "title": "Q3 2026 Earnings Conference Call Access Details"
+        },
+        {
+          "publishedAt": "2026-10-27T23:29:15Z",
+          "source": {
+            "name": "SK hynix official newsroom / disclosure待人工核验",
+            "url": "https://news.skhynix.com/en/q3-2026-business-results/"
+          },
+          "title": "SK hynix Announces 3Q26 Financial Results"
+        },
+        {
+          "publishedAt": "2026-10-21T00:59:02Z",
+          "source": {
+            "name": "SK hynix official newsroom / disclosure待人工核验",
+            "url": "https://news.skhynix.com/en/q3-2026-earnings-conference-call-invitation/"
+          },
+          "title": "Q3 2026 Earnings Conference Call Invitation"
+        }
+      ]
+    },
+    {
+      "id": "MU",
+      "name": "美光",
+      "role": "memory",
+      "status": "error",
+      "fetchedAt": null,
+      "source": {
+        "name": "SEC Company Facts / company proxy",
+        "url": "https://data.sec.gov/api/xbrl/companyfacts/CIK0000723125.json"
+      },
+      "quarters": [],
+      "crossCheck": {
+        "status": "unavailable",
+        "reason": "unverified_single_source: 精确的独立季度解析不可用；SEC API与SEC filing属于同一来源。",
+        "source": {
+          "name": "Stock Analysis quarterly / independent (not verified)",
+          "url": "https://stockanalysis.com/stocks/mu/financials/?p=quarterly"
+        }
+      },
+      "reason": "集团as-reported财务仅为company proxy，非AI收入、订单或归因毛利；未披露不等于零。 SEC collection failed: HTTP 403 previously observed; initial Node transport inherited disabled TLS; source remains unverifiable and was not retried"
+    },
+    {
+      "id": "MSFT",
+      "name": "微软",
+      "role": "buyer",
+      "status": "error",
+      "fetchedAt": null,
+      "source": {
+        "name": "SEC Company Facts / company proxy",
+        "url": "https://data.sec.gov/api/xbrl/companyfacts/CIK0000789019.json"
+      },
+      "quarters": [],
+      "crossCheck": {
+        "status": "unavailable",
+        "reason": "unverified_single_source: 精确的独立季度解析不可用；SEC API与SEC filing属于同一来源。",
+        "source": {
+          "name": "Stock Analysis quarterly / independent (not verified)",
+          "url": "https://stockanalysis.com/stocks/msft/financials/?p=quarterly"
+        }
+      },
+      "reason": "集团as-reported财务仅为company proxy，非AI收入、订单或归因毛利；未披露不等于零。 SEC collection failed: HTTP 403 previously observed; initial Node transport inherited disabled TLS; source remains unverifiable and was not retried"
+    },
+    {
+      "id": "AMZN",
+      "name": "亚马逊",
+      "role": "buyer",
+      "status": "error",
+      "fetchedAt": null,
+      "source": {
+        "name": "SEC Company Facts / company proxy",
+        "url": "https://data.sec.gov/api/xbrl/companyfacts/CIK0001018724.json"
+      },
+      "quarters": [],
+      "crossCheck": {
+        "status": "unavailable",
+        "reason": "unverified_single_source: 精确的独立季度解析不可用；SEC API与SEC filing属于同一来源。",
+        "source": {
+          "name": "Stock Analysis quarterly / independent (not verified)",
+          "url": "https://stockanalysis.com/stocks/amzn/financials/?p=quarterly"
+        }
+      },
+      "reason": "集团as-reported财务仅为company proxy，非AI收入、订单或归因毛利；未披露不等于零。 SEC collection failed: HTTP 403 previously observed; initial Node transport inherited disabled TLS; source remains unverifiable and was not retried"
+    },
+    {
+      "id": "GOOG",
+      "name": "谷歌",
+      "role": "buyer",
+      "status": "error",
+      "fetchedAt": null,
+      "source": {
+        "name": "SEC Company Facts / company proxy",
+        "url": "https://data.sec.gov/api/xbrl/companyfacts/CIK0001652044.json"
+      },
+      "quarters": [],
+      "crossCheck": {
+        "status": "unavailable",
+        "reason": "unverified_single_source: 精确的独立季度解析不可用；SEC API与SEC filing属于同一来源。",
+        "source": {
+          "name": "Stock Analysis quarterly / independent (not verified)",
+          "url": "https://stockanalysis.com/stocks/goog/financials/?p=quarterly"
+        }
+      },
+      "reason": "集团as-reported财务仅为company proxy，非AI收入、订单或归因毛利；未披露不等于零。 SEC collection failed: HTTP 403 previously observed; initial Node transport inherited disabled TLS; source remains unverifiable and was not retried"
+    },
+    {
+      "id": "META",
+      "name": "Meta",
+      "role": "buyer",
+      "status": "error",
+      "fetchedAt": null,
+      "source": {
+        "name": "SEC Company Facts / company proxy",
+        "url": "https://data.sec.gov/api/xbrl/companyfacts/CIK0001326801.json"
+      },
+      "quarters": [],
+      "crossCheck": {
+        "status": "unavailable",
+        "reason": "unverified_single_source: 精确的独立季度解析不可用；SEC API与SEC filing属于同一来源。",
+        "source": {
+          "name": "Stock Analysis quarterly / independent (not verified)",
+          "url": "https://stockanalysis.com/stocks/meta/financials/?p=quarterly"
+        }
+      },
+      "reason": "集团as-reported财务仅为company proxy，非AI收入、订单或归因毛利；未披露不等于零。 SEC collection failed: HTTP 403 previously observed; initial Node transport inherited disabled TLS; source remains unverifiable and was not retried"
+    }
+  ],
+  "evidence": [],
+  "errors": [
+    {
+      "companyId": "NVDA",
+      "stage": "primary",
+      "source": {
+        "name": "SEC Company Facts / company proxy",
+        "url": "https://data.sec.gov/api/xbrl/companyfacts/CIK0001045810.json"
+      },
+      "message": "SEC collection failed: HTTP 403 previously observed; initial Node transport inherited disabled TLS; source remains unverifiable and was not retried"
+    },
+    {
+      "companyId": "AMD",
+      "stage": "primary",
+      "source": {
+        "name": "SEC Company Facts / company proxy",
+        "url": "https://data.sec.gov/api/xbrl/companyfacts/CIK0000002488.json"
+      },
+      "message": "SEC collection failed: HTTP 403 previously observed; initial Node transport inherited disabled TLS; source remains unverifiable and was not retried"
+    },
+    {
+      "companyId": "TSM",
+      "stage": "primary",
+      "source": {
+        "name": "SEC Company Facts / company proxy",
+        "url": "https://data.sec.gov/api/xbrl/companyfacts/CIK0001046179.json"
+      },
+      "message": "SEC collection failed: HTTP 403 previously observed; initial Node transport inherited disabled TLS; source remains unverifiable and was not retried"
+    },
+    {
+      "companyId": "MU",
+      "stage": "primary",
+      "source": {
+        "name": "SEC Company Facts / company proxy",
+        "url": "https://data.sec.gov/api/xbrl/companyfacts/CIK0000723125.json"
+      },
+      "message": "SEC collection failed: HTTP 403 previously observed; initial Node transport inherited disabled TLS; source remains unverifiable and was not retried"
+    },
+    {
+      "companyId": "MSFT",
+      "stage": "primary",
+      "source": {
+        "name": "SEC Company Facts / company proxy",
+        "url": "https://data.sec.gov/api/xbrl/companyfacts/CIK0000789019.json"
+      },
+      "message": "SEC collection failed: HTTP 403 previously observed; initial Node transport inherited disabled TLS; source remains unverifiable and was not retried"
+    },
+    {
+      "companyId": "AMZN",
+      "stage": "primary",
+      "source": {
+        "name": "SEC Company Facts / company proxy",
+        "url": "https://data.sec.gov/api/xbrl/companyfacts/CIK0001018724.json"
+      },
+      "message": "SEC collection failed: HTTP 403 previously observed; initial Node transport inherited disabled TLS; source remains unverifiable and was not retried"
+    },
+    {
+      "companyId": "GOOG",
+      "stage": "primary",
+      "source": {
+        "name": "SEC Company Facts / company proxy",
+        "url": "https://data.sec.gov/api/xbrl/companyfacts/CIK0001652044.json"
+      },
+      "message": "SEC collection failed: HTTP 403 previously observed; initial Node transport inherited disabled TLS; source remains unverifiable and was not retried"
+    },
+    {
+      "companyId": "META",
+      "stage": "primary",
+      "source": {
+        "name": "SEC Company Facts / company proxy",
+        "url": "https://data.sec.gov/api/xbrl/companyfacts/CIK0001326801.json"
+      },
+      "message": "SEC collection failed: HTTP 403 previously observed; initial Node transport inherited disabled TLS; source remains unverifiable and was not retried"
+    },
+    {
+      "companyId": "NVDA",
+      "stage": "crossCheck",
+      "source": {
+        "name": "Stock Analysis quarterly / independent (not verified)",
+        "url": "https://stockanalysis.com/stocks/nvda/financials/?p=quarterly"
+      },
+      "message": "unverified_single_source: 独立副源本次探测：HTTP 200，但精确季度日期/财务单位解析未支持；不使用近似数值。；其余公司未重复探测同站点。"
+    },
+    {
+      "companyId": "AMD",
+      "stage": "crossCheck",
+      "source": {
+        "name": "Stock Analysis quarterly / independent (not verified)",
+        "url": "https://stockanalysis.com/stocks/amd/financials/?p=quarterly"
+      },
+      "message": "unverified_single_source: 独立副源本次探测：HTTP 200，但精确季度日期/财务单位解析未支持；不使用近似数值。；其余公司未重复探测同站点。"
+    },
+    {
+      "companyId": "SAMSUNG",
+      "stage": "coverage",
+      "source": {
+        "name": "Official IR / disclosure only",
+        "url": "https://www.samsung.com/global/ir/financial-information/earnings-release/"
+      },
+      "message": "集团as-reported财务仅为company proxy，非AI收入、订单或归因毛利；未披露不等于零。 官方IR缺少支持严格日期/口径验证的机器季度指标；链接保留供人工核验。"
+    },
+    {
+      "companyId": "SKHYNIX",
+      "stage": "coverage",
+      "source": {
+        "name": "Official IR / disclosure only",
+        "url": "https://news.skhynix.com/"
+      },
+      "message": "集团as-reported财务仅为company proxy，非AI收入、订单或归因毛利；未披露不等于零。 官方IR缺少支持严格日期/口径验证的机器季度指标；链接保留供人工核验。 新闻仅为disclosure待人工核验；不抽取财务、不regex计分。"
+    }
+  ]
+}
