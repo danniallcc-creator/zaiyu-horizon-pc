@@ -33,6 +33,17 @@ const NOTICE = '集团as-reported财务仅为company proxy，非AI收入、订�
 export const secURL = (cik) => `https://data.sec.gov/api/xbrl/companyfacts/CIK${String(cik).padStart(10, '0')}.json`;
 export const filingURL = (cik, accession) => `https://www.sec.gov/Archives/edgar/data/${cik}/${accession.replaceAll('-', '')}/${accession}-index.html`;
 const sourceFor = (company) => ({ name: company.cik ? 'SEC Company Facts / company proxy' : 'Official IR / disclosure only', url: company.cik ? secURL(company.cik) : company.ir });
+
+// Read a single CIK JSON from a pre-extracted SEC companyfacts.zip directory.
+// Returns the raw text or null if the file is missing/unreadable.
+export async function readBulkCIK(cik, bulkDir) {
+  try {
+    const path = resolve(bulkDir, `CIK${String(cik).padStart(10, '0')}.json`);
+    const text = await readFile(path, 'utf8');
+    return text.trim() ? text : null;
+  } catch { return null; }
+}
+
 function assert(condition, message) { if (!condition) throw new Error(message); }
 export function validDate(value, now = new Date()) {
   assert(typeof value === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(value), 'Invalid date');
@@ -391,7 +402,7 @@ export function validateSnapshot(snapshot, now = new Date()) {
   return snapshot;
 }
 
-export async function collectAICompanies({ now = () => new Date(), fetchImpl = fetch, previous = null, evidenceInput = { schemaVersion: 1, records: [] }, timeoutMs = 20_000 } = {}) {
+export async function collectAICompanies({ now = () => new Date(), fetchImpl = fetch, previous = null, evidenceInput = { schemaVersion: 1, records: [] }, timeoutMs = 20_000, bulkDir = null } = {}) {
   const at = now(), generatedAt = at.toISOString(), errors = [];
   let evidence = [];
   try { evidence = validateEvidenceInput(evidenceInput, at); } catch (error) { errors.push({ stage: 'evidence', message: error.message }); }
@@ -400,7 +411,10 @@ export async function collectAICompanies({ now = () => new Date(), fetchImpl = f
     let company = emptyCompany(definition, 'unavailable', `${NOTICE} 官方IR缺少支持严格日期/口径验证的机器季度指标；链接保留供人工核验。`);
     if (definition.cik) {
       try {
-        company = parseCompanyFacts(JSON.parse(await fetchPublic(secURL(definition.cik), { fetchImpl, timeoutMs })), definition, at);
+        // Bulk directory (SEC companyfacts.zip extract) avoids per-CIK HTTP 403.
+        let payloadText = bulkDir ? await readBulkCIK(definition.cik, bulkDir) : null;
+        if (!payloadText) payloadText = await fetchPublic(secURL(definition.cik), { fetchImpl, timeoutMs });
+        company = parseCompanyFacts(JSON.parse(payloadText), definition, at);
         validateCompany(company, at);
       } catch (error) {
         const reason = `SEC collection failed: ${error.message}`;
@@ -461,7 +475,9 @@ export async function runCollector({ outputPath = fileURLToPath(new URL('../data
   return snapshot;
 }
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
-  const snapshot = await runCollector();
-  console.log(JSON.stringify({ runStatus: snapshot.runStatus, freshCompanies: freshCompanyIds(snapshot), companies: snapshot.companies.map(({ id, status, quarters }) => ({ id, status, quarters: quarters.length, latestPeriodEnd: quarters.at(-1)?.end || null })), evidence: snapshot.evidence.length, errors: snapshot.errors.length }));
+  const bulkDirArg = process.argv.find((arg) => arg.startsWith('--bulk-dir='));
+  const bulkDir = bulkDirArg ? resolve(bulkDirArg.split('=')[1]) : null;
+  const snapshot = await runCollector(bulkDir ? { bulkDir } : {});
+  console.log(JSON.stringify({ runStatus: snapshot.runStatus, bulkDir: bulkDir || 'api-only', freshCompanies: freshCompanyIds(snapshot), companies: snapshot.companies.map(({ id, status, quarters }) => ({ id, status, quarters: quarters.length, latestPeriodEnd: quarters.at(-1)?.end || null })), evidence: snapshot.evidence.length, errors: snapshot.errors.length }));
   if (snapshot.runStatus === 'failed') process.exitCode = 1;
 }

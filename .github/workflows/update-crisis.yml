@@ -29,7 +29,7 @@ concurrency:
 jobs:
   collect:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 20
     outputs:
       changed: ${{ steps.commit.outputs.changed }}
       commit_sha: ${{ steps.commit.outputs.commit_sha }}
@@ -42,6 +42,49 @@ jobs:
           node-version: '22'
       - name: Test parsers, calculations, frontend model and failure handling
         run: node --test tests/crisis-*.test.mjs tests/ai-*.test.mjs
+      - name: Download SEC companyfacts bulk and extract needed CIK files
+        id: sec-bulk
+        continue-on-error: true
+        run: |
+          set -euo pipefail
+          BULK_DIR="$RUNNER_TEMP/sec-bulk"
+          mkdir -p "$BULK_DIR"
+          ZIP_PATH="$RUNNER_TEMP/companyfacts.zip"
+          echo "Downloading SEC companyfacts.zip (~1.3 GB)…"
+          curl --fail --silent --show-error --location --max-time 300 \
+            -H 'User-Agent: ZaiyuHorizonPublicFinancialMonitor/1.0 contact horizon-monitor@users.noreply.github.com' \
+            -o "$ZIP_PATH" \
+            'https://www.sec.gov/Archives/edgar/daily-index/xbrl/companyfacts.zip'
+          echo "Extracting needed CIK files…"
+          python3 -c "
+          import zipfile, os, json, sys
+          BULK_DIR, ZIP_PATH = os.environ['BULK_DIR'], os.environ['ZIP_PATH']
+          CIKS = ['0001045810', '0000002488', '0001046179', '0000723125', '0000789019', '0001018724', '0001652044', '0001326801']
+          with zipfile.ZipFile(ZIP_PATH) as z:
+              names = set(z.namelist())
+              for cik in CIKS:
+                  fname = f'CIK{cik}.json'
+                  if fname not in names:
+                      print(f'WARNING: {fname} not in ZIP, will fall back to API', file=sys.stderr)
+                      continue
+                  with z.open(fname) as f:
+                      data = f.read()
+                  try:
+                      json.loads(data)
+                  except json.JSONDecodeError:
+                      print(f'WARNING: {fname} invalid JSON, skipping', file=sys.stderr)
+                      continue
+                  with open(os.path.join(BULK_DIR, fname), 'wb') as out:
+                      out.write(data)
+                  print(f'Extracted {fname} ({len(data):,} bytes)')
+          extracted = len(os.listdir(BULK_DIR))
+          print(f'Total extracted: {extracted}/{len(CIKS)} CIK files')
+          " 
+          echo "bulk-dir=$BULK_DIR" >> "$GITHUB_OUTPUT"
+          rm -f "$ZIP_PATH"
+        env:
+          BULK_DIR: ${{ runner.temp }}/sec-bulk
+          ZIP_PATH: ${{ runner.temp }}/companyfacts.zip
       - name: Collect actual public observations
         id: collect
         continue-on-error: true
@@ -49,7 +92,13 @@ jobs:
       - name: Collect company financial proxies and reviewed AI evidence
         id: companies
         continue-on-error: true
-        run: node scripts/update-ai-companies.mjs
+        run: |
+          if [ -n "${{ steps.sec-bulk.outputs.bulk-dir }}" ] && [ -d "${{ steps.sec-bulk.outputs.bulk-dir }}" ]; then
+            node scripts/update-ai-companies.mjs --bulk-dir="${{ steps.sec-bulk.outputs.bulk-dir }}"
+          else
+            echo "::warning::SEC bulk directory unavailable, falling back to per-CIK API"
+            node scripts/update-ai-companies.mjs
+          fi
       - name: Upload collection diagnostics (including all-source failures)
         if: always() && (steps.collect.outcome != 'skipped' || steps.companies.outcome != 'skipped')
         uses: actions/upload-artifact@v4

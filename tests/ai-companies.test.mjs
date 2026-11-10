@@ -4,7 +4,7 @@ import { mkdtemp, readFile, writeFile, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import {
-  COMPANIES, METRIC_KEYS, secURL, filingURL, validDate, fetchPublic, quarterize,
+  COMPANIES, METRIC_KEYS, secURL, filingURL, validDate, fetchPublic, quarterize, readBulkCIK,
   parseCompanyFacts, contiguousQuarterCount, validateEvidenceInput, parseDisclosures,
   collectAICompanies, freshCompanyIds, validateSnapshot, runCollector,
 } from '../scripts/update-ai-companies.mjs';
@@ -509,4 +509,53 @@ test('P1-3: restated facts keep the latest filing and mark the period as restate
   // GrossMargin derivation uses the restated inputs.
   assert.equal(latest.metrics.grossMargin.status, 'ok');
   assert.ok(Math.abs(latest.metrics.grossMargin.value - (155 - 62) / 155 * 100) < 1e-6);
+});
+
+test('readBulkCIK reads CIK JSON from directory and returns null for missing files', async () => {
+  const dir = await mkdtemp(join(tmpdir(), 'sec-bulk-'));
+  try {
+    const payload = quarterlyFacts(NVDA.cik);
+    await writeFile(join(dir, `CIK${String(NVDA.cik).padStart(10, '0')}.json`), JSON.stringify(payload));
+    const text = await readBulkCIK(NVDA.cik, dir);
+    assert.ok(text);
+    assert.equal(JSON.parse(text).cik, NVDA.cik);
+    // Missing CIK returns null, not an error.
+    assert.equal(await readBulkCIK(9999999, dir), null);
+    // Empty file returns null.
+    await writeFile(join(dir, 'CIK0009999999.json'), '');
+    assert.equal(await readBulkCIK(9999999, dir), null);
+  } finally { await rm(dir, { recursive: true, force: true }); }
+});
+
+test('collectAICompanies reads from bulk directory when bulkDir is set', async () => {
+  const dir = await mkdtemp(join(tmpdir(), 'sec-bulk-'));
+  try {
+    // Write NVDA fixture to bulk dir; other CIK companies have no file.
+    await writeFile(join(dir, `CIK${String(NVDA.cik).padStart(10, '0')}.json`), JSON.stringify(quarterlyFacts(NVDA.cik)));
+    // API fetch should NOT be called for NVDA (bulk file exists).
+    // API fetch IS called for other CIK companies (no bulk file), returning 403.
+    let apiCalls = 0;
+    const bulkFetch = (url) => { apiCalls++; return Promise.resolve(response('WAF denied', 403)); };
+    const snapshot = await collectAICompanies({ now: () => NOW, fetchImpl: bulkFetch, bulkDir: dir });
+    const nvda = snapshot.companies.find((c) => c.id === 'NVDA');
+    assert.equal(nvda.status, 'partial');
+    assert.ok(nvda.quarters.length > 0);
+    // Non-NVDA CIK companies failed (403 from API, no bulk file).
+    const amd = snapshot.companies.find((c) => c.id === 'AMD');
+    assert.equal(amd.status, 'error');
+    // API was called for non-NVDA CIK companies but not NVDA.
+    assert.ok(apiCalls > 0);
+  } finally { await rm(dir, { recursive: true, force: true }); }
+});
+
+test('collectAICompanies falls back to HTTP API when bulk file is missing', async () => {
+  const dir = await mkdtemp(join(tmpdir(), 'sec-bulk-'));
+  try {
+    // Empty bulk dir: all CIK companies fall through to HTTP API.
+    const snapshot = await collectAICompanies({ now: () => NOW, fetchImpl: fixtureFetch, bulkDir: dir });
+    const nvda = snapshot.companies.find((c) => c.id === 'NVDA');
+    // fixtureFetch returns valid data for companyfacts URLs.
+    assert.equal(nvda.status, 'partial');
+    assert.ok(nvda.quarters.length > 0);
+  } finally { await rm(dir, { recursive: true, force: true }); }
 });

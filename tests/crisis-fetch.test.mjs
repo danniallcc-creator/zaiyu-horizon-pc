@@ -418,7 +418,7 @@ test('workflow tests before collection, fails after diagnostics, commits only da
   assert.match(yaml, /data\/crisis-daily\.json\|data\/ai-company-daily\.json\) ;;/);
   assert.match(yaml, /Refusing unexpected staged file:[\s\S]*exit 1/);
   assert.ok(yaml.indexOf('Refusing unexpected staged file:') < yaml.indexOf('git commit'));
-  assert.match(yaml, /id: companies\n        continue-on-error: true\n        run: node scripts\/update-ai-companies\.mjs/);
+  assert.match(yaml, /id: companies\n        continue-on-error: true\n        run: \|\n          if \[ -n "\$\{\{ steps\.sec-bulk\.outputs\.bulk-dir \}\}" \]/);
   assert.match(yaml, /path: \|\n            data\/crisis-daily\.json\n            data\/ai-company-daily\.json/);
   assert.ok(yaml.indexOf('node --test') < yaml.indexOf('node scripts/update-ai-companies.mjs'));
   assert.match(yaml, /name: Commit only the two daily data files\n        id: commit\n        if: steps\.collect\.outcome == 'success'/);
