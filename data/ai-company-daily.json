@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-11-11T06:47:03.609Z",
-  "lastSuccessfulAt": "2026-11-11T06:47:03.609Z",
+  "generatedAt": "2026-11-12T07:25:54.852Z",
+  "lastSuccessfulAt": "2026-11-12T07:25:54.852Z",
   "runStatus": "partial",
   "companies": [
     {
@@ -9,7 +9,7 @@
       "name": "英伟达",
       "role": "designer",
       "status": "partial",
-      "fetchedAt": "2026-11-11T06:47:03.609Z",
+      "fetchedAt": "2026-11-12T07:25:54.852Z",
       "source": {
         "name": "SEC Company Facts / company proxy",
         "url": "https://data.sec.gov/api/xbrl/companyfacts/CIK0001045810.json"
@@ -2409,7 +2409,7 @@
               "currency": "USD",
               "kind": "observed",
               "scope": "company",
-              "status": "ok",
+              "status": "stale",
               "source": {
                 "name": "SEC filed XBRL / company proxy",
                 "url": "https://www.sec.gov/Archives/edgar/data/1045810/000104581026000052/0001045810-26-000052-index.html"
@@ -2429,7 +2429,7 @@
               "currency": "USD",
               "kind": "observed",
               "scope": "company",
-              "status": "ok",
+              "status": "stale",
               "source": {
                 "name": "SEC filed XBRL / company proxy",
                 "url": "https://www.sec.gov/Archives/edgar/data/1045810/000104581026000052/0001045810-26-000052-index.html"
@@ -2449,7 +2449,7 @@
               "currency": "USD",
               "kind": "derived",
               "scope": "company",
-              "status": "ok",
+              "status": "stale",
               "source": {
                 "name": "SEC filed XBRL / company proxy",
                 "url": "https://www.sec.gov/Archives/edgar/data/1045810/000104581026000052/0001045810-26-000052-index.html"
@@ -2525,7 +2525,7 @@
               "currency": "USD",
               "kind": "observed",
               "scope": "company",
-              "status": "ok",
+              "status": "stale",
               "source": {
                 "name": "SEC filed XBRL / company proxy",
                 "url": "https://www.sec.gov/Archives/edgar/data/1045810/000104581026000052/0001045810-26-000052-index.html"
@@ -2558,7 +2558,7 @@
               "currency": "USD",
               "kind": "observed",
               "scope": "company",
-              "status": "ok",
+              "status": "stale",
               "source": {
                 "name": "SEC filed XBRL / company proxy",
                 "url": "https://www.sec.gov/Archives/edgar/data/1045810/000104581026000052/0001045810-26-000052-index.html"
@@ -2578,7 +2578,7 @@
               "currency": "USD",
               "kind": "observed",
               "scope": "company",
-              "status": "ok",
+              "status": "stale",
               "source": {
                 "name": "SEC filed XBRL / company proxy",
                 "url": "https://www.sec.gov/Archives/edgar/data/1045810/000104581026000052/0001045810-26-000052-index.html"
@@ -2880,7 +2880,7 @@
       "name": "超威半导体（AMD）",
       "role": "designer",
       "status": "partial",
-      "fetchedAt": "2026-11-11T06:47:03.609Z",
+      "fetchedAt": "2026-11-12T07:25:54.852Z",
       "source": {
         "name": "SEC Company Facts / company proxy",
         "url": "https://data.sec.gov/api/xbrl/companyfacts/CIK0000002488.json"
@@ -5649,7 +5649,7 @@
       "name": "台积电",
       "role": "foundry",
       "status": "stale",
-      "fetchedAt": "2026-11-11T06:47:03.609Z",
+      "fetchedAt": "2026-11-12T07:25:54.852Z",
       "source": {
         "name": "SEC Company Facts / company proxy",
         "url": "https://data.sec.gov/api/xbrl/companyfacts/CIK0001046179.json"
@@ -5687,7 +5687,7 @@
       "name": "SK海力士",
       "role": "memory",
       "status": "unavailable",
-      "fetchedAt": "2026-11-11T06:47:03.609Z",
+      "fetchedAt": "2026-11-12T07:25:54.852Z",
       "source": {
         "name": "Official IR / disclosure only",
         "url": "https://news.skhynix.com/"
@@ -5730,7 +5730,7 @@
       "name": "美光",
       "role": "memory",
       "status": "partial",
-      "fetchedAt": "2026-11-11T06:47:03.609Z",
+      "fetchedAt": "2026-11-12T07:25:54.852Z",
       "source": {
         "name": "SEC Company Facts / company proxy",
         "url": "https://data.sec.gov/api/xbrl/companyfacts/CIK0000723125.json"
@@ -8489,7 +8489,7 @@
       "name": "微软",
       "role": "buyer",
       "status": "partial",
-      "fetchedAt": "2026-11-11T06:47:03.609Z",
+      "fetchedAt": "2026-11-12T07:25:54.852Z",
       "source": {
         "name": "SEC Company Facts / company proxy",
         "url": "https://data.sec.gov/api/xbrl/companyfacts/CIK0000789019.json"
@@ -10442,7 +10442,7 @@
       "name": "亚马逊",
       "role": "buyer",
       "status": "partial",
-      "fetchedAt": "2026-11-11T06:47:03.609Z",
+      "fetchedAt": "2026-11-12T07:25:54.852Z",
       "source": {
         "name": "SEC Company Facts / company proxy",
         "url": "https://data.sec.gov/api/xbrl/companyfacts/CIK0001018724.json"
@@ -12700,7 +12700,7 @@
       "name": "谷歌",
       "role": "buyer",
       "status": "partial",
-      "fetchedAt": "2026-11-11T06:47:03.609Z",
+      "fetchedAt": "2026-11-12T07:25:54.852Z",
       "source": {
         "name": "SEC Company Facts / company proxy",
         "url": "https://data.sec.gov/api/xbrl/companyfacts/CIK0001652044.json"
@@ -14849,7 +14849,7 @@
       "name": "Meta",
       "role": "buyer",
       "status": "partial",
-      "fetchedAt": "2026-11-11T06:47:03.609Z",
+      "fetchedAt": "2026-11-12T07:25:54.852Z",
       "source": {
         "name": "SEC Company Facts / company proxy",
         "url": "https://data.sec.gov/api/xbrl/companyfacts/CIK0001326801.json"
