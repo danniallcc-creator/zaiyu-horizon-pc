@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
-  "collectionStartedAt": "2026-11-12T07:25:52.927Z",
-  "generatedAt": "2026-11-12T07:25:54.776Z",
+  "collectionStartedAt": "2026-11-13T06:57:27.416Z",
+  "generatedAt": "2026-11-13T06:57:29.595Z",
   "metrics": {
     "DGS2": {
       "frequency": "daily",
@@ -12,10 +12,10 @@
       },
       "kind": "observed",
       "maxAgeDays": 7,
-      "value": 4.56,
-      "observationDate": "2026-11-09",
-      "periodEnd": "2026-11-09",
-      "fetchedAt": "2026-11-12T07:25:53.424Z",
+      "value": 4.73,
+      "observationDate": "2026-11-10",
+      "periodEnd": "2026-11-10",
+      "fetchedAt": "2026-11-13T06:57:27.880Z",
       "status": "ok"
     },
     "DGS5": {
@@ -27,10 +27,10 @@
       },
       "kind": "observed",
       "maxAgeDays": 7,
-      "value": 4.67,
-      "observationDate": "2026-11-09",
-      "periodEnd": "2026-11-09",
-      "fetchedAt": "2026-11-12T07:25:53.492Z",
+      "value": 4.81,
+      "observationDate": "2026-11-10",
+      "periodEnd": "2026-11-10",
+      "fetchedAt": "2026-11-13T06:57:27.896Z",
       "status": "ok"
     },
     "DGS10": {
@@ -42,10 +42,10 @@
       },
       "kind": "observed",
       "maxAgeDays": 7,
-      "value": 4.88,
-      "observationDate": "2026-11-09",
-      "periodEnd": "2026-11-09",
-      "fetchedAt": "2026-11-12T07:25:53.440Z",
+      "value": 4.98,
+      "observationDate": "2026-11-10",
+      "periodEnd": "2026-11-10",
+      "fetchedAt": "2026-11-13T06:57:27.922Z",
       "status": "ok"
     },
     "DGS30": {
@@ -57,10 +57,10 @@
       },
       "kind": "observed",
       "maxAgeDays": 7,
-      "value": 5.26,
-      "observationDate": "2026-11-09",
-      "periodEnd": "2026-11-09",
-      "fetchedAt": "2026-11-12T07:25:53.524Z",
+      "value": 5.35,
+      "observationDate": "2026-11-10",
+      "periodEnd": "2026-11-10",
+      "fetchedAt": "2026-11-13T06:57:27.909Z",
       "status": "ok"
     },
     "T10Y2Y": {
@@ -72,10 +72,10 @@
       },
       "kind": "observed",
       "maxAgeDays": 7,
-      "value": 0.25,
-      "observationDate": "2026-11-10",
-      "periodEnd": "2026-11-10",
-      "fetchedAt": "2026-11-12T07:25:53.486Z",
+      "value": 0.24,
+      "observationDate": "2026-11-12",
+      "periodEnd": "2026-11-12",
+      "fetchedAt": "2026-11-13T06:57:28.324Z",
       "status": "ok"
     },
     "VIXCLS": {
@@ -87,10 +87,10 @@
       },
       "kind": "observed",
       "maxAgeDays": 7,
-      "value": 19.46,
-      "observationDate": "2026-11-10",
-      "periodEnd": "2026-11-10",
-      "fetchedAt": "2026-11-12T07:25:53.518Z",
+      "value": 17.49,
+      "observationDate": "2026-11-11",
+      "periodEnd": "2026-11-11",
+      "fetchedAt": "2026-11-13T06:57:28.165Z",
       "status": "ok"
     },
     "UNRATE": {
@@ -105,7 +105,7 @@
       "value": 4.1,
       "observationDate": "2026-10-01",
       "periodEnd": "2026-10-31",
-      "fetchedAt": "2026-11-12T07:25:53.686Z",
+      "fetchedAt": "2026-11-13T06:57:28.168Z",
       "status": "ok"
     },
     "UMCSENT": {
@@ -120,7 +120,7 @@
       "value": 48.1,
       "observationDate": "2026-09-01",
       "periodEnd": "2026-09-30",
-      "fetchedAt": "2026-11-12T07:25:53.658Z",
+      "fetchedAt": "2026-11-13T06:57:28.222Z",
       "status": "ok"
     },
     "DCCLACBS": {
@@ -135,7 +135,7 @@
       "value": 2.85,
       "observationDate": "2026-04-01",
       "periodEnd": "2026-06-30",
-      "fetchedAt": "2026-11-12T07:25:53.892Z",
+      "fetchedAt": "2026-11-13T06:57:28.394Z",
       "status": "ok"
     },
     "BAMLH0A0HYM2": {
@@ -147,10 +147,10 @@
       },
       "kind": "observed",
       "maxAgeDays": 7,
-      "value": 3.34,
-      "observationDate": "2026-11-09",
-      "periodEnd": "2026-11-09",
-      "fetchedAt": "2026-11-12T07:25:53.552Z",
+      "value": 3.3,
+      "observationDate": "2026-11-11",
+      "periodEnd": "2026-11-11",
+      "fetchedAt": "2026-11-13T06:57:28.382Z",
       "status": "ok"
     },
     "DFEDTARL": {
@@ -163,9 +163,9 @@
       "kind": "observed",
       "maxAgeDays": 7,
       "value": 3.75,
-      "observationDate": "2026-11-11",
-      "periodEnd": "2026-11-11",
-      "fetchedAt": "2026-11-12T07:25:53.759Z",
+      "observationDate": "2026-11-12",
+      "periodEnd": "2026-11-12",
+      "fetchedAt": "2026-11-13T06:57:28.609Z",
       "status": "ok"
     },
     "DFEDTARU": {
@@ -178,9 +178,9 @@
       "kind": "observed",
       "maxAgeDays": 7,
       "value": 4,
-      "observationDate": "2026-11-11",
-      "periodEnd": "2026-11-11",
-      "fetchedAt": "2026-11-12T07:25:53.855Z",
+      "observationDate": "2026-11-12",
+      "periodEnd": "2026-11-12",
+      "fetchedAt": "2026-11-13T06:57:28.529Z",
       "status": "ok"
     },
     "CPI_YOY": {
@@ -231,13 +231,13 @@
       "value": 3.1211596029620203,
       "observationDate": "2026-09-01",
       "periodEnd": "2026-09-30",
-      "fetchedAt": "2026-11-12T07:25:53.897Z",
+      "fetchedAt": "2026-11-13T06:57:28.643Z",
       "status": "ok",
       "inputs": [
         {
           "value": 130.902,
           "observationDate": "2026-09-01",
-          "fetchedAt": "2026-11-12T07:25:53.897Z",
+          "fetchedAt": "2026-11-13T06:57:28.643Z",
           "source": {
             "name": "FRED PCEPILFE",
             "url": "https://fred.stlouisfed.org/graph/fredgraph.csv?id=PCEPILFE&cosd=2023-01-01"
@@ -246,7 +246,7 @@
         {
           "value": 126.94,
           "observationDate": "2025-09-01",
-          "fetchedAt": "2026-11-12T07:25:53.897Z",
+          "fetchedAt": "2026-11-13T06:57:28.643Z",
           "source": {
             "name": "FRED PCEPILFE",
             "url": "https://fred.stlouisfed.org/graph/fredgraph.csv?id=PCEPILFE&cosd=2023-01-01"
@@ -266,13 +266,13 @@
       "value": 2.0909884672754453,
       "observationDate": "2026-08-01",
       "periodEnd": "2026-08-31",
-      "fetchedAt": "2026-11-12T07:25:54.085Z",
+      "fetchedAt": "2026-11-13T06:57:28.775Z",
       "status": "ok",
       "inputs": [
         {
           "value": 336.741,
           "observationDate": "2026-08-01",
-          "fetchedAt": "2026-11-12T07:25:54.085Z",
+          "fetchedAt": "2026-11-13T06:57:28.775Z",
           "source": {
             "name": "FRED CSUSHPINSA",
             "url": "https://fred.stlouisfed.org/graph/fredgraph.csv?id=CSUSHPINSA&cosd=2023-01-01"
@@ -281,7 +281,7 @@
         {
           "value": 329.844,
           "observationDate": "2025-08-01",
-          "fetchedAt": "2026-11-12T07:25:54.085Z",
+          "fetchedAt": "2026-11-13T06:57:28.775Z",
           "source": {
             "name": "FRED CSUSHPINSA",
             "url": "https://fred.stlouisfed.org/graph/fredgraph.csv?id=CSUSHPINSA&cosd=2023-01-01"
@@ -301,13 +301,13 @@
       "value": 26.60883594773582,
       "observationDate": "2026-04-01",
       "periodEnd": "2026-06-30",
-      "fetchedAt": "2026-11-12T07:25:54.026Z",
+      "fetchedAt": "2026-11-13T06:57:28.917Z",
       "status": "ok",
       "inputs": [
         {
           "value": 4279.937,
           "observationDate": "2026-04-01",
-          "fetchedAt": "2026-11-12T07:25:54.026Z",
+          "fetchedAt": "2026-11-13T06:57:28.917Z",
           "source": {
             "name": "FRED CP / BEA all-US corporate profits (not S&P 500 earnings)",
             "url": "https://fred.stlouisfed.org/graph/fredgraph.csv?id=CP&cosd=2023-01-01"
@@ -316,7 +316,7 @@
         {
           "value": 3380.441,
           "observationDate": "2025-04-01",
-          "fetchedAt": "2026-11-12T07:25:54.026Z",
+          "fetchedAt": "2026-11-13T06:57:28.917Z",
           "source": {
             "name": "FRED CP / BEA all-US corporate profits (not S&P 500 earnings)",
             "url": "https://fred.stlouisfed.org/graph/fredgraph.csv?id=CP&cosd=2023-01-01"
@@ -336,13 +336,13 @@
       "value": 48.20977040527249,
       "observationDate": "2026-04-01",
       "periodEnd": "2026-06-30",
-      "fetchedAt": "2026-11-12T07:25:54.531Z",
+      "fetchedAt": "2026-11-13T06:57:29.127Z",
       "status": "ok",
       "inputs": [
         {
           "value": 15698562,
           "observationDate": "2026-04-01",
-          "fetchedAt": "2026-11-12T07:25:54.268Z",
+          "fetchedAt": "2026-11-13T06:57:28.896Z",
           "source": {
             "name": "FRED BCNSDODNS",
             "url": "https://fred.stlouisfed.org/graph/fredgraph.csv?id=BCNSDODNS&cosd=2023-01-01"
@@ -351,7 +351,7 @@
         {
           "value": 32563.03,
           "observationDate": "2026-04-01",
-          "fetchedAt": "2026-11-12T07:25:54.531Z",
+          "fetchedAt": "2026-11-13T06:57:29.127Z",
           "source": {
             "name": "FRED GDP",
             "url": "https://fred.stlouisfed.org/graph/fredgraph.csv?id=GDP&cosd=2023-01-01"
@@ -368,10 +368,10 @@
       },
       "kind": "observed",
       "maxAgeDays": 7,
-      "value": 40.24,
-      "observationDate": "2026-11-11",
-      "periodEnd": "2026-11-11",
-      "fetchedAt": "2026-11-12T07:25:54.057Z",
+      "value": 40.09,
+      "observationDate": "2026-11-12",
+      "periodEnd": "2026-11-12",
+      "fetchedAt": "2026-11-13T06:57:28.818Z",
       "status": "ok"
     },
     "PE_TTM": {
@@ -383,10 +383,10 @@
       },
       "kind": "proxy",
       "maxAgeDays": 7,
-      "value": 26,
-      "observationDate": "2026-11-11",
-      "periodEnd": "2026-11-11",
-      "fetchedAt": "2026-11-12T07:25:54.267Z",
+      "value": 25.91,
+      "observationDate": "2026-11-12",
+      "periodEnd": "2026-11-12",
+      "fetchedAt": "2026-11-13T06:57:28.892Z",
       "status": "ok"
     },
     "EPS_TTM": {
@@ -401,7 +401,7 @@
       "value": 298.03,
       "observationDate": "2026-06-30",
       "periodEnd": "2026-06-30",
-      "fetchedAt": "2026-11-12T07:25:54.082Z",
+      "fetchedAt": "2026-11-13T06:57:28.845Z",
       "status": "ok"
     },
     "CONCENTRATION": {
@@ -429,10 +429,10 @@
       },
       "kind": "observed",
       "maxAgeDays": 7,
-      "value": 7619.3798828125,
-      "observationDate": "2026-11-11",
-      "periodEnd": "2026-11-11",
-      "fetchedAt": "2026-11-12T07:25:54.256Z",
+      "value": 7592.39990234375,
+      "observationDate": "2026-11-12",
+      "periodEnd": "2026-11-12",
+      "fetchedAt": "2026-11-13T06:57:29.304Z",
       "status": "ok",
       "closePolicy": "Exchange-local 16:00 close plus 30-minute margin; no inferred market calendar"
     },
@@ -445,26 +445,26 @@
       },
       "kind": "derived",
       "maxAgeDays": 7,
-      "value": 11.286900158802071,
-      "observationDate": "2026-11-11",
-      "periodEnd": "2026-11-11",
-      "fetchedAt": "2026-11-12T07:25:54.256Z",
+      "value": 10.823071776115833,
+      "observationDate": "2026-11-12",
+      "periodEnd": "2026-11-12",
+      "fetchedAt": "2026-11-13T06:57:29.304Z",
       "status": "ok",
       "closePolicy": "Exchange-local 16:00 close plus 30-minute margin; no inferred market calendar",
       "inputs": [
         {
-          "value": 7619.3798828125,
-          "observationDate": "2026-11-11",
-          "fetchedAt": "2026-11-12T07:25:54.256Z",
+          "value": 7592.39990234375,
+          "observationDate": "2026-11-12",
+          "fetchedAt": "2026-11-13T06:57:29.304Z",
           "source": {
             "name": "Yahoo Finance ^GSPC",
             "url": "https://query1.finance.yahoo.com/v8/finance/chart/%5EGSPC?range=2y&interval=1d"
           }
         },
         {
-          "value": 6846.60986328125,
-          "observationDate": "2025-11-11",
-          "fetchedAt": "2026-11-12T07:25:54.256Z",
+          "value": 6850.919921875,
+          "observationDate": "2025-11-12",
+          "fetchedAt": "2026-11-13T06:57:29.304Z",
           "source": {
             "name": "Yahoo Finance ^GSPC",
             "url": "https://query1.finance.yahoo.com/v8/finance/chart/%5EGSPC?range=2y&interval=1d"
@@ -481,10 +481,10 @@
       },
       "kind": "observed",
       "maxAgeDays": 7,
-      "value": 25466.189453125,
-      "observationDate": "2026-11-11",
-      "periodEnd": "2026-11-11",
-      "fetchedAt": "2026-11-12T07:25:54.343Z",
+      "value": 25366.08984375,
+      "observationDate": "2026-11-12",
+      "periodEnd": "2026-11-12",
+      "fetchedAt": "2026-11-13T06:57:29.371Z",
       "status": "ok",
       "closePolicy": "Exchange-local 16:00 close plus 30-minute margin; no inferred market calendar"
     },
@@ -497,26 +497,26 @@
       },
       "kind": "derived",
       "maxAgeDays": 7,
-      "value": 8.513137318706999,
-      "observationDate": "2026-11-11",
-      "periodEnd": "2026-11-11",
-      "fetchedAt": "2026-11-12T07:25:54.343Z",
+      "value": 8.372170878299823,
+      "observationDate": "2026-11-12",
+      "periodEnd": "2026-11-12",
+      "fetchedAt": "2026-11-13T06:57:29.371Z",
       "status": "ok",
       "closePolicy": "Exchange-local 16:00 close plus 30-minute margin; no inferred market calendar",
       "inputs": [
         {
-          "value": 25466.189453125,
-          "observationDate": "2026-11-11",
-          "fetchedAt": "2026-11-12T07:25:54.343Z",
+          "value": 25366.08984375,
+          "observationDate": "2026-11-12",
+          "fetchedAt": "2026-11-13T06:57:29.371Z",
           "source": {
             "name": "Yahoo Finance ^IXIC",
             "url": "https://query1.finance.yahoo.com/v8/finance/chart/%5EIXIC?range=2y&interval=1d"
           }
         },
         {
-          "value": 23468.30078125,
-          "observationDate": "2025-11-11",
-          "fetchedAt": "2026-11-12T07:25:54.343Z",
+          "value": 23406.4609375,
+          "observationDate": "2025-11-12",
+          "fetchedAt": "2026-11-13T06:57:29.371Z",
           "source": {
             "name": "Yahoo Finance ^IXIC",
             "url": "https://query1.finance.yahoo.com/v8/finance/chart/%5EIXIC?range=2y&interval=1d"
@@ -533,10 +533,10 @@
       },
       "kind": "observed",
       "maxAgeDays": 7,
-      "value": 102.91000366210938,
-      "observationDate": "2026-11-11",
-      "periodEnd": "2026-11-11",
-      "fetchedAt": "2026-11-12T07:25:54.436Z",
+      "value": 103.16999816894531,
+      "observationDate": "2026-11-12",
+      "periodEnd": "2026-11-12",
+      "fetchedAt": "2026-11-13T06:57:29.239Z",
       "status": "ok",
       "closePolicy": "Prior complete exchange-local day only; futures/DXY intentionally delayed to exclude unfinished sessions"
     },
@@ -549,26 +549,26 @@
       },
       "kind": "derived",
       "maxAgeDays": 7,
-      "value": 3.4687357826201026,
-      "observationDate": "2026-11-11",
-      "periodEnd": "2026-11-11",
-      "fetchedAt": "2026-11-12T07:25:54.436Z",
+      "value": 3.709282958879734,
+      "observationDate": "2026-11-12",
+      "periodEnd": "2026-11-12",
+      "fetchedAt": "2026-11-13T06:57:29.239Z",
       "status": "ok",
       "closePolicy": "Prior complete exchange-local day only; futures/DXY intentionally delayed to exclude unfinished sessions",
       "inputs": [
         {
-          "value": 102.91000366210938,
-          "observationDate": "2026-11-11",
-          "fetchedAt": "2026-11-12T07:25:54.436Z",
+          "value": 103.16999816894531,
+          "observationDate": "2026-11-12",
+          "fetchedAt": "2026-11-13T06:57:29.239Z",
           "source": {
             "name": "Yahoo Finance DX-Y.NYB",
             "url": "https://query1.finance.yahoo.com/v8/finance/chart/DX-Y.NYB?range=2y&interval=1d"
           }
         },
         {
-          "value": 99.45999908447266,
-          "observationDate": "2025-11-11",
-          "fetchedAt": "2026-11-12T07:25:54.436Z",
+          "value": 99.4800033569336,
+          "observationDate": "2025-11-12",
+          "fetchedAt": "2026-11-13T06:57:29.239Z",
           "source": {
             "name": "Yahoo Finance DX-Y.NYB",
             "url": "https://query1.finance.yahoo.com/v8/finance/chart/DX-Y.NYB?range=2y&interval=1d"
@@ -585,10 +585,10 @@
       },
       "kind": "proxy",
       "maxAgeDays": 7,
-      "value": 4000.5,
-      "observationDate": "2026-11-11",
-      "periodEnd": "2026-11-11",
-      "fetchedAt": "2026-11-12T07:25:54.521Z",
+      "value": 3885.300048828125,
+      "observationDate": "2026-11-12",
+      "periodEnd": "2026-11-12",
+      "fetchedAt": "2026-11-13T06:57:29.504Z",
       "status": "ok",
       "closePolicy": "Prior complete exchange-local day only; futures/DXY intentionally delayed to exclude unfinished sessions"
     },
@@ -601,26 +601,26 @@
       },
       "kind": "derived",
       "maxAgeDays": 7,
-      "value": -2.813201423172118,
-      "observationDate": "2026-11-11",
-      "periodEnd": "2026-11-11",
-      "fetchedAt": "2026-11-12T07:25:54.521Z",
+      "value": -7.79143822905114,
+      "observationDate": "2026-11-12",
+      "periodEnd": "2026-11-12",
+      "fetchedAt": "2026-11-13T06:57:29.504Z",
       "status": "ok",
       "closePolicy": "Prior complete exchange-local day only; futures/DXY intentionally delayed to exclude unfinished sessions",
       "inputs": [
         {
-          "value": 4000.5,
-          "observationDate": "2026-11-11",
-          "fetchedAt": "2026-11-12T07:25:54.521Z",
+          "value": 3885.300048828125,
+          "observationDate": "2026-11-12",
+          "fetchedAt": "2026-11-13T06:57:29.504Z",
           "source": {
             "name": "Yahoo Finance GC=F front-month futures (not spot)",
             "url": "https://query1.finance.yahoo.com/v8/finance/chart/GC%3DF?range=2y&interval=1d"
           }
         },
         {
-          "value": 4116.2998046875,
-          "observationDate": "2025-11-11",
-          "fetchedAt": "2026-11-12T07:25:54.521Z",
+          "value": 4213.60009765625,
+          "observationDate": "2025-11-12",
+          "fetchedAt": "2026-11-13T06:57:29.504Z",
           "source": {
             "name": "Yahoo Finance GC=F front-month futures (not spot)",
             "url": "https://query1.finance.yahoo.com/v8/finance/chart/GC%3DF?range=2y&interval=1d"
@@ -637,10 +637,10 @@
       },
       "kind": "proxy",
       "maxAgeDays": 7,
-      "value": 86.52999877929688,
-      "observationDate": "2026-11-11",
-      "periodEnd": "2026-11-11",
-      "fetchedAt": "2026-11-12T07:25:54.775Z",
+      "value": 88.73999786376953,
+      "observationDate": "2026-11-12",
+      "periodEnd": "2026-11-12",
+      "fetchedAt": "2026-11-13T06:57:29.437Z",
       "status": "ok",
       "closePolicy": "Prior complete exchange-local day only; futures/DXY intentionally delayed to exclude unfinished sessions"
     },
@@ -653,26 +653,26 @@
       },
       "kind": "derived",
       "maxAgeDays": 7,
-      "value": 41.75949783985897,
-      "observationDate": "2026-11-11",
-      "periodEnd": "2026-11-11",
-      "fetchedAt": "2026-11-12T07:25:54.775Z",
+      "value": 51.71823442849948,
+      "observationDate": "2026-11-12",
+      "periodEnd": "2026-11-12",
+      "fetchedAt": "2026-11-13T06:57:29.437Z",
       "status": "ok",
       "closePolicy": "Prior complete exchange-local day only; futures/DXY intentionally delayed to exclude unfinished sessions",
       "inputs": [
         {
-          "value": 86.52999877929688,
-          "observationDate": "2026-11-11",
-          "fetchedAt": "2026-11-12T07:25:54.775Z",
+          "value": 88.73999786376953,
+          "observationDate": "2026-11-12",
+          "fetchedAt": "2026-11-13T06:57:29.437Z",
           "source": {
             "name": "Yahoo Finance CL=F front-month futures (not spot)",
             "url": "https://query1.finance.yahoo.com/v8/finance/chart/CL%3DF?range=2y&interval=1d"
           }
         },
         {
-          "value": 61.040000915527344,
-          "observationDate": "2025-11-11",
-          "fetchedAt": "2026-11-12T07:25:54.775Z",
+          "value": 58.4900016784668,
+          "observationDate": "2025-11-12",
+          "fetchedAt": "2026-11-13T06:57:29.437Z",
           "source": {
             "name": "Yahoo Finance CL=F front-month futures (not spot)",
             "url": "https://query1.finance.yahoo.com/v8/finance/chart/CL%3DF?range=2y&interval=1d"
@@ -692,7 +692,7 @@
       "value": 73964.46875,
       "observationDate": "2026-11-11",
       "periodEnd": "2026-11-11",
-      "fetchedAt": "2026-11-12T07:25:54.677Z",
+      "fetchedAt": "2026-11-13T06:57:29.595Z",
       "status": "ok",
       "closePolicy": "Completed UTC days only; current BTC daily candle excluded"
     },
@@ -708,14 +708,14 @@
       "value": -28.188071369472368,
       "observationDate": "2026-11-11",
       "periodEnd": "2026-11-11",
-      "fetchedAt": "2026-11-12T07:25:54.677Z",
+      "fetchedAt": "2026-11-13T06:57:29.595Z",
       "status": "ok",
       "closePolicy": "Completed UTC days only; current BTC daily candle excluded",
       "inputs": [
         {
           "value": 73964.46875,
           "observationDate": "2026-11-11",
-          "fetchedAt": "2026-11-12T07:25:54.677Z",
+          "fetchedAt": "2026-11-13T06:57:29.595Z",
           "source": {
             "name": "Yahoo Finance BTC-USD",
             "url": "https://query1.finance.yahoo.com/v8/finance/chart/BTC-USD?range=2y&interval=1d"
@@ -724,7 +724,7 @@
         {
           "value": 102997.46875,
           "observationDate": "2025-11-11",
-          "fetchedAt": "2026-11-12T07:25:54.677Z",
+          "fetchedAt": "2026-11-13T06:57:29.595Z",
           "source": {
             "name": "Yahoo Finance BTC-USD",
             "url": "https://query1.finance.yahoo.com/v8/finance/chart/BTC-USD?range=2y&interval=1d"
@@ -744,5 +744,5 @@
     }
   ],
   "runStatus": "partial",
-  "lastSuccessfulAt": "2026-11-12T07:25:54.776Z"
+  "lastSuccessfulAt": "2026-11-13T06:57:29.595Z"
 }
